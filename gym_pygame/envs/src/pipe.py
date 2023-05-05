@@ -1,36 +1,32 @@
 import pygame
 
-from src.player import LEFT_POSITION, SIZE
-
-PIPE_SPEED = 300
-PIPE_WIDTH = 80
+from gym_pygame.envs.params import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT
 
 
 class Pipe:
     player_passed = False
 
-    def __init__(self, player=None, generator=None, space_length=150, height=100, position=0, screen=None):
+    def __init__(self, player=None, generator=None, space_length=150, height=100, position=0):
         self.space_length = space_length
         self.width = PIPE_WIDTH
         self.position = position
         self.height = height
         self.player = player
         self.generator = generator
-        self.rect1 = pygame.Rect(self.position, 0, self.width, height)
-        self.rect2 = pygame.Rect(self.position, self.space_length + self.height, self.width, generator.game.height - self.height)
-        self.screen = screen
+        self.rect1 = pygame.Rect(self.position, -3000, self.width, height+3000)
+        self.rect2 = pygame.Rect(self.position, self.space_length + self.height, self.width, HEIGHT - self.height)
 
-    def draw(self):
-        pygame.draw.rect(self.screen, "green", self.rect1)
-        pygame.draw.rect(self.screen, "green", self.rect2)
+    def draw(self, canvas):
+        pygame.draw.rect(canvas, "green", self.rect1)
+        pygame.draw.rect(canvas, "green", self.rect2)
 
     def move(self, dt):
         # Go to left
         self.position -= dt * PIPE_SPEED
         # Move rectangles
-        self.rect1 = pygame.Rect(self.position, 0, self.width, self.height)
+        self.rect1 = pygame.Rect(self.position, -3000, self.width, self.height+3000)
         self.rect2 = pygame.Rect(self.position, self.space_length + self.height, self.width,
-                      self.generator.game.height - self.height - self.space_length)
+                                 HEIGHT - self.height - self.space_length)
 
         # Check if collides with player
         self.collision()
@@ -46,6 +42,7 @@ class Pipe:
             self.generator.end()
 
     def is_player_passed(self):
-        if self.position <= SIZE + LEFT_POSITION and not self.player_passed:
+        if self.position + PIPE_WIDTH / 2 <= SIZE + LEFT_POSITION and not self.player_passed:
             self.player_passed = True
             self.player.points += 1
+            self.player.reward = True

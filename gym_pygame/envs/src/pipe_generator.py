@@ -2,24 +2,27 @@ import random
 
 import pygame
 
-from src.pipe import Pipe, PIPE_SPEED, PIPE_WIDTH
-
-SPACE_BETWEEN_PIPES = 300
+from gym_pygame.envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT
+from gym_pygame.envs.src.pipe import Pipe
 
 
 class PipeGenerator:
 
-    def __init__(self, game=None, screen=None):
+    def __init__(self, game=None):
         self.pipes = []
         self.game = game
         self.time_between = (SPACE_BETWEEN_PIPES + PIPE_WIDTH) / PIPE_SPEED
         self.time_spent = 0
-        self.screen = screen
+
+    def reset(self):
+        self.pipes = []
+        self.time_spent = 0
 
     def gen_pipe(self):
         # Create a pipe with random height
         # TODO make an easy way to change how we compute the height (random or not)
-        return Pipe(self.game.player, self, position=100+self.game.width, height=random.randint(200, self.game.height - 200), screen=self.screen)
+        return Pipe(self.game.player, self, position=100 + WIDTH,
+                    height=random.randint(200, HEIGHT - 200))
 
     def generator(self, dt):
         self.time_spent += dt
@@ -35,14 +38,14 @@ class PipeGenerator:
             if pipe.position < -100:
                 self.pipes.remove(pipe)
 
-    def draw(self):
+    def draw(self, canvas):
         for pipe in self.pipes:
-            pipe.draw()
+            pipe.draw(canvas)
 
-    def logs(self):
+    def logs(self, canvas):
         my_font = pygame.font.SysFont('Arial', 14)
         text_surface = my_font.render(f'pipes: {len(self.pipes)}', False, (0, 0, 0))
-        self.screen.blit(text_surface, (0, 20))
+        canvas.blit(text_surface, (0, 20))
 
     def end(self):
-        self.game.end()
+        self.game.terminated = True

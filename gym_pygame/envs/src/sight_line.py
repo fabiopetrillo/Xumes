@@ -2,6 +2,8 @@ import math
 
 import pygame
 
+from gym_pygame.envs.params import HEIGHT, WIDTH
+
 
 def line_rect_intersection(line_start, line_end, rect):
     # Find the four corners of the rectangle
@@ -49,12 +51,11 @@ def line_rect_intersection(line_start, line_end, rect):
 
 class SightLine:
 
-    def __init__(self, player, angle, screen):
+    def __init__(self, player, angle):
         self.player = player
         self.angle = angle
         self.max_length = 2000
         self.distance = 2000
-        self.screen = screen
 
     # Use to compute the new intersection
     def end_virtual_position(self):
@@ -70,8 +71,8 @@ class SightLine:
         end_y = y + self.distance * math.sin(self.angle)
         return end_x, end_y
 
-    def draw(self):
-        pygame.draw.line(self.screen, "red", self.player.center(), self.end_position())
+    def draw(self, canvas):
+        pygame.draw.line(canvas, "red", self.player.center(), self.end_position())
 
     def check_collision_pipe(self, pipe):
         x_player, y_player = self.player.center()
@@ -89,3 +90,21 @@ class SightLine:
                     distance = d
 
         return distance
+
+    def check_collision_ground(self):
+        x_player, y_player = self.player.center()
+
+        intersections = line_rect_intersection(self.player.center(), self.end_virtual_position(), pygame.Rect(0, HEIGHT, WIDTH, 10))
+
+        distance = 2000  # TODO remove magic number
+        if intersections is not None:
+            # For every intersections we keep the min distance
+            for (x, y) in intersections:
+                d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                if d < distance:
+                    distance = d
+
+        return distance
+    def reset(self):
+        self.max_length = 2000
+        self.distance = 2000
