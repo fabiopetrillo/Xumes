@@ -16,25 +16,27 @@ class PolicyNetwork(nn.Module):
         """
         super().__init__()
 
-        hidden_space1 = 32  # Nothing special with 16, feel free to change
-        hidden_space2 = 64  # Nothing special with 32, feel free to change
-
+        hidden_space1 = 16  # Nothing special with 16, feel free to change
+        hidden_space2 = 32  # Nothing special with 32, feel free to change
+        hidden_space3 = 32
         # Shared Network
         self.shared_net = nn.Sequential(
             nn.Linear(obs_space_dims, hidden_space1),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_space1, hidden_space2),
+            nn.Tanh(),
+            nn.Linear(hidden_space2, hidden_space3),
             nn.Tanh(),
         )
 
         # Policy Mean specific Linear Layer
         self.policy_mean_net = nn.Sequential(
-            nn.Linear(hidden_space2, action_space_dims)
+            nn.Linear(hidden_space3, action_space_dims)
         )
 
         # Policy Std Dev specific Linear Layer
         self.policy_stddev_net = nn.Sequential(
-            nn.Linear(hidden_space2, action_space_dims)
+            nn.Linear(hidden_space3, action_space_dims)
         )
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
