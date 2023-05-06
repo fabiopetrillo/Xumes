@@ -1,6 +1,5 @@
 # Create and wrap the environment
 import random
-import gym_pygame
 
 import numpy as np
 import torch

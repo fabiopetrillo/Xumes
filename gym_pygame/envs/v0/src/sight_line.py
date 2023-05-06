@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from gym_pygame.envs.params import HEIGHT, WIDTH
+from envs import HEIGHT, WIDTH
 
 
 def line_rect_intersection(line_start, line_end, rect):

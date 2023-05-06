@@ -1,6 +1,6 @@
 import pygame
 
-from gym_pygame.envs.params import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT
+from envs import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT
 
 
 class Pipe:

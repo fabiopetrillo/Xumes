@@ -1,6 +1,6 @@
 import pygame
 
-from gym_pygame.envs.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION
+from envs import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION
 
 PLAYER_COLOR = "yellow"
 

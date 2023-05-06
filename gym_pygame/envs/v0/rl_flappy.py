@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import gymnasium as gym
-import numpy
 import numpy as np
 import pygame
 from gymnasium import spaces
 
-from gym_pygame.envs.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
-from gym_pygame.envs.src.lidar import Lidar
-from gym_pygame.envs.src.pipe_generator import PipeGenerator
-from gym_pygame.envs.src.player import Player
+from envs import HEIGHT, LIDAR_MAX_DIST, WIDTH
+from envs.v0.src.lidar import Lidar
+from envs.v0.src.pipe_generator import PipeGenerator
+from envs.v0.src import Player
 
 # Screen
 BACKGROUND_COLOR = (137, 207, 240)

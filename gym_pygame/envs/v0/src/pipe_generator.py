@@ -2,8 +2,8 @@ import random
 
 import pygame
 
-from gym_pygame.envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT
-from gym_pygame.envs.src.pipe import Pipe
+from envs import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT
+from envs.v0.src.pipe import Pipe
 
 
 class PipeGenerator:

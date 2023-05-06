@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from gym_pygame.envs.src.sight_line import SightLine
+from envs.v0.src.sight_line import SightLine
 
 
 class Lidar:

@@ -1,9 +1,9 @@
 import pygame
 
-from envs.params import HEIGHT, WIDTH
-from envs.src.lidar import Lidar
-from envs.src.pipe_generator import PipeGenerator
-from envs.src.player import Player
+from envs import HEIGHT, WIDTH
+from envs.v0.src import Lidar
+from envs.v0.src.pipe_generator import PipeGenerator
+from envs.v0.src import Player
 
 BACKGROUND_COLOR = (137, 207, 240)
 
