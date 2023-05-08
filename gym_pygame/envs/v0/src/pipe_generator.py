@@ -1,8 +1,8 @@
 import random
-
+import numpy as np
 import pygame
 
-from envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE
+from envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE, LEFT_POSITION
 from envs.v0.src.pipe import Pipe
 
 
@@ -18,6 +18,15 @@ class PipeGenerator:
         self.pipes = []
         self.time_spent = 0
 
+    def reset_random(self):
+        number_of_pipes = WIDTH // (SPACE_BETWEEN_PIPES + PIPE_WIDTH)
+        self.pipes = []
+        start_position = np.random.uniform(LEFT_POSITION, WIDTH / 3)
+        for i in range(number_of_pipes):
+            self.pipes.append(Pipe(self.game.player, self, position=start_position + i * (PIPE_WIDTH + SPACE_BETWEEN_PIPES),
+                    height=random.randint(50, HEIGHT - 50 - PIPE_SPACE)))
+
+
     def gen_pipe(self):
         # Create a pipe with random height
         # TODO make an easy way to change how we compute the height (random or not)
@@ -27,8 +36,11 @@ class PipeGenerator:
     def generator(self, dt):
         self.time_spent += dt
         # We wait enough time and create a new pipe
-        if self.time_spent > self.time_between:
-            self.time_spent = 0
+        if self.pipes:
+            if WIDTH - self.pipes[-1].position + 100 > SPACE_BETWEEN_PIPES :
+                self.time_spent = 0
+                self.pipes.append(self.gen_pipe())
+        else:
             self.pipes.append(self.gen_pipe())
 
     def move(self, dt):

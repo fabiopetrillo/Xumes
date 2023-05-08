@@ -1,6 +1,8 @@
+import random
+
 import pygame
 
-from envs.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED
+from envs.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED, PIPE_SPACE
 
 PLAYER_COLOR = "yellow"
 
@@ -23,7 +25,20 @@ class Player:
         self.reward = False
         self.dt_jump = 0
 
-
+    def reset_random(self, pipes):
+        self.speedup = 0
+        self.points = 0
+        self.distance = 0
+        self.reward = False
+        self.dt_jump = 0
+        in_pipe = False
+        for pipe in pipes:
+            if LEFT_POSITION <= pipe.position <= LEFT_POSITION + SIZE:
+                self.position = random.uniform(pipe.height + SIZE + 10, pipe.height + PIPE_SPACE - SIZE - 10)
+                in_pipe = True
+                break
+        if not in_pipe:
+            self.position = random.uniform(100, HEIGHT-100)
     def wait_jump(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:

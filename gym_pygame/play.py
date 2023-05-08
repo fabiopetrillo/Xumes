@@ -60,8 +60,8 @@ class Game:
             self.dt = self.clock.tick(60) / 1000
 
     def reset(self):
-        self.player.reset()
         self.pipe_generator.reset()
+        self.player.reset()
         self.lidar.reset()
         self.terminated = False
 

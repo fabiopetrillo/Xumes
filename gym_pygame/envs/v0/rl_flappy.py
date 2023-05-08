@@ -32,7 +32,7 @@ class FlappyEnv(gym.Env):
 
         # We have two actions jump and not jump
         self.action_space = spaces.Discrete(1)
-
+        self.reset()
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
 
@@ -59,8 +59,12 @@ class FlappyEnv(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
 
-        self.pipe_generator.reset()
-        self.player.reset()
+        if option == "demo":
+            self.pipe_generator.reset()
+            self.player.reset()
+        else:
+            self.pipe_generator.reset_random()
+            self.player.reset_random(self.pipe_generator.pipes)
         self.lidar.reset()
         self.terminated = False
         self.previous_points = 0
