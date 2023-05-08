@@ -33,8 +33,3 @@ I create a gym environmnent used as interface between the policy grandient algor
 I trained the model on 5000 episodes, using the Adam optimizer with a learning rate of 1e-4, a discount factor of gamma = 0.99, a negative loss and a Bernoulli distribution to compute the action.
 
 ![results](https://github.com/mastainvin/rl_flappy/blob/master/learning/graphs/RLFlappy-v0-easy-reward.png?raw=true)
-
-# Future works
-- [ ] stack 5 previous state to improve learning
-- [ ] improve the observation
-- [ ] adapt the network 
