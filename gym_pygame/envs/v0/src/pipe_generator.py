@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-from envs import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT
+from envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE
 from envs.v0.src.pipe import Pipe
 
 
@@ -22,7 +22,7 @@ class PipeGenerator:
         # Create a pipe with random height
         # TODO make an easy way to change how we compute the height (random or not)
         return Pipe(self.game.player, self, position=100 + WIDTH,
-                    height=random.randint(200, HEIGHT - 200))
+                    height=random.randint(50, HEIGHT - 50 - PIPE_SPACE))
 
     def generator(self, dt):
         self.time_spent += dt

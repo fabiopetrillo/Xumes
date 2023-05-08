@@ -1,6 +1,6 @@
 import pygame
 
-from envs import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION
+from envs.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED
 
 PLAYER_COLOR = "yellow"
 
@@ -8,6 +8,7 @@ class Player:
     speedup = 0
     points = 0
     dt_jump = 0
+    distance = 0
     def __init__(self, position=None, game=None):
         self.initial_position = position
         self.position = position
@@ -18,6 +19,10 @@ class Player:
         self.position = self.initial_position
         self.speedup = 0
         self.points = 0
+        self.distance = 0
+        self.reward = False
+        self.dt_jump = 0
+
 
     def wait_jump(self):
         keys = pygame.key.get_pressed()
@@ -33,6 +38,7 @@ class Player:
         self.position -= self.speedup * dt
         self.speedup -= FALL_SPEEDUP * dt
         self.dt_jump += dt
+        self.distance += dt * PIPE_SPEED
         self.collision()
 
     def collision(self):

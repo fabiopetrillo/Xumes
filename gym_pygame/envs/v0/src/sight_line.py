@@ -1,8 +1,9 @@
 import math
+from abc import abstractmethod
 
 import pygame
 
-from envs import HEIGHT, WIDTH
+from envs.params import HEIGHT, WIDTH
 
 
 def line_rect_intersection(line_start, line_end, rect):
@@ -51,6 +52,10 @@ def line_rect_intersection(line_start, line_end, rect):
 
 class SightLine:
 
+    @abstractmethod
+    def color(self):
+        pass
+
     def __init__(self, player, angle):
         self.player = player
         self.angle = angle
@@ -72,15 +77,16 @@ class SightLine:
         return end_x, end_y
 
     def draw(self, canvas):
-        pygame.draw.line(canvas, "red", self.player.center(), self.end_position())
+        pygame.draw.line(canvas, self.color(), self.player.center(), self.end_position())
 
     def check_collision_pipe(self, pipe):
-        x_player, y_player = self.player.center()
 
         intersections = []
         intersections.extend(line_rect_intersection(self.player.center(), self.end_virtual_position(), pipe.rect1))
         intersections.extend(line_rect_intersection(self.player.center(), self.end_virtual_position(), pipe.rect2))
 
+        x_player, y_player = self.player.center()
+
         distance = 2000  # TODO remove magic number
         if intersections is not None:
             # For every intersections we keep the min distance
@@ -90,11 +96,16 @@ class SightLine:
                     distance = d
 
         return distance
+
+    @abstractmethod
+    def vision(self, pipes):
+        pass
 
     def check_collision_ground(self):
         x_player, y_player = self.player.center()
 
-        intersections = line_rect_intersection(self.player.center(), self.end_virtual_position(), pygame.Rect(0, HEIGHT, WIDTH, 10))
+        intersections = line_rect_intersection(self.player.center(), self.end_virtual_position(),
+                                               pygame.Rect(0, HEIGHT, WIDTH, 10))
 
         distance = 2000  # TODO remove magic number
         if intersections is not None:
@@ -105,6 +116,23 @@ class SightLine:
                     distance = d
 
         return distance
+
+    def check_collision_sky(self):
+        x_player, y_player = self.player.center()
+
+        intersections = line_rect_intersection(self.player.center(), self.end_virtual_position(),
+                                               pygame.Rect(0, -10, WIDTH, 10))
+
+        distance = 2000  # TODO remove magic number
+        if intersections is not None:
+            # For every intersections we keep the min distance
+            for (x, y) in intersections:
+                d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                if d < distance:
+                    distance = d
+
+        return distance
+
     def reset(self):
         self.max_length = 2000
         self.distance = 2000

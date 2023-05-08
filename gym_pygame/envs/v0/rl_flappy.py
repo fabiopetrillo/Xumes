@@ -5,10 +5,10 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs import HEIGHT, LIDAR_MAX_DIST, WIDTH
+from envs.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
 from envs.v0.src.lidar import Lidar
 from envs.v0.src.pipe_generator import PipeGenerator
-from envs.v0.src import Player
+from envs.v0.src.player import Player
 
 # Screen
 BACKGROUND_COLOR = (137, 207, 240)
@@ -31,7 +31,7 @@ class FlappyEnv(gym.Env):
         )
 
         # We have two actions jump and not jump
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(1)
 
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
@@ -45,6 +45,7 @@ class FlappyEnv(gym.Env):
 
     def _get_info(self):
         return {
+            "distance": self.player.distance,
             "points": self.player.points,
             "position": self.player.position,
             "speedup": self.player.speedup,
@@ -70,7 +71,8 @@ class FlappyEnv(gym.Env):
         return observation, info
 
     def step(self, action):
-        if np.argmax(action) == 1:
+
+        if action[0] == 1:
             self.player.jump()
 
             # if not self.render_mode == "human" or self.human_dt > self.learn_dt:
@@ -83,17 +85,19 @@ class FlappyEnv(gym.Env):
         self.lidar.vision()
 
         terminated = self.terminated
-        if self.player.reward:
-            reward = 1
-            self.player.reward = False
-        else:
-            reward = 0
+        # if self.player.reward:
+        #     reward = 1
+        #     self.player.reward = False
+        # else:
+        #     reward = 0
+
+        reward = self.player.points - self.previous_points
+        self.previous_points = self.player.points
 
         if terminated:
             reward = -1
 
-        # reward = self.player.points - self.previous_points
-        # self.previous_points = reward
+
         observation = self._get_obs()
         info = self._get_info()
 
@@ -121,11 +125,11 @@ class FlappyEnv(gym.Env):
         # Now we draw the agent
         self.player.draw(canvas)
         # And finaly we draw the lidar
-        self.lidar.draw(canvas)
+        # self.lidar.draw(canvas)
 
-        self.pipe_generator.logs(canvas)
-        self.player.logs(canvas)
-        self.lidar.logs(canvas)
+        # self.pipe_generator.logs(canvas)
+        # self.player.logs(canvas)
+        # self.lidar.logs(canvas)
 
         if self.render_mode == "human":
             # The following line copies our drawings from `canvas` to the visible window

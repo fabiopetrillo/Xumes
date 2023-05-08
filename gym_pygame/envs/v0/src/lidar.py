@@ -2,7 +2,8 @@ import math
 
 import pygame
 
-from envs.v0.src.sight_line import SightLine
+from envs.v0.src.sight_line_first import SightLineFirst
+from envs.v0.src.sight_line_snd import SightLineSecond
 
 
 class Lidar:
@@ -11,13 +12,13 @@ class Lidar:
         self.pipe_generator = pipe_generator
         self.player = player
         self.sight_lines = [
-            SightLine(self.player, math.pi / 4),
-            SightLine(self.player, - math.pi / 4),
-            SightLine(self.player, math.pi / 6),
-            SightLine(self.player, -math.pi / 6),
-            SightLine(self.player, math.pi / 12),
-            SightLine(self.player, -math.pi / 12),
-            SightLine(self.player, 0),
+            SightLineFirst(self.player, math.pi / 6),
+            SightLineFirst(self.player, - math.pi / 6),
+            SightLineFirst(self.player, math.pi / 4),
+            SightLineFirst(self.player, - math.pi / 4),
+            SightLineFirst(self.player, math.pi / 12),
+            SightLineFirst(self.player, -math.pi / 12),
+            SightLineFirst(self.player, 0),
         ]
 
     def draw(self, canvas):
@@ -26,14 +27,7 @@ class Lidar:
 
     def vision(self):
         for line in self.sight_lines:
-            distances = []
-            # We compute distances between the line and every pipe
-            for pipe in self.pipe_generator.pipes:
-                distances.append(line.check_collision_pipe(pipe))
-            distances.append(line.check_collision_ground())
-            # We keep the min
-            if distances:
-                line.distance = min(distances)
+            line.vision(self.pipe_generator.pipes)
 
     def logs(self, canvas):
         my_font = pygame.font.SysFont('Arial', 14)

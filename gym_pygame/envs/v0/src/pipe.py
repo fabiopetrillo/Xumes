@@ -1,12 +1,12 @@
 import pygame
 
-from envs import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT
+from envs.params import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT, PIPE_SPACE
 
 
 class Pipe:
     player_passed = False
 
-    def __init__(self, player=None, generator=None, space_length=150, height=100, position=0):
+    def __init__(self, player=None, generator=None, space_length=PIPE_SPACE, height=100, position=0):
         self.space_length = space_length
         self.width = PIPE_WIDTH
         self.position = position

@@ -1,9 +1,9 @@
 import pygame
 
-from envs import HEIGHT, WIDTH
-from envs.v0.src import Lidar
+from envs.params import HEIGHT, WIDTH
+from envs.v0.src.lidar import Lidar
 from envs.v0.src.pipe_generator import PipeGenerator
-from envs.v0.src import Player
+from envs.v0.src.player import Player
 
 BACKGROUND_COLOR = (137, 207, 240)
 
@@ -70,12 +70,6 @@ class Game:
         # Draw every component
         self.player.draw(self.screen)
         self.pipe_generator.draw(self.screen)
-        self.lidar.draw(self.screen)
-
-        # Print logs on screen
-        self.player.logs(self.screen)
-        self.lidar.logs(self.screen)
-        self.pipe_generator.logs(self.screen)
 
     def check_end(self):
         if self.terminated:

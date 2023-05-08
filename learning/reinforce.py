@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.distributions import Normal
+from torch.distributions import Bernoulli
 
 from learning.policy_network import PolicyNetwork
 
@@ -9,8 +10,7 @@ class REINFORCE:
     """REINFORCE algorithm."""
 
     def __init__(self, obs_space_dims: int, action_space_dims: int):
-        """Initializes an agent that learns a policy via REINFORCE algorithm [1]
-        to solve the task at hand (Inverted Pendulum v4).
+        """Initializes an agent that learns a policy via REINFORCE algorithm [1].
 
         Args:
             obs_space_dims: Dimension of the observation space
@@ -38,11 +38,10 @@ class REINFORCE:
             action: Action to be performed
         """
         state = torch.tensor(np.array([state]))
-        action_means, action_stddevs = self.net(state)
+        action = self.net(state)
 
-        # create a normal distribution from the predicted
-        #   mean and standard deviation and sample an action
-        distrib = Normal(action_means[0] + self.eps, action_stddevs[0] + self.eps)
+        # create a bernoulli distribution from the predicted
+        distrib = Bernoulli(action[0])
         action = distrib.sample()
         prob = distrib.log_prob(action)
 
