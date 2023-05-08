@@ -127,8 +127,8 @@ class FlappyEnv(gym.Env):
         # And finaly we draw the lidar
         # self.lidar.draw(canvas)
 
+        self.player.logs(canvas)
         # self.pipe_generator.logs(canvas)
-        # self.player.logs(canvas)
         # self.lidar.logs(canvas)
 
         if self.render_mode == "human":

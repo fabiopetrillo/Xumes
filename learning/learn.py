@@ -14,7 +14,7 @@ from learning.reinforce import REINFORCE
 env = gym.make(f"gym_pygame/{ENV_NAME}")
 wrapped_env = gym.wrappers.RecordEpisodeStatistics(env, 50)  # Records episode-reward
 
-total_num_episodes = int(1e3)  # Total number of episodes
+total_num_episodes = int(5e3)  # Total number of episodes
 
 # Observation-space of InvertedPendulum-v4 (4)
 obs_space_dims = 0

@@ -18,8 +18,8 @@ class PolicyNetwork(nn.Module):
         """
         super().__init__()
 
-        hidden_space1 = 64
-        hidden_space2 = 64
+        hidden_space1 = 32
+        hidden_space2 = 32
 
         self.network = nn.Sequential(
             nn.Linear(obs_space_dims, hidden_space1),

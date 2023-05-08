@@ -50,7 +50,7 @@ class Player:
 
     def logs(self, canvas):
         my_font = pygame.font.SysFont('Arial', 14)
-        text_surface = my_font.render(f'points: {self.points} speedup: {self.speedup} position: {int(self.position)}',
+        text_surface = my_font.render(f'points: {self.points} speedup: {self.speedup}',
                                       False, (0, 0, 0))
         canvas.blit(text_surface, (0, 0))
 

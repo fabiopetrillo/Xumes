@@ -51,7 +51,6 @@ class Game:
 
             self.render()
 
-
             # flip() the display to put your work on screen
             pygame.display.flip()
 
@@ -70,7 +69,7 @@ class Game:
         # Draw every component
         self.player.draw(self.screen)
         self.pipe_generator.draw(self.screen)
-
+        self.player.logs(self.screen)
     def check_end(self):
         if self.terminated:
             self.reset()

@@ -12,7 +12,7 @@ LEFT_POSITION = 100
 # Pipe
 PIPE_SPEED = 300
 PIPE_WIDTH = 80
-PIPE_SPACE = 300 # easy 300 medium 250 hard 200
+PIPE_SPACE = 200 # easy 300 medium 250 hard 200
 
 # Pipe generator
 SPACE_BETWEEN_PIPES = 400
