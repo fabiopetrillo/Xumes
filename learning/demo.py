@@ -32,7 +32,7 @@ env = gym.make(f"gym_pygame/{ENV_NAME}", render_mode="human")
 
 for episode in range(total_num_episodes):
     # gymnasium v26 requires users to set seed while resetting the environment
-    obs, info = env.reset(seed=seed)
+    obs, info = env.reset(seed=seed, option="demo")
 
     done = False
     while not done:
