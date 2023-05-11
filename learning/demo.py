@@ -1,10 +1,9 @@
 import random
-import gym_pygame
 import numpy as np
 import torch
 import gymnasium as gym
 
-from envs.params import ENV_NAME, TEST_NAME
+from envs.v0.params import ENV_NAME, TEST_NAME
 from learning.reinforce import REINFORCE
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")

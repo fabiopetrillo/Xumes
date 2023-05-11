@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from typing import Tuple
 
-from envs.params import ENV_NAME, TEST_NAME
+from envs.v0.params import ENV_NAME, TEST_NAME
 
 
 class PolicyNetwork(nn.Module):

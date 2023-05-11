@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-from envs.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED, PIPE_SPACE
+from envs.v0.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED, PIPE_SPACE
 
 PLAYER_COLOR = "yellow"
 

@@ -5,7 +5,7 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
+from envs.v0.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
 from envs.v0.src.lidar import Lidar
 from envs.v0.src.pipe_generator import PipeGenerator
 from envs.v0.src.player import Player

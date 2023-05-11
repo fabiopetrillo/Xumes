@@ -1,5 +1,4 @@
 import random
-import gym_pygame
 
 import numpy as np
 import torch
@@ -7,7 +6,7 @@ import gymnasium as gym
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from envs.params import ENV_NAME, TEST_NAME
+from envs.v0.params import ENV_NAME, TEST_NAME
 from learning.reinforce import REINFORCE
 
 

@@ -1,6 +1,6 @@
 import pygame
 
-from envs.params import HEIGHT, WIDTH
+from envs.v0.params import HEIGHT, WIDTH
 from envs.v0.src.lidar import Lidar
 from envs.v0.src.pipe_generator import PipeGenerator
 from envs.v0.src.player import Player

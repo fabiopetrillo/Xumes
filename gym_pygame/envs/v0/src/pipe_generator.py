@@ -2,7 +2,7 @@ import random
 import numpy as np
 import pygame
 
-from envs.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE, LEFT_POSITION
+from envs.v0.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE, LEFT_POSITION
 from envs.v0.src.pipe import Pipe
 
 
