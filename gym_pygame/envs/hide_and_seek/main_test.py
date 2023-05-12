@@ -1,7 +1,7 @@
 import pygame
 
-from envs.dongeons.params import HEIGHT, WIDTH, BACKGROUND_COLOR, TILE_SIZE, BOARD_SIZE
-from envs.dongeons.src.board import Board
+from envs.hide_and_seek.params import HEIGHT, WIDTH, BACKGROUND_COLOR, TILE_SIZE, BOARD_SIZE
+from envs.hide_and_seek.src.board import Board
 
 
 class Game:
@@ -28,8 +28,9 @@ class Game:
 
             # Background
             self.screen.fill(BACKGROUND_COLOR)
-            self.board.compute_state(self.dt)
             self.board.draw(self.screen)
+            self.board.compute_state(self.dt)
+
             # flip() the display to put your work on screen
             pygame.display.flip()
 

@@ -1,7 +1,4 @@
-import pygame
-
-from envs.dongeons.params import TILE_SIZE
-from envs.dongeons.src.tile import Tile
+from envs.hide_and_seek.src.tile import Tile
 
 
 class Wall(Tile):

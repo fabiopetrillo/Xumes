@@ -2,7 +2,7 @@ from abc import ABC
 
 import pygame
 
-from envs.dongeons.params import TILE_SIZE
+from envs.hide_and_seek.params import TILE_SIZE
 
 
 class Tile(ABC):
@@ -18,4 +18,5 @@ class Tile(ABC):
         pygame.draw.rect(canvas, self.color, self.rect)
 
     def __lt__(self, other):
+        # Use with the A star algorithm
         return self.x + self.y < other.x + other.y
