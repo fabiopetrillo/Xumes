@@ -118,6 +118,8 @@ class Board:
             random_ground_enemy = np.random.choice(list(self.ground_graph.keys()))
             if random_ground_enemy != random_ground:
                 self.enemies.append(Enemy(random_ground_enemy.x * TILE_SIZE, random_ground_enemy.y * TILE_SIZE, self))
+        if not self.enemies:
+            self.reset()
 
     def add_tile(self, graph, tile, x, y):
         # Add a tile in a board representation graph
@@ -216,13 +218,18 @@ class Board:
     def compute_state(self, dt):
         self.player.control(dt)
         self.player.check_if_coin()
-        self.check_no_more_coins()
+        if self.check_no_more_coins():
+            self.reset()
+        if self.is_caught_by_enemy(dt):
+            self.reset()
+
+    def is_caught_by_enemy(self, dt):
         for enemy in self.enemies:
             enemy.control(dt)
             enemy.see(dt)
             if enemy.close_to_player():
-                self.reset()
-                break
+                return True
+        return False
 
     @property
     def entities(self):
@@ -243,7 +250,7 @@ class Board:
     def check_no_more_coins(self):
         # If the player won the game
         if self.player.points >= self.number_coins:
-            self.reset()
+            return True
 
     def reset(self):
         self.__init__()

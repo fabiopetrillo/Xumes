@@ -1,0 +1,1 @@
+from envs.hide_and_seek.hide_and_seek_env import HideAndSeekEnv

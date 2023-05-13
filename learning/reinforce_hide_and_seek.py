@@ -1,8 +1,10 @@
+import random
+
 import numpy as np
 import torch
-from torch.distributions import Bernoulli
+from torch.distributions import Multinomial
 
-from learning.policy_network import PolicyNetwork
+from learning.policy_network_hide_and_seek import PolicyNetwork
 
 
 class REINFORCE:
@@ -39,15 +41,12 @@ class REINFORCE:
         state = torch.tensor(np.array([state]))
         action = self.net(state)
 
-        # create a bernoulli distribution from the predicted
-        distrib = Bernoulli(action[0])
+        distrib = Multinomial(total_count=1, probs=action[0])
         action = distrib.sample()
         prob = distrib.log_prob(action)
 
         action = action.numpy()
-
         self.probs.append(prob)
-
         return action
 
     def update(self):

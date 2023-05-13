@@ -6,22 +6,23 @@ import gymnasium as gym
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from envs.v0.params import ENV_NAME, TEST_NAME
-from learning.reinforce import REINFORCE
+
+from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
+from learning.reinforce_hide_and_seek import REINFORCE
 
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")
 wrapped_env = gym.wrappers.RecordEpisodeStatistics(env, 50)  # Records episode-reward
 
-total_num_episodes = int(3e4)  # Total number of episodes
+total_num_episodes = int(1e3)  # Total number of episodes
 
 # Observation-space of InvertedPendulum-v4 (4)
 obs_space_dims = 0
 
 for space in env.observation_space:
-    obs_space_dims += env.observation_space[space].shape[0]
+    obs_space_dims += env.observation_space[space].shape[0] * env.observation_space[space].shape[1]
 
-action_space_dims = 1
+action_space_dims = 4
 
 # set seed
 seed = 42
@@ -41,10 +42,10 @@ for episode in range(total_num_episodes+1):
 
     done = False
     while not done:
-        obs_array = []
-        obs_array.append(obs['speedup'])
-        obs_array.extend(obs['lidar'])
-        action = agent.sample_action(obs_array)
+        obs_array = [obs['type'], obs['coin'], obs['enemies']]
+        obs_flatten = np.array(obs_array)
+        obs_flatten = obs_flatten.flatten()
+        action = agent.sample_action(obs_flatten)
 
         # Step return type - `tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]`
         # These represent the next observation, the reward from the step,
@@ -56,12 +57,11 @@ for episode in range(total_num_episodes+1):
         # End the episode when either truncated or terminated is true
         #  - truncated: The episode duration reaches max number of timesteps
         #  - terminated: Any of the state space values is no longer finite.
-        done = terminated
+        done = terminated or truncated
 
     reward_over_episodes.append(wrapped_env.return_queue[-1])
-    distance_over_episodes.append(info['distance'])
     agent.update()
-    if episode % 1000 == 0:
+    if episode % 10 == 0:
         avg_reward = int(np.mean(wrapped_env.return_queue))
         if avg_reward >= best_average_reward[0]:
             best_average_reward[0] = avg_reward
@@ -69,20 +69,9 @@ for episode in range(total_num_episodes+1):
         print("Episode:", episode, "Average Reward:", avg_reward)
 
 
-# Save graph for the distances
-df1 = pd.DataFrame([distance_over_episodes]).melt()
-df1.rename(columns={"variable": "episodes", "value": "distance"}, inplace=True)
-sns.set(style="darkgrid", context="talk", palette="rainbow")
-
-plt.figure(figsize=(18, 8))
-sns.lineplot(x="episodes", y="distance", data=df1, sizes=(15, 8)).set(
-    title=f"{ENV_NAME} {TEST_NAME} distance"
-)
-plt.savefig(f"./graphs/{ENV_NAME}-{TEST_NAME}-distance.png")
-plt.show()
 
 # Save graph for the rewards
-rewards_to_plot = [[reward[0] for reward in reward_over_episodes]]
+rewards_to_plot = [[reward for reward in reward_over_episodes]]
 df1 = pd.DataFrame(rewards_to_plot).melt()
 df1.rename(columns={"variable": "episodes", "value": "reward"}, inplace=True)
 sns.set(style="darkgrid", context="talk", palette="rainbow")

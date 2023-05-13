@@ -48,3 +48,5 @@ class Player(Entity, ABC):
             if tile.has_coin:
                 self.points += 1
                 tile.has_coin = False
+                return True
+        return False

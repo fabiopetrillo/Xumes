@@ -27,8 +27,10 @@ class PolicyNetwork(nn.Module):
             nn.Linear(hidden_space1, hidden_space2),
             nn.ReLU(),
             nn.Linear(hidden_space2, action_space_dims),
-            nn.Sigmoid(),
+            nn.Softmax(),
         )
+
+
 
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
