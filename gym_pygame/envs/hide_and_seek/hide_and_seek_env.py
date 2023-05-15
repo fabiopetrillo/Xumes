@@ -7,9 +7,9 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR, VIEW_GRID_SIZE
+from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR
 from envs.hide_and_seek.src.board import Board
-from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT, get_tile_from_position
+from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT
 from envs.hide_and_seek.src.ground import Ground
 
 
@@ -28,8 +28,8 @@ class HideAndSeekEnv(gym.Env):
         self.time_since_point = 0
         self.observation_space = spaces.Dict(
             {
-                "position": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
-                "around": spaces.Box(0, 1, shape=(20, 20), dtype=float),
+                "coin": spaces.Box(0,TILE_SIZE*20, shape=(2,), dtype=float),
+                "lidar": spaces.Box(0, 1, shape=(len(self.board.lidar.sight_lines), ), dtype=float),
             }
         )
 
@@ -44,55 +44,15 @@ class HideAndSeekEnv(gym.Env):
         self.clock = None
 
     def _get_obs(self):
-        # tile_enemy_map = {}
-        # distance_enemy_map = {}
-        # for enemy in self.board.enemies:
-        #     enemy_center_x, enemy_center_y = enemy.center()
-        #     enemy_center_tile_x, enemy_center_tile_y = get_tile_from_position(enemy_center_x, enemy_center_y)
-        #     if self.board.board[enemy_center_tile_x][enemy_center_tile_y] in tile_enemy_map.keys():
-        #         tile_enemy_map[self.board.board[enemy_center_tile_x][enemy_center_tile_y]].append(enemy)
-        #     else:
-        #         tile_enemy_map[self.board.board[enemy_center_tile_x][enemy_center_tile_y]] = [enemy]
-        #     distance = np.sqrt(np.power(player_center_x - enemy_center_x, 2) + np.power(player_center_y - enemy_center_y, 2))
-        #     distance_enemy_map[distance] = enemy
-        #
-        # type_obs = np.zeros((VIEW_GRID_SIZE, VIEW_GRID_SIZE))
-        # coin_obs = np.zeros((VIEW_GRID_SIZE, VIEW_GRID_SIZE))
-        # enemies_obs = np.zeros((VIEW_GRID_SIZE, VIEW_GRID_SIZE))
-        #
-        # for i in range(center_tile_x - (VIEW_GRID_SIZE - 1) // 2, center_tile_x + (VIEW_GRID_SIZE - 1) // 2 + 1):
-        #     for j in range(center_tile_y - (VIEW_GRID_SIZE - 1) // 2, center_tile_y + (VIEW_GRID_SIZE - 1) // 2 + 1):
-        #         if 0 <= i < self.board_size_x-1 and 0 <= j < self.board_size_y-1:
-        #             tile = self.board.board[i][j]
-        #             array_x, array_y = i - center_tile_x + (VIEW_GRID_SIZE - 1) // 2,j - center_tile_y + (VIEW_GRID_SIZE - 1) // 2
-        #             if isinstance(tile, Ground):
-        #                 type_obs[array_x][array_y] = 0.5
-        #                 if tile.has_coin:
-        #                     type_obs[array_x][array_y] = 1
-        #                     coin_obs[array_x][array_y] = 1
-        #                 if tile in tile_enemy_map.keys():  # Not a lot of information for the enemies
-        #                     enemy_ratio = len(tile_enemy_map[tile]) * 1.0 / len(self.board.enemies)
-        #                     enemies_obs[array_x][array_y] = enemy_ratio
-        #
-        # if distance_enemy_map.keys():
-        #     closest_enemy = distance_enemy_map[min(distance_enemy_map.keys())]
-        #     closest_enemy_x, closest_enemy_y = closest_enemy.center()
-        # else:
-        #     closest_enemy_x, closest_enemy_y = 0, 0
+        distance_coin_map = {}
+        for ground in self.board.ground_graph.keys():
+            if ground.has_coin:
+                nd = np.sqrt(np.power(ground.x - self.board.player.x, 2) + np.power(ground.y - self.board.player.y, 2))
+                distance_coin_map[nd] = ground
 
-        around = np.zeros(shape=(20,20))
-        i = 0
-        for l in self.board.board:
-            j = 0
-            for v in l:
-                if isinstance(v, Ground):
-                    around[i][j] = 1
-                    if v.has_coin:
-                        around[i][j] = 2
-                j += 1
-            i += 1
-
-        return {"around": np.array(around), "position": np.array([self.board.player.center()[0], self.board.player.center()[1]])}
+        ground = distance_coin_map[min(distance_coin_map.keys())]
+        lidar = [line.distance * 1.0 / 2000 for line in self.board.lidar.sight_lines]
+        return {"lidar": np.array(lidar), "coin": np.array([self.board.player.x - ground.x, self.board.player.y - ground.y])}
 
     def _get_info(self):
         return {
@@ -102,8 +62,8 @@ class HideAndSeekEnv(gym.Env):
     def reset(self, seed=None, option=None, **kwargs):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-        level = random.choice(range(len(self.board.level_names)))
-        self.board.reset(level=level)
+        # level = random.choice(range(len(self.board.level_names)))
+        self.board.reset(level=0)
         self.board_size_x, self.board_size_y = self.board.size_x, self.board.size_y
         self.time_since_point = 0
         observation = self._get_obs()
@@ -137,6 +97,8 @@ class HideAndSeekEnv(gym.Env):
         if self.board.is_caught_by_enemy(self.dt):
             reward = -1
             terminated = True
+
+        self.board.lidar.vision()
         observation = self._get_obs()
         info = self._get_info()
 

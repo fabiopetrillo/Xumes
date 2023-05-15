@@ -1,17 +1,10 @@
-import random
 import gym_pygame
-import numpy as np
-import torch
 import gymnasium as gym
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-from stable_baselines3 import DQN, PPO, A2C
+from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 
 from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
-from learning.reinforce_hide_and_seek import REINFORCE
 
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")
@@ -19,7 +12,7 @@ env = gym.make(f"gym_pygame/{ENV_NAME}")
 # Instantiate the agent
 model = PPO('MultiInputPolicy', env, learning_rate=1e-3, verbose=1)
 # Train the agent
-model.learn(total_timesteps=int(2e5))
+model.learn(total_timesteps=int(2e4))
 # Save the agent
 model.save(f"./model/{ENV_NAME}-{TEST_NAME}")
 

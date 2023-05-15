@@ -149,14 +149,14 @@ class Enemy(Entity, ABC):
         # Here we gather all tile between the enemy and the player
         if distance_player > 1:
 
-            # steps to do to reach the player
+            # steps to take to reach the player
             diff_x, diff_y = (player_x - self.x) / (40*distance_player), (
                         player_y - self.y) / (40*distance_player)
 
             dist_x, dist_y = self.center()
             tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
 
-            # While the tile checked have not reach the player yet
+            # While the tile checked have not reached the player yet
             while abs(player_tile_x-enemy_tile_x) + abs(player_tile_y-enemy_tile_y) > abs(tile_x-enemy_tile_x) + abs(tile_y-enemy_tile_y):
                 # We walk of one step
                 dist_x += diff_x
@@ -173,7 +173,7 @@ class Enemy(Entity, ABC):
                 tile_check = True
 
         # If the enemy remembers the player or
-        # If he see him (no wall between) and if he is enough close
+        # If he sees him (no wall between) and if he is enough close
         # The enemy sees the player
         if self.remember_player_dt > 0 or (ENEMY_VIEW_DIST >= distance_player >= len(self.path) - 1 and not tile_check):
             self.color = "red"
