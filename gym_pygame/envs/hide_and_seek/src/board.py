@@ -1,4 +1,5 @@
 import random
+from os import walk
 from typing import List
 
 import numpy as np
@@ -20,8 +21,8 @@ def print_graph(graph):
 
 class Board:
 
-    def __init__(self):
-        self.size_x, self.size_y = np.random.randint(5, 20), np.random.randint(5, 20)
+    def __init__(self, level):
+        self.size_x, self.size_y = 20, 20
         self.board = np.ndarray((self.size_x, self.size_y), dtype=Wall)
 
         # Graphs a usefull to compute the a star algorithm
@@ -32,7 +33,11 @@ class Board:
         self.enemies = []
         self.player = None
         self.number_coins = 0
+        self.level = level
+        self.level_names = next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[2]
+        self.generate_world()
 
+    def generate_world(self):
         # Create a board with just wall in it
         for i in range(self.size_x):
             for j in range(self.size_y):
@@ -64,45 +69,34 @@ class Board:
                             self.wall_graph[wall].append(self.board[right][top])
                             self.wall_graph[self.board[right][top]].append(wall)
 
-        # Get a start for the create of the ground
-        i_start = np.random.randint(1, self.size_x - 1)
-        j_start = np.random.randint(1, self.size_y - 1)
+        # Load map
+        with open(f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
+            lines = f.readlines()
+            j = 0
+            for line in lines:
+                i = 0
+                for value in line:
+                    try:
+                        v = int(value)
+                        if v == 1 or v == 2 or v == 3:
+                            self.remove_tile(self.wall_graph, i, j)
 
-        # Add a ground at this position
-        self.remove_tile(self.wall_graph, i_start, j_start)
-        ground = Ground(i_start, j_start, self.board, has_coin=np.random.choice([False, True]))
-        if ground.has_coin:
-            self.number_coins += 1
-        self.add_tile(self.ground_graph, ground, i_start, j_start)
-        self.add_reachable_tile(self.reachable_ground_graph, ground, i_start, j_start)
+                            ground = Ground(i, j, self.board, has_coin=(v == 2))
+                            if ground.has_coin:
+                                self.number_coins += 1
+                            self.add_tile(self.ground_graph, ground, i, j)
+                            self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
+                            # if v == 3:
+                            #     self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
+                    except:
+                        pass
+                    i += 1
+                j += 1
 
-        # Use a random method to create other ground tiles
-        for k in range(max(self.size_x, self.size_y)):
-            changes = []
-            for i in range(self.size_x):
-                for j in range(self.size_y):
-                    # If the tile is a wall inside the playable area
-                    if 0 < i < self.size_x - 1 and 0 < j < self.size_y - 1 and isinstance(self.board[i][j], Wall):
-                        # We count the number of ground around and determine with a random choice if we replace
-                        # it by a ground
-                        count = self.count_ground_around(i, j)
-                        transform = 0.40 * np.sin(count)
-                        rand = random.random()
-                        if rand < transform:
-                            changes.append((i, j))
-
-            # Then we compute the changes (replacing wall by grounds)
-            for i, j in changes:
-                self.remove_tile(self.wall_graph, i, j)
-                ground = Ground(i, j, self.board, has_coin=np.random.choice([False, True], p=[0.5, 0.5]))
-                if ground.has_coin:
-                    self.number_coins += 1
-                self.add_tile(self.ground_graph, ground, i, j)
-                self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
-
-        # Determine the position of start of the player
-        random_ground = np.random.choice(list(self.ground_graph.keys()))
-        self.player = Player(random_ground.x * TILE_SIZE, random_ground.y * TILE_SIZE, self)
+        # Determine the position of start of the player if not in file
+        if not self.player:
+            random_ground = np.random.choice(list(self.ground_graph.keys()))
+            self.player = Player(random_ground.x * TILE_SIZE, random_ground.y * TILE_SIZE, self)
 
         # Remove duplicates in every graphs
         for ground in self.ground_graph.keys():
@@ -111,15 +105,6 @@ class Board:
             self.reachable_ground_graph[ground] = set(self.reachable_ground_graph[ground])
         for wall in self.wall_graph.keys():
             self.wall_graph[wall] = set(self.wall_graph[wall])
-
-        # Add enemies
-        nb_enemies = len(self.ground_graph.keys()) // 20
-        for i in range(nb_enemies):
-            random_ground_enemy = np.random.choice(list(self.ground_graph.keys()))
-            if random_ground_enemy != random_ground:
-                self.enemies.append(Enemy(random_ground_enemy.x * TILE_SIZE, random_ground_enemy.y * TILE_SIZE, self))
-        if not self.enemies:
-            self.reset()
 
     def add_tile(self, graph, tile, x, y):
         # Add a tile in a board representation graph
@@ -219,7 +204,10 @@ class Board:
         self.player.control(dt)
         self.player.check_if_coin()
         if self.check_no_more_coins():
-            self.reset()
+            if self.level+1 < len(self.level_names):
+                self.__init__(self.level + 1)
+            else:
+                self.reset()
         if self.is_caught_by_enemy(dt):
             self.reset()
 
@@ -252,5 +240,5 @@ class Board:
         if self.player.points >= self.number_coins:
             return True
 
-    def reset(self):
-        self.__init__()
+    def reset(self, level):
+        self.__init__(level=level)

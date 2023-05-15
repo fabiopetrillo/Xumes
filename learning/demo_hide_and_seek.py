@@ -35,9 +35,11 @@ for episode in range(total_num_episodes):
 
     done = False
     while not done:
-        obs_array = [obs['type'], obs['coin'], obs['enemies']]
+        obs_array = [obs['type'], obs['coin']]
         obs_flatten = np.array(obs_array)
         obs_flatten = obs_flatten.flatten()
+        obs_flatten = np.append(obs_flatten, obs['position'])
+
         action = agent.sample_action(obs_flatten)
 
         # Step return type - `tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]`

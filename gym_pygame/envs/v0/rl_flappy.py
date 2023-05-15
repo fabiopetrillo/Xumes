@@ -25,13 +25,13 @@ class FlappyEnv(gym.Env):
         self.dt = 0.09
         self.observation_space = spaces.Dict(
             {
-                "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
+                "speedup": spaces.Box(-float('inf'), 300, shape=(1, ), dtype=float),
                 "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(len(self.lidar.sight_lines),), dtype=float),
             }
         )
 
         # We have two actions jump and not jump
-        self.action_space = spaces.Discrete(1)
+        self.action_space = spaces.Discrete(2)
         self.reset()
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
@@ -41,7 +41,7 @@ class FlappyEnv(gym.Env):
 
     def _get_obs(self):
         lidar = [line.distance for line in self.lidar.sight_lines]
-        return {"speedup": np.array(self.player.speedup), "lidar": np.array(lidar)}
+        return {"speedup": np.array([self.player.speedup]), "lidar": np.array(lidar)}
 
     def _get_info(self):
         return {
@@ -76,7 +76,7 @@ class FlappyEnv(gym.Env):
 
     def step(self, action):
 
-        if action[0] == 1:
+        if action == 1:
             self.player.jump()
 
             # if not self.render_mode == "human" or self.human_dt > self.learn_dt:
@@ -145,6 +145,7 @@ class FlappyEnv(gym.Env):
             # The following line will automatically add a delay to keep the framerate stable.
             self.dt = self.clock.tick(self.metadata["render_fps"]) / 1000
         else:  # rgb_array
+            self.dt = self.clock.tick(60) / 1000
             return np.transpose(
                 np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
             )

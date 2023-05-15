@@ -21,16 +21,22 @@ class PolicyNetwork(nn.Module):
         hidden_space1 = 32
         hidden_space2 = 32
 
-        self.network = nn.Sequential(
+        self.shared_net = nn.Sequential(
             nn.Linear(obs_space_dims, hidden_space1),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_space1, hidden_space2),
-            nn.ReLU(),
-            nn.Linear(hidden_space2, action_space_dims),
-            nn.Softmax(),
+            nn.Tanh(),
         )
 
+        # Policy Mean specific Linear Layer
+        self.policy_mean_net = nn.Sequential(
+            nn.Linear(hidden_space2, action_space_dims)
+        )
 
+        # Policy Std Dev specific Linear Layer
+        self.policy_stddev_net = nn.Sequential(
+            nn.Linear(hidden_space2, action_space_dims)
+        )
 
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -43,9 +49,14 @@ class PolicyNetwork(nn.Module):
         Returns:
             action_prob: predicted probability of the bernoulli distribution
         """
-        action_prob = self.network(x.float())
+        shared_features = self.shared_net(x.float())
 
-        return action_prob
+        action_means = self.policy_mean_net(shared_features)
+        action_stddevs = torch.log(
+            1 + torch.exp(self.policy_stddev_net(shared_features))
+        )
+
+        return action_means, action_stddevs
 
 
     def save(self):

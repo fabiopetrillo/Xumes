@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 import torch
-from torch.distributions import Multinomial
+from torch.distributions import Multinomial, Normal
 
 from learning.policy_network_hide_and_seek import PolicyNetwork
 
@@ -39,14 +39,18 @@ class REINFORCE:
             action: Action to be performed
         """
         state = torch.tensor(np.array([state]))
-        action = self.net(state)
+        action_means, action_stddevs = self.net(state)
 
-        distrib = Multinomial(total_count=1, probs=action[0])
+        # create a normal distribution from the predicted
+        #   mean and standard deviation and sample an action
+        distrib = Normal(action_means[0] + self.eps, action_stddevs[0] + self.eps)
         action = distrib.sample()
         prob = distrib.log_prob(action)
 
         action = action.numpy()
+
         self.probs.append(prob)
+
         return action
 
     def update(self):

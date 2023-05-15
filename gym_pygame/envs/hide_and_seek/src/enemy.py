@@ -127,7 +127,7 @@ class Enemy(Entity, ABC):
         self.player_seen = False
         self.base_control = CONTROL_RIGHT
         self.no_goal_dt = random.random() * 2
-        self.color = "black"
+        self.color = "orange"
         self.path = []
         self.remember_player_dt = 0
 

@@ -18,7 +18,8 @@ class Game:
         self.running = True
 
         self.dt = 0
-        self.board = Board()
+        self.board = Board(level=0)
+
     def run(self):
         while self.running:
             # pygame.QUIT event means the user clicked X to close your window

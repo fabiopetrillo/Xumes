@@ -12,6 +12,6 @@ ENEMY_SIZE = (15, 15)
 ENEMY_VIEW_DIST = 4
 ENEMY_MEMORY = 1
 
-VIEW_GRID_SIZE = 5
+VIEW_GRID_SIZE = 7
 ENV_NAME = "HNS-v0"
-TEST_NAME = "first"
+TEST_NAME = "hns_no_enemy_grid"
