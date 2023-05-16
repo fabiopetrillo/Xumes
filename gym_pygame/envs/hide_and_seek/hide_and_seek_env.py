@@ -79,7 +79,6 @@ class HideAndSeekEnv(gym.Env):
         return observation, info
 
     def step(self, action):
-        print(action)
         if action == 0:
             self.board.player.move(CONTROL_TOP, self.dt)
         elif action == 1:

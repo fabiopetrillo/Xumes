@@ -20,12 +20,15 @@ def print_graph(graph):
 
 
 class Board:
+    level_names = \
+        next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[
+            2]
 
     def __init__(self, level):
         self.size_x, self.size_y = 20, 20
         self.board = np.ndarray((self.size_x, self.size_y), dtype=Wall)
 
-        # Graphs a usefull to compute the a star algorithm
+        # Graphs are useful to compute the a-star algorithm
         self.ground_graph = {}
         self.reachable_ground_graph = {}
         self.wall_graph = {}
@@ -34,7 +37,6 @@ class Board:
         self.player = None
         self.number_coins = 0
         self.level = level
-        self.level_names = next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[2]
         self.generate_world()
 
     def generate_world(self):
@@ -70,7 +72,8 @@ class Board:
                             self.wall_graph[self.board[right][top]].append(wall)
 
         # Load map
-        with open(f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
+        with open(
+                f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
             lines = f.readlines()
             j = 0
             for line in lines:
@@ -204,7 +207,7 @@ class Board:
         self.player.control(dt)
         self.player.check_if_coin()
         if self.check_no_more_coins():
-            if self.level+1 < len(self.level_names):
+            if self.level + 1 < len(self.level_names):
                 self.__init__(self.level + 1)
             else:
                 self.reset()
