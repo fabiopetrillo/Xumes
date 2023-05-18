@@ -28,8 +28,10 @@ class HideAndSeekEnv(gym.Env):
         self.time_since_point = 0
         self.observation_space = spaces.Dict(
             {
-                "position": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
-                "around": spaces.Box(0, 1, shape=(20, 20), dtype=float),
+                # "position_in_tile": spaces.Box(0, 1, shape=(2,), dtype=float),
+                "position": spaces.Box(0, 1, shape=(4,2), dtype=float),
+                "coin": spaces.Box(0, 1, shape=(2,), dtype=float),
+                "around": spaces.Box(0, 1, shape=(VIEW_GRID_SIZE, VIEW_GRID_SIZE), dtype=float),
             }
         )
 
@@ -44,19 +46,70 @@ class HideAndSeekEnv(gym.Env):
         self.clock = None
 
     def _get_obs(self):
-        around = np.zeros(shape=(20, 20))
-        i = 0
-        for l in self.board.board:
-            j = 0
-            for v in l:
-                if isinstance(v, Ground):
-                    around[i][j] = 1
-                    if v.has_coin:
-                        around[i][j] = 2
-                j += 1
-            i += 1
+        player_center_x, player_center_y = self.board.player.center()
+        center_tile_x, center_tile_y = get_tile_from_position(player_center_x, player_center_y)
 
-        return {"around": np.array(around), "position": np.array([self.board.player.center()[0], self.board.player.center()[1]])}
+        type_obs = np.zeros((VIEW_GRID_SIZE, VIEW_GRID_SIZE))
+        coin_obs = np.zeros((VIEW_GRID_SIZE, VIEW_GRID_SIZE))
+        for i in range(center_tile_x - (VIEW_GRID_SIZE - 1) // 2, center_tile_x + (VIEW_GRID_SIZE - 1) // 2 + 1):
+            for j in range(center_tile_y - (VIEW_GRID_SIZE - 1) // 2, center_tile_y + (VIEW_GRID_SIZE - 1) // 2 + 1):
+                if 0 <= i < self.board_size_x - 1 and 0 <= j < self.board_size_y - 1:
+                    tile = self.board.board[i][j]
+                    array_x, array_y = i - center_tile_x + (VIEW_GRID_SIZE - 1) // 2, j - center_tile_y + (
+                            VIEW_GRID_SIZE - 1) // 2
+                    if isinstance(tile, Ground):
+                        type_obs[array_x][array_y] = 0.5
+                        if tile.has_coin:
+                            type_obs[array_x][array_y] = 1
+
+        distance_coin_map = {}
+        for ground in self.board.ground_graph.keys():
+            if ground.has_coin:
+                distance_coin_map[np.abs(ground.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x) + np.abs(
+                    ground.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y)] = ground
+        total_x = BOARD_SIZE[0] * TILE_SIZE
+        total_y = BOARD_SIZE[1] * TILE_SIZE
+        try:
+            coin = distance_coin_map[min(distance_coin_map.keys())]
+            coin_x, coin_y = coin.x, coin.y
+            # coin_x, coin_y = ((coin.x * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_x,
+            #                   (coin.y * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_y)
+        except:
+            coin_x, coin_y = 0, 0
+
+
+        player_tile_x = player_center_x % TILE_SIZE
+        player_tile_y = player_center_y % TILE_SIZE
+
+        if player_tile_x + self.board.player.size_x // 2 >= TILE_SIZE or self.board.player.size_x // 2 >= player_tile_x:
+            tile_x = 1.0
+        else:
+            tile_x = player_tile_x * 1.0 / TILE_SIZE
+
+        if player_tile_y + self.board.player.size_y // 2 >= TILE_SIZE or self.board.player.size_y // 2 >= player_tile_y:
+            tile_y = 1.0
+        else:
+            tile_y = player_tile_y * 1.0 / TILE_SIZE
+
+        top_left_corner_x, top_left_corner_y = self.board.player.x, self.board.player.y
+        top_right_corner_x, top_right_corner_y = top_left_corner_x + self.board.player.size_x, top_left_corner_y
+        bottom_left_corner_x, bottom_left_corner_y = top_left_corner_x, top_right_corner_y + self.board.player.size_y
+        bottom_right_corner_x, bottom_right_corner_y = bottom_left_corner_x + self.board.player.size_x, bottom_left_corner_y
+
+        top_left_x, top_left_y = get_tile_from_position(top_left_corner_x, top_left_corner_y)
+        top_right_x, top_right_y = get_tile_from_position(top_right_corner_x, top_right_corner_y)
+        bottom_left_x, bottom_left_y = get_tile_from_position(bottom_left_corner_x, bottom_left_corner_y)
+        bottom_right_x, bottom_right_y = get_tile_from_position(bottom_right_corner_x, bottom_right_corner_y)
+
+
+        return {
+            "around": type_obs,
+            "coin": np.array([coin_x, coin_y]),
+            "position": np.array([[top_left_x, top_left_y], [top_right_x, top_right_y], [bottom_left_x, bottom_left_y], [bottom_right_x, bottom_right_y]])
+            # "position": np.array([[(top_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_left_corner_y% TILE_SIZE) * 1.0 / TILE_SIZE], [(top_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_left_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE]]),
+            # "position_in_tile": np.array([tile_x, tile_y]),
+        }
+        # "position": np.array([self.board.player.x % TILE_SIZE * 1.0 / TILE_SIZE, self.board.player.y % TILE_SIZE * 1.0 / TILE_SIZE])}
 
     def _get_info(self):
         return {
@@ -80,24 +133,28 @@ class HideAndSeekEnv(gym.Env):
 
     def step(self, action):
         if action == 0:
-            self.board.player.move(CONTROL_TOP, self.dt)
+            collide = self.board.player.move(CONTROL_TOP, self.dt)
         elif action == 1:
-            self.board.player.move(CONTROL_RIGHT, self.dt)
+            collide = self.board.player.move(CONTROL_RIGHT, self.dt)
         elif action == 2:
-            self.board.player.move(CONTROL_DOWN, self.dt)
+            collide = self.board.player.move(CONTROL_DOWN, self.dt)
         else:
-            self.board.player.move(CONTROL_LEFT, self.dt)
+            collide = self.board.player.move(CONTROL_LEFT, self.dt)
 
         reward = 0
         terminated = False
         if self.board.player.check_if_coin():
-            reward = 0.5
+            reward = 1
         if self.board.check_no_more_coins():
             terminated = True
-            reward = 1
+            reward = 2
         if self.board.is_caught_by_enemy(self.dt):
             reward = -1
             terminated = True
+
+        if reward == 0 and collide:
+            reward = -0.1
+
         observation = self._get_obs()
         info = self._get_info()
 

@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from envs.hide_and_seek.params import TILE_SIZE
+from envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE
 from envs.hide_and_seek.src.entity import Entity
 from envs.hide_and_seek.src.enemy import Enemy
 from envs.hide_and_seek.src.ground import Ground
@@ -99,7 +99,8 @@ class Board:
         # Determine the position of start of the player if not in file
         if not self.player:
             random_ground = np.random.choice(list(self.ground_graph.keys()))
-            self.player = Player(random_ground.x * TILE_SIZE, random_ground.y * TILE_SIZE, self)
+            size_x, size_y = PLAYER_SIZE
+            self.player = Player(random_ground.x * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), random_ground.y * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), self)
 
         # Remove duplicates in every graphs
         for ground in self.ground_graph.keys():

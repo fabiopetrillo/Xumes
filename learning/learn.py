@@ -13,7 +13,7 @@ model = PPO('MultiInputPolicy', env, learning_rate=1e-3, verbose=1)
 # Train the agent
 model.learn(total_timesteps=int(2e5))
 # Save the agent
-model.save("./model/flappy")
+model.save(f"./model/{ENV_NAME}-{TEST_NAME}")
 
 env.close()
 env = gym.make(f"gym_pygame/{ENV_NAME}", render_mode="human")
