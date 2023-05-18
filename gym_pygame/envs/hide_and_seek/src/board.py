@@ -21,39 +21,26 @@ def print_graph(graph):
 
 
 class Board:
+    level_names = \
+        next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[
+            2]
 
     def __init__(self, level):
         self.size_x, self.size_y = 20, 20
         self.board = np.ndarray((self.size_x, self.size_y), dtype=Wall)
 
-        # Graphs a usefull to compute the a star algorithm
+        # Graphs are useful to compute the a-star algorithm
         self.ground_graph = {}
         self.reachable_ground_graph = {}
         self.wall_graph = {}
 
         self.enemies = []
+        self.player = None
         self.number_coins = 0
         self.level = level
-        self.level_names = next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[
-            2]
+        self.generate_world()
 
-        self.player = Player(None, None, self)
-        self.generate_world(level)
-        self.lidar = Lidar(board=self, player=self.player)
-
-
-    def generate_world(self, level):
-        self.board = np.ndarray((self.size_x, self.size_y), dtype=Wall)
-
-        # Graphs a usefull to compute the a star algorithm
-        self.ground_graph = {}
-        self.reachable_ground_graph = {}
-        self.wall_graph = {}
-
-        self.enemies = []
-        self.number_coins = 0
-        self.level = level
-        self.level = level
+    def generate_world(self):
         # Create a board with just wall in it
         for i in range(self.size_x):
             for j in range(self.size_y):
@@ -61,29 +48,32 @@ class Board:
                 # And connect it in the graph
                 wall = Wall(i, j, self)
                 self.board[i][j] = wall
-                self.wall_graph[wall] = []
                 if 0 < i < self.size_x - 1 and 0 < j < self.size_y - 1:
+                    self.wall_graph[wall] = []
                     left = i - 1
                     top = j - 1
                     right = i + 1
 
                     # TODO refactor this part
-                    if isinstance(self.board[left][j], Wall):
-                        self.wall_graph[wall].append(self.board[left][j])
-                        self.wall_graph[self.board[left][j]].append(wall)
-                    if isinstance(self.board[i][top], Wall):
-                        self.wall_graph[wall].append(self.board[i][top])
-                        self.wall_graph[self.board[i][top]].append(wall)
-                    if isinstance(self.board[left][top], Wall):
-                        self.wall_graph[wall].append(self.board[left][top])
-                        self.wall_graph[self.board[left][top]].append(wall)
-                    if isinstance(self.board[right][top], Wall):
-                        self.wall_graph[wall].append(self.board[right][top])
-                        self.wall_graph[self.board[right][top]].append(wall)
+                    if left != 0:
+                        if isinstance(self.board[left][j], Wall):
+                            self.wall_graph[wall].append(self.board[left][j])
+                            self.wall_graph[self.board[left][j]].append(wall)
+                    if top != 0:
+                        if isinstance(self.board[i][top], Wall):
+                            self.wall_graph[wall].append(self.board[i][top])
+                            self.wall_graph[self.board[i][top]].append(wall)
+                    if top != 0 and left != 0:
+                        if isinstance(self.board[left][top], Wall):
+                            self.wall_graph[wall].append(self.board[left][top])
+                            self.wall_graph[self.board[left][top]].append(wall)
+                    if top != 0 and right != self.size_y - 1:
+                        if isinstance(self.board[right][top], Wall):
+                            self.wall_graph[wall].append(self.board[right][top])
+                            self.wall_graph[self.board[right][top]].append(wall)
 
         # Load map
-        with open(
-                f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
+        with open(f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
             lines = f.readlines()
             j = 0
             for line in lines:
@@ -107,9 +97,10 @@ class Board:
                 j += 1
 
         # Determine the position of start of the player if not in file
-        random_ground = np.random.choice(list(self.ground_graph.keys()))
-        self.player.x = random_ground.x * TILE_SIZE
-        self.player.y = random_ground.y * TILE_SIZE
+        if not self.player:
+            random_ground = np.random.choice(list(self.ground_graph.keys()))
+            size_x, size_y = PLAYER_SIZE
+            self.player = Player(random_ground.x * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), random_ground.y * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), self)
 
         # Remove duplicates in every graphs
         for ground in self.ground_graph.keys():
@@ -220,11 +211,11 @@ class Board:
         self.lidar.vision()
         if self.check_no_more_coins():
             if self.level + 1 < len(self.level_names):
-                self.generate_world(self.level + 1)
+                self.__init__(self.level + 1)
             else:
-                self.reset(level=0)
+                self.reset()
         if self.is_caught_by_enemy(dt):
-            self.reset(level=0)
+            self.reset()
 
     def is_caught_by_enemy(self, dt):
         for enemy in self.enemies:
@@ -256,4 +247,4 @@ class Board:
             return True
 
     def reset(self, level):
-        self.generate_world(level)
+        self.__init__(level=level)
