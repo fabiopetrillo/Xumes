@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from envs.hide_and_seek.params import TILE_SIZE
+from envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE
 from envs.hide_and_seek.src.entity import Entity
 from envs.hide_and_seek.src.enemy import Enemy
 from envs.hide_and_seek.src.ground import Ground
@@ -36,6 +36,7 @@ class Board:
 
         self.enemies = []
         self.player = None
+        self.lidar = None
         self.number_coins = 0
         self.level = level
         self.generate_world()
@@ -90,7 +91,12 @@ class Board:
                             self.add_tile(self.ground_graph, ground, i, j)
                             self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
                             # if v == 3:
-                            #     self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
+                            #     size_x, size_y = PLAYER_SIZE
+                            #
+                            #     self.player = Player(i * TILE_SIZE - size_x // 2,
+                            #                          j * TILE_SIZE - size_y // 2, self)
+                            #
+                            #     # self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
                     except:
                         pass
                     i += 1
@@ -101,7 +107,9 @@ class Board:
             random_ground = np.random.choice(list(self.ground_graph.keys()))
             size_x, size_y = PLAYER_SIZE
             self.player = Player(random_ground.x * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), random_ground.y * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1), self)
+            # self.player = Player(random_ground.x * TILE_SIZE - size_x // 2 , random_ground.y * TILE_SIZE  - size_y // 2, self)
 
+        self.lidar = Lidar(self, self.player)
         # Remove duplicates in every graphs
         for ground in self.ground_graph.keys():
             self.ground_graph[ground] = set(self.ground_graph[ground])
@@ -202,6 +210,7 @@ class Board:
             enemy.draw(canvas)
 
         self.lidar.draw(canvas)
+        self.lidar.logs(canvas)
         self.player.draw(canvas)
         self.player.logs(canvas)
 
@@ -213,9 +222,9 @@ class Board:
             if self.level + 1 < len(self.level_names):
                 self.__init__(self.level + 1)
             else:
-                self.reset()
+                self.reset(0)
         if self.is_caught_by_enemy(dt):
-            self.reset()
+            self.reset(0)
 
     def is_caught_by_enemy(self, dt):
         for enemy in self.enemies:

@@ -12,11 +12,9 @@ class Lidar:
         self.player = player
         theta = 0
         self.sight_lines = []
-        nb_lazer = 5
+        nb_lazer = 8
         for i in range(nb_lazer):
-            self.sight_lines.append(SightLineFirst(self.player, theta))
-            if theta != -theta:
-                self.sight_lines.append(SightLineFirst(self.player, theta))
+            self.sight_lines.append(SightLineFirst(self.board, self.player, theta))
             theta += 2 * math.pi / nb_lazer
 
     def draw(self, canvas):
@@ -26,9 +24,8 @@ class Lidar:
     def vision(self):
         for line in self.sight_lines:
             line.reset()
-        for wall in self.board.wall_graph.keys():
-            for line in self.sight_lines:
-                line.vision(wall)
+            line.vision()
+
 
     def logs(self, canvas):
         my_font = pygame.font.SysFont('Arial', 14)

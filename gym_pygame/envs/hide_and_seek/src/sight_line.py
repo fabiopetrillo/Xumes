@@ -1,7 +1,11 @@
 import math
 from abc import abstractmethod
 
+import numpy as np
 import pygame
+
+from envs.hide_and_seek.src.entity import get_tile_from_position
+from envs.hide_and_seek.src.wall import Wall
 
 
 def line_rect_intersection(line_start, line_end, rect):
@@ -54,11 +58,13 @@ class SightLine:
     def color(self):
         pass
 
-    def __init__(self, player, angle):
+    def __init__(self, board, player, angle):
         self.player = player
+        self.board = board
         self.angle = angle
         self.max_length = 2000
         self.distance = 2000
+        self.last_distance = 2000
 
     # Use to compute the new intersection
     def end_virtual_position(self):
@@ -77,25 +83,74 @@ class SightLine:
     def draw(self, canvas):
         pygame.draw.line(canvas, self.color(), self.player.center(), self.end_position())
 
-    def check_collision_wall(self, wall):
+    def check_collision_wall(self):
 
-        intersections = []
-        intersections.extend(line_rect_intersection(self.player.center(), self.end_virtual_position(), wall.rect))
-
-        x_player, y_player = self.player.center()
-
+        wall = self._first_wall()
         distance = 2000  # TODO remove magic number
-        if intersections is not None:
-            # For every intersections we keep the min distance
-            for (x, y) in intersections:
-                d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
-                if d < distance:
-                    distance = d
 
+        if wall:
+            intersections = []
+            intersections.extend(line_rect_intersection(self.player.center(), self.end_virtual_position(), wall.rect))
+
+            x_player, y_player = self.player.center()
+
+            if intersections is not None:
+                # For every intersections we keep the min distance
+                for (x, y) in intersections:
+                    d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                    if d < distance:
+                        distance = d
         return distance
 
+    @property
+    def x(self):
+        return self.player.x
+
+    @property
+    def y(self):
+        return self.player.y
+
+    def center(self):
+        return self.player.center()
+
+    def _first_wall(self):
+
+        last_x, last_y = self.end_virtual_position()
+        last_tile_x, last_tile_y = get_tile_from_position(last_x, last_y)
+        player_tile_x, player_tile_y = get_tile_from_position(self.x, self.y)
+
+        # Distance in tile
+        distance_last = np.sqrt(
+            np.power(player_tile_x - last_tile_x, 2) + np.power(player_tile_y - last_tile_y, 2))
+
+        # Here we gather all tile between the enemy and the player
+        if distance_last > 1:
+            # steps to take to reach the player
+            diff_x, diff_y = (last_x - self.x) / (40 * distance_last), (
+                    last_y - self.y) / (40 * distance_last)
+
+            dist_x, dist_y = self.center()
+            tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
+
+
+            # While the tile checked have not reached the player yet
+            while abs(player_tile_x - last_tile_x) + abs(player_tile_y - last_tile_y) > abs(
+                    tile_x - player_tile_x) + abs(tile_y - player_tile_y):
+                # We walk of one step
+                dist_x += diff_x
+                dist_y += diff_y
+                # Get the tile and add it to the to check list
+                tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
+
+                if 0 <= tile_x <= self.board.size_x and 0 <= tile_y <= self.board.size_y:
+                    tile = self.board.board[tile_x][tile_y]
+                    if isinstance(tile, Wall):
+                        return tile
+                else:
+                    return
+
     @abstractmethod
-    def vision(self, wall):
+    def vision(self):
         pass
 
     def reset(self):

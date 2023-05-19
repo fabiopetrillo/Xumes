@@ -3,7 +3,7 @@ HEIGHT = 720
 
 BACKGROUND_COLOR = (224, 205, 169)
 
-BOARD_SIZE = (20, 20)
+BOARD_SIZE = (8, 7)
 TILE_SIZE = 40
 
 PLAYER_SIZE = (15, 15)
@@ -14,6 +14,6 @@ ENEMY_MEMORY = 1
 
 VIEW_GRID_SIZE = 7
 
-LEVEL_TEST = 0
+LEVEL_TEST = 3
 ENV_NAME = "HNS-v0"
-TEST_NAME = "first_level"
+TEST_NAME = "fourth_level_lidar"
