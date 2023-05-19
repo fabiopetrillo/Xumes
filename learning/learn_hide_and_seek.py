@@ -7,9 +7,9 @@ from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")
 
-time_steps = int(4e4)
+time_steps = int(2.5e5)
 
-PPO('MultiInputPolicy', env, learning_rate=1e-3, verbose=1).learn(total_timesteps=time_steps).save(
+PPO('MultiInputPolicy', env, verbose=1).learn(total_timesteps=time_steps).save(
     f"./model/{ENV_NAME}-{TEST_NAME}")
 
 env.close()

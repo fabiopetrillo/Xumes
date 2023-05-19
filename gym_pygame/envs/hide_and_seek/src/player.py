@@ -45,7 +45,7 @@ class Player(Entity, ABC):
         tile_x, tile_y = get_tile_from_position(center_x, center_y)
         tile = self.board.board[tile_x][tile_y]
         if tile and isinstance(tile, Ground):
-            if tile.has_coin:
+            if tile.has_coin and tile.in_coin(center_x, center_y):
                 self.points += 1
                 tile.has_coin = False
                 return True

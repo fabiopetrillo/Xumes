@@ -7,7 +7,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
 
 env = gym.make(f"gym_pygame/{ENV_NAME}", render_mode="human")
-model = PPO('MultiInputPolicy', env, learning_rate=1e-3, verbose=2)
+model = PPO('MultiInputPolicy', env, verbose=1)
 model = model.load(f"./model/{ENV_NAME}-{TEST_NAME}")
 # Evaluate the agent
 # mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)

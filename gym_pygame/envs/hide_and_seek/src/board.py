@@ -42,6 +42,12 @@ class Board:
         self.generate_world()
 
     def generate_world(self):
+
+        do_normal_game = True
+        if not do_normal_game:
+            normal_game = np.random.choice([True, False])
+        else:
+            normal_game = True
         # Create a board with just wall in it
         for i in range(self.size_x):
             for j in range(self.size_y):
@@ -85,18 +91,24 @@ class Board:
                         if v == 1 or v == 2 or v == 3:
                             self.remove_tile(self.wall_graph, i, j)
 
-                            ground = Ground(i, j, self.board, has_coin=(v == 2))
+                            coin = False
+                            if v == 2:
+                                coin = True
+                                if not normal_game:
+                                    coin = np.random.choice([True, False], p=[0.8, 0.2])
+                            ground = Ground(i, j, self.board, has_coin=coin)
+
                             if ground.has_coin:
                                 self.number_coins += 1
                             self.add_tile(self.ground_graph, ground, i, j)
                             self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
-                            # if v == 3:
-                            #     size_x, size_y = PLAYER_SIZE
-                            #
-                            #     self.player = Player(i * TILE_SIZE - size_x // 2,
-                            #                          j * TILE_SIZE - size_y // 2, self)
-                            #
-                            #     # self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
+                            if v == 3 and normal_game:
+                                size_x, size_y = PLAYER_SIZE
+
+                                # self.player = Player(i * TILE_SIZE - size_x // 2,
+                                #                      j * TILE_SIZE - size_y // 2, self)
+
+                                self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
                     except:
                         pass
                     i += 1

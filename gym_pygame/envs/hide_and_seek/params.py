@@ -14,6 +14,6 @@ ENEMY_MEMORY = 1
 
 VIEW_GRID_SIZE = 7
 
-LEVEL_TEST = 3
+LEVEL_TEST = 1
 ENV_NAME = "HNS-v0"
-TEST_NAME = "fourth_level_lidar"
+TEST_NAME = "all_level_lidar"

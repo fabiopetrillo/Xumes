@@ -1,10 +1,12 @@
 import math
 from abc import abstractmethod
+from typing import Union
 
 import numpy as np
 import pygame
 
 from envs.hide_and_seek.src.entity import get_tile_from_position
+from envs.hide_and_seek.src.ground import Ground
 from envs.hide_and_seek.src.wall import Wall
 
 
@@ -58,60 +60,78 @@ class SightLine:
     def color(self):
         pass
 
-    def __init__(self, board, player, angle):
+    def __init__(self, board, player, angle, start_x, start_y):
         self.player = player
         self.board = board
         self.angle = angle
         self.max_length = 2000
         self.distance = 2000
         self.last_distance = 2000
+        self.type = None
+        self.last_type = None
+        self.start_x = start_x
+        self.start_y = start_y
 
     # Use to compute the new intersection
     def end_virtual_position(self):
-        x, y = self.player.center()
+        x, y = self.center()
         end_x = x + self.max_length * math.cos(self.angle)
         end_y = y + self.max_length * math.sin(self.angle)
         return end_x, end_y
 
+    @property
+    def end_x(self):
+        return self.x + self.distance * math.cos(self.angle)
+
+    @property
+    def end_y(self):
+        return self.y + self.distance * math.sin(self.angle)
+
     # Use to get the actual distance
     def end_position(self):
-        x, y = self.player.center()
+        x, y = self.center()
         end_x = x + self.distance * math.cos(self.angle)
         end_y = y + self.distance * math.sin(self.angle)
         return end_x, end_y
 
     def draw(self, canvas):
-        pygame.draw.line(canvas, self.color(), self.player.center(), self.end_position())
+        pygame.draw.line(canvas, self.color(), self.center(), self.end_position())
 
     def check_collision_wall(self):
 
-        wall = self._first_wall()
-        distance = 2000  # TODO remove magic number
+        walls = self._first_wall()
+        distance, type_wall = 2000, None  # TODO remove magic number
+        found_wall = False
 
-        if wall:
-            intersections = []
-            intersections.extend(line_rect_intersection(self.player.center(), self.end_virtual_position(), wall.rect))
+        if walls:
+            while not found_wall and walls:
+                wall = walls.pop(0)
+                type_wall = type(wall)
+                intersections = line_rect_intersection(self.center(), self.end_virtual_position(), wall.rect)
 
-            x_player, y_player = self.player.center()
+                x_player, y_player = self.center()
 
-            if intersections is not None:
-                # For every intersections we keep the min distance
-                for (x, y) in intersections:
-                    d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
-                    if d < distance:
-                        distance = d
-        return distance
+                if intersections:
+                    # For every intersections we keep the min distance
+                    for (x, y) in intersections:
+                        d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                        if d < distance:
+                            distance = d
+                    found_wall = True
+
+        return distance, type_wall
 
     @property
     def x(self):
-        return self.player.x
+        return self.player.x + self.start_x
 
     @property
     def y(self):
-        return self.player.y
+        return self.player.y + self.start_y
 
     def center(self):
-        return self.player.center()
+        player_x, player_y = self.player.center()
+        return player_x + self.start_x, player_y + self.start_y
 
     def _first_wall(self):
 
@@ -119,6 +139,7 @@ class SightLine:
         last_tile_x, last_tile_y = get_tile_from_position(last_x, last_y)
         player_tile_x, player_tile_y = get_tile_from_position(self.x, self.y)
 
+        tiles = []
         # Distance in tile
         distance_last = np.sqrt(
             np.power(player_tile_x - last_tile_x, 2) + np.power(player_tile_y - last_tile_y, 2))
@@ -132,7 +153,6 @@ class SightLine:
             dist_x, dist_y = self.center()
             tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
 
-
             # While the tile checked have not reached the player yet
             while abs(player_tile_x - last_tile_x) + abs(player_tile_y - last_tile_y) > abs(
                     tile_x - player_tile_x) + abs(tile_y - player_tile_y):
@@ -145,7 +165,11 @@ class SightLine:
                 if 0 <= tile_x <= self.board.size_x and 0 <= tile_y <= self.board.size_y:
                     tile = self.board.board[tile_x][tile_y]
                     if isinstance(tile, Wall):
-                        return tile
+                        tiles.append(tile)
+                        return tiles
+                    elif isinstance(tile, Ground):
+                        if tile.has_coin:
+                            tiles.append(tile)
                 else:
                     return
 
@@ -156,3 +180,4 @@ class SightLine:
     def reset(self):
         self.max_length = 2000
         self.distance = 2000
+        self.type = None

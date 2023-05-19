@@ -11,6 +11,7 @@ from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR, V
 from envs.hide_and_seek.src.board import Board
 from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT, get_tile_from_position
 from envs.hide_and_seek.src.ground import Ground
+from envs.hide_and_seek.src.wall import Wall
 
 
 class HideAndSeekEnv(gym.Env):
@@ -26,11 +27,16 @@ class HideAndSeekEnv(gym.Env):
         self.height = board_total_size_y * TILE_SIZE
         self.dt = 0.1
         self.time_since_point = 0
+        self.coin_x, self.coin_y = 0, 0
+
+        lidar = [[self.coin_x - line.end_x, self.coin_y - line.end_y, 0 if line.type == Wall else 1] for line in
+                 self.board.lidar.sight_lines]
+        self.lidars = [lidar for _ in range(5)]
         self.observation_space = spaces.Dict(
             {
                 # "position_in_tile": spaces.Box(0, 1, shape=(2,), dtype=float),
                 # "position": spaces.Box(0, 1, shape=(4,2), dtype=float),
-                "position": spaces.Box(0, float('inf'), shape=(len(self.board.lidar.sight_lines),), dtype=float),
+                "position": spaces.Box(0, float('inf'), shape=(len(self.board.lidar.sight_lines), 3), dtype=float),
                 "coin": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
                 # "around": spaces.Box(0, 1, shape=(VIEW_GRID_SIZE, VIEW_GRID_SIZE), dtype=float),
             }
@@ -60,19 +66,19 @@ class HideAndSeekEnv(gym.Env):
         total_y = BOARD_SIZE[1] * TILE_SIZE
         try:
             coin = distance_coin_map[min(distance_coin_map.keys())]
-            coin_x, coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x, coin.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y
+            self.coin_x, self.coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2, coin.y * TILE_SIZE + TILE_SIZE // 2
+            # self.coin_x, self.coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x, coin.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y
             # coin_x, coin_y = ((coin.x * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_x,
             #                   (coin.y * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_y)
         except:
-            coin_x, coin_y = 0, 0
+            self.coin_x, self.coin_y = 0, 0
 
-
-
-
-        lidar = [line.distance for line in self.board.lidar.sight_lines]
+        lidar = [[ np.abs(self.coin_x - line.end_x), np.abs(self.coin_y - line.end_y),  0 if line.type == Wall else 1] for line in self.board.lidar.sight_lines]
+        # self.lidars.pop(0)
+        # self.lidars.append(lidar)
         return {
             # "around": type_obs,
-            "coin": np.array([coin_x, coin_y]),
+            "coin": np.array([np.abs(self.coin_x - player_center_x), np.abs(self.coin_y - player_center_y)]),
             "position": np.array(lidar)
             # "position": np.array([[top_left_x, top_left_y], [top_right_x, top_right_y], [bottom_left_x, bottom_left_y], [bottom_right_x, bottom_right_y]])
             # "position": np.array([[(top_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_left_corner_y% TILE_SIZE) * 1.0 / TILE_SIZE], [(top_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_left_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE]]),
@@ -88,8 +94,8 @@ class HideAndSeekEnv(gym.Env):
     def reset(self, seed=None, **kwargs):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-        # level = random.choice(range(len(self.board.level_names)))
-        self.board.reset(level=LEVEL_TEST)
+        level = random.choice(range(len(self.board.level_names)))
+        self.board.reset(level=level)
         self.board_size_x, self.board_size_y = self.board.size_x, self.board.size_y
         self.time_since_point = 0
         observation = self._get_obs()
@@ -122,7 +128,7 @@ class HideAndSeekEnv(gym.Env):
             terminated = True
 
         if reward == 0 and collide:
-            reward = -0.5
+            reward = -0.1
 
         observation = self._get_obs()
         info = self._get_info()
@@ -149,6 +155,11 @@ class HideAndSeekEnv(gym.Env):
         # Draw
         self.board.draw(canvas)
 
+        my_font = pygame.font.SysFont('Arial', 14)
+        text_surface = my_font.render(f'coin: {int(self.coin_y)} {int(self.coin_x)}',
+                                      False, (0, 0, 0))
+        canvas.blit(text_surface, (0, 15))
+
         if self.render_mode == "human":
             # The following line copies our drawings from `canvas` to the visible window
             self.window.blit(canvas, canvas.get_rect())
@@ -159,7 +170,7 @@ class HideAndSeekEnv(gym.Env):
             # The following line will automatically add a delay to keep the framerate stable.
             self.dt = self.clock.tick(self.metadata["render_fps"]) / 1000
         else:  # rgb_array
-            self.dt = self.clock.tick() / 1000
+            # self.dt = self.clock.tick() / 1000
 
             return np.transpose(
                 np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
