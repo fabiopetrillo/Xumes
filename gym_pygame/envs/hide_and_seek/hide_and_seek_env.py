@@ -36,8 +36,10 @@ class HideAndSeekEnv(gym.Env):
             {
                 # "position_in_tile": spaces.Box(0, 1, shape=(2,), dtype=float),
                 # "position": spaces.Box(0, 1, shape=(4,2), dtype=float),
-                "position": spaces.Box(0, float('inf'), shape=(len(self.board.lidar.sight_lines), 3), dtype=float),
+                "position": spaces.Box(-1, float('inf'), shape=(len(self.board.lidar.sight_lines), 6), dtype=float),
                 "coin": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
+                "enemy": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
+
                 # "around": spaces.Box(0, 1, shape=(VIEW_GRID_SIZE, VIEW_GRID_SIZE), dtype=float),
             }
         )
@@ -62,22 +64,31 @@ class HideAndSeekEnv(gym.Env):
             if ground.has_coin:
                 distance_coin_map[np.abs(ground.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x) + np.abs(
                     ground.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y)] = ground
-        total_x = BOARD_SIZE[0] * TILE_SIZE
-        total_y = BOARD_SIZE[1] * TILE_SIZE
         try:
             coin = distance_coin_map[min(distance_coin_map.keys())]
             self.coin_x, self.coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2, coin.y * TILE_SIZE + TILE_SIZE // 2
-            # self.coin_x, self.coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x, coin.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y
-            # coin_x, coin_y = ((coin.x * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_x,
-            #                   (coin.y * TILE_SIZE + TILE_SIZE // 2 * 1.0) / total_y)
         except:
             self.coin_x, self.coin_y = 0, 0
 
-        lidar = [[ np.abs(self.coin_x - line.end_x), np.abs(self.coin_y - line.end_y),  0 if line.type == Wall else 1] for line in self.board.lidar.sight_lines]
+        distance_enemy_map = {}
+        for enemy in self.board.enemies:
+            distance_enemy_map[np.abs(enemy.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x) + np.abs(
+                enemy.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y)] = enemy
+        try:
+            enemy = distance_enemy_map[min(distance_enemy_map.keys())]
+            self.enemy_x, self.enemy_y = enemy.x, enemy.y
+        except:
+            self.enemy_x, self.enemy_y = 0, 0
+
+        lidar = [[np.abs(self.coin_x - line.end_x), np.abs(self.coin_y - line.end_y),
+                  np.abs(self.enemy_x - line.end_x), np.abs(self.enemy_y - line.end_y),
+                  line.distance,
+                  0 if line.type == Wall else 1 if line.type == Ground else -1] for line in self.board.lidar.sight_lines]
         # self.lidars.pop(0)
         # self.lidars.append(lidar)
         return {
             # "around": type_obs,
+            "enemy": np.array([np.abs(self.enemy_x - player_center_x), np.abs(self.enemy_y - player_center_y)]),
             "coin": np.array([np.abs(self.coin_x - player_center_x), np.abs(self.coin_y - player_center_y)]),
             "position": np.array(lidar)
             # "position": np.array([[top_left_x, top_left_y], [top_right_x, top_right_y], [bottom_left_x, bottom_left_y], [bottom_right_x, bottom_right_y]])

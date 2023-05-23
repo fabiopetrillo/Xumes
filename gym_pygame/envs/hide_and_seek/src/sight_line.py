@@ -60,7 +60,7 @@ class SightLine:
     def color(self):
         pass
 
-    def __init__(self, board, player, angle, start_x, start_y):
+    def __init__(self, board, player, angle, start_x, start_y, tiles_enemies_map):
         self.player = player
         self.board = board
         self.angle = angle
@@ -71,6 +71,7 @@ class SightLine:
         self.last_type = None
         self.start_x = start_x
         self.start_y = start_y
+        self.tiles_enemies_map = tiles_enemies_map
 
     # Use to compute the new intersection
     def end_virtual_position(self):
@@ -100,25 +101,34 @@ class SightLine:
     def check_collision_wall(self):
 
         walls = self._first_wall()
-        distance, type_wall = 2000, None  # TODO remove magic number
+        distance, type_wall, collision = 2000, None, None  # TODO remove magic number
+
         found_wall = False
 
         if walls:
             while not found_wall and walls:
                 wall = walls.pop(0)
                 type_wall = type(wall)
-                intersections = line_rect_intersection(self.center(), self.end_virtual_position(), wall.rect)
+                intersections = {}
+                if type_wall == Wall or wall.has_coin:
+                    intersections[wall] = line_rect_intersection(self.center(), self.end_virtual_position(), wall.rect)
+                if type_wall == Ground and wall in self.tiles_enemies_map.keys():
+                    for enemy in self.tiles_enemies_map[wall]:
+                        intersections[enemy] = line_rect_intersection(self.center(), self.end_virtual_position(), enemy.rect)
 
                 x_player, y_player = self.center()
 
                 if intersections:
                     # For every intersections we keep the min distance
-                    for (x, y) in intersections:
-                        d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
-                        if d < distance:
-                            distance = d
-                    found_wall = True
+                    for type_collision in intersections.keys():
+                        for (x, y) in intersections[type_collision]:
+                            d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                            if d < distance:
+                                distance = d
+                                collision = type_collision
+                                found_wall = True
 
+        type_wall = type(collision)
         return distance, type_wall
 
     @property
@@ -168,8 +178,9 @@ class SightLine:
                         tiles.append(tile)
                         return tiles
                     elif isinstance(tile, Ground):
-                        if tile.has_coin:
+                        if tile.has_coin or tile in self.tiles_enemies_map.keys():
                             tiles.append(tile)
+
                 else:
                     return
 

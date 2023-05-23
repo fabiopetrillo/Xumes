@@ -5,7 +5,7 @@ from typing import Optional, Dict, List
 import numpy as np
 import pygame
 
-from envs.hide_and_seek.params import ENEMY_SIZE, ENEMY_VIEW_DIST, ENEMY_MEMORY
+from envs.hide_and_seek.params import ENEMY_SIZE, ENEMY_VIEW_DIST, ENEMY_MEMORY, ENEMY_SPEED
 from envs.hide_and_seek.src.entity import Entity, CONTROL_DOWN, CONTROL_TOP, CONTROL_LEFT, CONTROL_RIGHT, \
     get_tile_from_position
 from envs.hide_and_seek.src.tile import Tile
@@ -115,13 +115,16 @@ class Enemy(Entity, ABC):
                 else:
                     self.base_control = CONTROL_TOP
 
+        self.rect = pygame.Rect(self.x, self.y, self.size_x, self.size_y)
+
         return self.base_control
 
     def __init__(self, x, y, board):
         super().__init__(x, y, board)
         self.size_x, self.size_y = ENEMY_SIZE
+        self.rect = pygame.Rect(self.x, self.y, self.size_x, self.size_y)
         self.think_is_x, self.think_is_y = self.x, self.y
-        self.speed = 100
+        self.speed = ENEMY_SPEED
         self.goal_x = -1
         self.goal_y = -1
         self.player_seen = False
@@ -130,6 +133,7 @@ class Enemy(Entity, ABC):
         self.color = "orange"
         self.path = []
         self.remember_player_dt = 0
+
 
     def see(self, dt):
         # Use to make the enemy remember that he saw the player and continue to seek him
@@ -181,7 +185,7 @@ class Enemy(Entity, ABC):
             if self.remember_player_dt <= 0:
                 self.remember_player_dt = ENEMY_MEMORY
         else:  # The enemy is not seeing the player
-            self.color = "black"
+            self.color = "violet"
             self.player_seen = False
 
     def close_to_player(self):
@@ -189,7 +193,7 @@ class Enemy(Entity, ABC):
         center_x, center_y = self.center()
         goal_center_x, goal_center_y = self.board.player.center()
         distance = np.sqrt(np.power(center_x - goal_center_x, 2) + np.power(center_y - goal_center_y, 2))
-        return distance < 22
+        return distance < 44
 
     def center(self):
         size_x, size_y = ENEMY_SIZE
@@ -205,6 +209,5 @@ class Enemy(Entity, ABC):
             self.think_is_x, self.think_is_y = self.center()
 
     def draw(self, canvas):
-        size_x, size_y = ENEMY_SIZE
-        rect_bottom = pygame.Rect(self.x, self.y, size_x, size_y)
-        pygame.draw.rect(canvas, self.color, rect_bottom)
+        self.rect = pygame.Rect(self.x, self.y, self.size_x, self.size_y)
+        pygame.draw.rect(canvas, self.color, self.rect)

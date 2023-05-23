@@ -2,7 +2,7 @@ from abc import ABC
 
 import pygame
 
-from envs.hide_and_seek.params import PLAYER_SIZE
+from envs.hide_and_seek.params import PLAYER_SIZE, PLAYER_SPEED
 from envs.hide_and_seek.src.entity import RIGHT, LEFT, TOP, Entity, CONTROL_TOP, CONTROL_DOWN, CONTROL_LEFT, CONTROL_RIGHT, \
     get_tile_from_position
 from envs.hide_and_seek.src.ground import Ground
@@ -12,7 +12,7 @@ class Player(Entity, ABC):
     def __init__(self, x, y, board):
         super().__init__(x, y, board)
         self.size_x, self.size_y = PLAYER_SIZE
-        self.speed = 150
+        self.speed = PLAYER_SPEED
         self.points = 0
 
     def find_control(self, dt):
