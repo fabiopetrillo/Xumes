@@ -1,7 +1,7 @@
 import gym_pygame
+import gymnasium as gym
 from stable_baselines3 import PPO
 
-import gymnasium as gym
 from envs.flappy_bird.params import ENV_NAME, TEST_NAME
 
 
