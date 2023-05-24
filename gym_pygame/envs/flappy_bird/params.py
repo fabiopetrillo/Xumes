@@ -21,5 +21,5 @@ SPACE_BETWEEN_PIPES = 400 # easy 400 hard 350
 LIDAR_MAX_DIST = 2000
 
 # Model
-ENV_NAME = "RLFlappy-v0"
+ENV_NAME = "RLFlappy-flappy_bird"
 TEST_NAME = "easy"

@@ -1,7 +1,7 @@
 import math
 from abc import ABC
 
-from envs.v0.src.sight_line import SightLine
+from envs.flappy_bird.src.sight_line import SightLine
 
 
 class SightLineFirst(SightLine, ABC):

@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pygame
 
-from envs.hide_and_seek.params import BOARD_SIZE
+from envs.hide_and_seek.params import BOARD_SIZE, NB_RAYS
 from envs.hide_and_seek.src.entity import get_tile_from_position
 from envs.hide_and_seek.src.ground import Ground
 from envs.hide_and_seek.src.sight_line_first import SightLineFirst
@@ -17,21 +17,11 @@ class Lidar:
         self.player = player
         theta = math.pi / 4
         self.tiles_enemies_map = {}
-        half_player_x, half_player_y = self.player.size_x / 2, self.player.size_y / 2
-        self.sight_lines = [
-            SightLineFirst(self.board, self.player, 0, half_player_x, 0, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, math.pi / 4, half_player_x, half_player_y, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, math.pi / 2, 0, half_player_y, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, 3 * math.pi / 4, -half_player_x, half_player_y, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, math.pi, -half_player_x, 0, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, -math.pi / 4, half_player_x, -half_player_y, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, -math.pi / 2, 0, -half_player_y, self.tiles_enemies_map),
-            SightLineFirst(self.board, self.player, -3 * math.pi / 4, -half_player_x, -half_player_y, self.tiles_enemies_map),
-        ]
-        # nb_lazer = 8
-        # for i in range(nb_lazer):
-        #     self.sight_lines.append(SightLineFirst(self.board, self.player, theta))
-        #     theta += 2 * math.pi / nb_lazer
+        self.sight_lines = []
+        nb_rays = NB_RAYS
+        for i in range(nb_rays):
+            self.sight_lines.append(SightLineFirst(self.board, self.player, theta, 0, 0, self.tiles_enemies_map))
+            theta += 2 * math.pi / nb_rays
 
     def draw(self, canvas):
         for line in self.sight_lines:

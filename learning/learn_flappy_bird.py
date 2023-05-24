@@ -1,9 +1,8 @@
 import gym_pygame
+from stable_baselines3 import PPO
+
 import gymnasium as gym
-
-from stable_baselines3 import PPO, A2C
-
-from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
+from envs.flappy_bird.params import ENV_NAME, TEST_NAME
 
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")
@@ -14,4 +13,3 @@ PPO('MultiInputPolicy', env, verbose=1).learn(total_timesteps=time_steps).save(
     f"./model/{ENV_NAME}-{TEST_NAME}")
 
 env.close()
-

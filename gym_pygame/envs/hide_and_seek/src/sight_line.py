@@ -100,33 +100,19 @@ class SightLine:
 
     def check_collision_wall(self):
 
-        walls = self._first_wall()
+        intersections = self._first_wall()
         distance, type_wall, collision = 2000, None, None  # TODO remove magic number
 
-        found_wall = False
+        x_player, y_player = self.center()
 
-        if walls:
-            while not found_wall and walls:
-                wall = walls.pop(0)
-                type_wall = type(wall)
-                intersections = {}
-                if type_wall == Wall or wall.has_coin:
-                    intersections[wall] = line_rect_intersection(self.center(), self.end_virtual_position(), wall.rect)
-                if type_wall == Ground and wall in self.tiles_enemies_map.keys():
-                    for enemy in self.tiles_enemies_map[wall]:
-                        intersections[enemy] = line_rect_intersection(self.center(), self.end_virtual_position(), enemy.rect)
-
-                x_player, y_player = self.center()
-
-                if intersections:
-                    # For every intersections we keep the min distance
-                    for type_collision in intersections.keys():
-                        for (x, y) in intersections[type_collision]:
-                            d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
-                            if d < distance:
-                                distance = d
-                                collision = type_collision
-                                found_wall = True
+        if intersections:
+            # For every intersection we keep the min distance
+            for type_collision in intersections.keys():
+                for (x, y) in intersections[type_collision]:
+                    d = math.sqrt((x_player - x) ** 2 + (y_player - y) ** 2)
+                    if d < distance:
+                        distance = d
+                        collision = type_collision
 
         type_wall = type(collision)
         return distance, type_wall
@@ -149,7 +135,6 @@ class SightLine:
         last_tile_x, last_tile_y = get_tile_from_position(last_x, last_y)
         player_tile_x, player_tile_y = get_tile_from_position(self.x, self.y)
 
-        tiles = []
         # Distance in tile
         distance_last = np.sqrt(
             np.power(player_tile_x - last_tile_x, 2) + np.power(player_tile_y - last_tile_y, 2))
@@ -163,6 +148,8 @@ class SightLine:
             dist_x, dist_y = self.center()
             tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
 
+            intersections = {}
+
             # While the tile checked have not reached the player yet
             while abs(player_tile_x - last_tile_x) + abs(player_tile_y - last_tile_y) > abs(
                     tile_x - player_tile_x) + abs(tile_y - player_tile_y):
@@ -175,11 +162,21 @@ class SightLine:
                 if 0 <= tile_x <= self.board.size_x and 0 <= tile_y <= self.board.size_y:
                     tile = self.board.board[tile_x][tile_y]
                     if isinstance(tile, Wall):
-                        tiles.append(tile)
-                        return tiles
+                        intersections[tile] = line_rect_intersection(self.center(), self.end_virtual_position(), tile.rect)
+                        return intersections
                     elif isinstance(tile, Ground):
-                        if tile.has_coin or tile in self.tiles_enemies_map.keys():
-                            tiles.append(tile)
+                        has_coin = tile.has_coin
+                        has_enemies = tile in self.tiles_enemies_map.keys()
+                        if has_coin:
+                            intersections[tile] = line_rect_intersection(self.center(), self.end_virtual_position(),
+                                                                         tile.rect)
+                        if has_enemies:
+                            for enemy in self.tiles_enemies_map[tile]:
+                                intersections[enemy] = line_rect_intersection(self.center(),
+                                                                              self.end_virtual_position(), enemy.rect)
+                        if tile in intersections.keys():
+                            if intersections[tile]:
+                                return intersections
 
                 else:
                     return

@@ -19,7 +19,7 @@ class Game:
         self.running = True
 
         self.dt = 0
-        self.board = Board(level=0)
+        self.board = Board()
 
     def run(self):
         while self.running:

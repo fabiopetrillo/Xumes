@@ -1,10 +1,9 @@
 import random
-from os import walk
 from typing import List
 
 import numpy as np
 
-from envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE, NORMAL_GAME
+from envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE, BOARD_SIZE
 from envs.hide_and_seek.src.entity import Entity
 from envs.hide_and_seek.src.enemy import Enemy
 from envs.hide_and_seek.src.ground import Ground
@@ -21,12 +20,8 @@ def print_graph(graph):
 
 
 class Board:
-    level_names = \
-        next(walk("/home/cytech/Cours/ING2/IA 2/rl_project//gym_pygame/envs/hide_and_seek/src/maps"), (None, None, []))[
-            2]
-
-    def __init__(self, level):
-        self.size_x, self.size_y = 20, 20
+    def __init__(self):
+        self.size_x, self.size_y = BOARD_SIZE
         self.board = np.ndarray((self.size_x, self.size_y), dtype=Wall)
 
         # Graphs are useful to compute the a-star algorithm
@@ -38,15 +33,9 @@ class Board:
         self.player = None
         self.lidar = None
         self.number_coins = 0
-        self.level = level
         self.generate_world()
 
     def generate_world(self):
-
-        if not NORMAL_GAME:
-            normal_game = np.random.choice([True, False], p=[0.5, 0.5])
-        else:
-            normal_game = True
 
         # Create a board with just wall in it
         for i in range(self.size_x):
@@ -79,63 +68,52 @@ class Board:
                             self.wall_graph[wall].append(self.board[right][top])
                             self.wall_graph[self.board[right][top]].append(wall)
 
-        # Load map
-        with open(
-                f"/home/cytech/Cours/ING2/IA 2/rl_project/gym_pygame/envs/hide_and_seek/src/maps/map{self.level}") as f:
-            lines = f.readlines()
-            j = 0
-            for line in lines:
-                i = 0
-                for value in line:
-                    try:
-                        v = int(value)
-                        if v == 1 or v == 2 or v == 3 or v == 4:
-                            self.remove_tile(self.wall_graph, i, j)
+        # Get a start for the creation of the ground
+        i_start = np.random.randint(1, self.size_x - 1)
+        j_start = np.random.randint(1, self.size_y - 1)
 
-                            coin = False
-                            if v == 2:
-                                coin = True
-                                if not normal_game:
-                                    coin = np.random.choice([True, False], p=[0.8, 0.2])
-                            ground = Ground(i, j, self.board, has_coin=coin)
+        # Add a ground at this position
+        self.remove_tile(self.wall_graph, i_start, j_start)
+        ground = Ground(i_start, j_start, self.board, has_coin=np.random.choice([False, True]))
+        if ground.has_coin:
+            self.number_coins += 1
+        self.add_tile(self.ground_graph, ground, i_start, j_start)
+        self.add_reachable_tile(self.reachable_ground_graph, ground, i_start, j_start)
 
-                            if ground.has_coin:
-                                self.number_coins += 1
-                            self.add_tile(self.ground_graph, ground, i, j)
-                            self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
-                            if v == 3 and normal_game:
-                                size_x, size_y = PLAYER_SIZE
+        # Use a random method to create other ground tiles
+        for k in range(max(self.size_x, self.size_y)):
+            changes = []
+            for tile in self.wall_graph.keys():
+                i = tile.x
+                j = tile.y
+                # We count the number of ground around and determine with a random choice if we replace
+                # it by a ground
+                count = self.count_ground_around(i, j)
+                transform = 0.40 * np.sin(count)
+                rand = random.random()
+                if rand < transform:
+                    changes.append((i, j))
 
-                                # self.player = Player(i * TILE_SIZE - size_x // 2,
-                                #                      j * TILE_SIZE - size_y // 2, self)
+            # Then we compute the changes (replacing wall by grounds)
+            for i, j in changes:
+                self.remove_tile(self.wall_graph, i, j)
+                ground = Ground(i, j, self.board, has_coin=np.random.choice([False, True], p=[0.9, 0.1]))
+                if ground.has_coin:
+                    self.number_coins += 1
+                self.add_tile(self.ground_graph, ground, i, j)
+                self.add_reachable_tile(self.reachable_ground_graph, ground, i, j)
 
-                                self.player = Player(i * TILE_SIZE, j * TILE_SIZE, self)
-                            if v == 4 and normal_game:
-                                self.enemies.append(Enemy(i * TILE_SIZE, j * TILE_SIZE, self))
-                    except:
-                        pass
-                    i += 1
-                j += 1
+        random_ground = np.random.choice(list(self.ground_graph.keys()))
+        size_x, size_y = PLAYER_SIZE
+        self.player = Player(random_ground.x * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1),
+                             random_ground.y * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1),
+                             self)
 
-        # Determine the position of start of the player if not in file
-        random_ground = None
-        if not self.player:
-            random_ground = np.random.choice(list(self.ground_graph.keys()))
-            size_x, size_y = PLAYER_SIZE
-            self.player = Player(random_ground.x * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1),
-                                 random_ground.y * TILE_SIZE + np.random.randint(size_x + 1, TILE_SIZE - size_x - 1),
-                                 self)
-            # self.player = Player(random_ground.x * TILE_SIZE - size_x // 2 , random_ground.y * TILE_SIZE  - size_y // 2, self)
-
-        if not normal_game:
-            enemies_ground = list(self.ground_graph.keys()).copy()
-            if random_ground:
-                enemies_ground.remove(random_ground)
-                for ground in self.ground_graph[random_ground]:
-                    if ground in enemies_ground:
-                        enemies_ground.remove(ground)
-            random_ground_enemy = np.random.choice(enemies_ground)
-            self.enemies.append(Enemy(random_ground_enemy.x * TILE_SIZE, random_ground_enemy.y * TILE_SIZE, self))
+        enemies_ground = list(self.ground_graph.keys()).copy()
+        if random_ground:
+            enemies_ground.remove(random_ground)
+        random_ground_enemy = np.random.choice(enemies_ground)
+        self.enemies.append(Enemy(random_ground_enemy.x * TILE_SIZE, random_ground_enemy.y * TILE_SIZE, self))
 
         self.lidar = Lidar(self, self.player)
         # Remove duplicates in every graphs
@@ -247,12 +225,9 @@ class Board:
         self.player.check_if_coin()
         self.lidar.vision()
         if self.check_no_more_coins():
-            if self.level + 1 < len(self.level_names):
-                self.__init__(self.level + 1)
-            else:
-                self.reset(0)
+            self.reset()
         if self.is_caught_by_enemy(dt):
-            self.reset(0)
+            self.reset()
 
     def is_caught_by_enemy(self, dt):
         for enemy in self.enemies:
@@ -283,5 +258,5 @@ class Board:
         if self.player.points >= self.number_coins:
             return True
 
-    def reset(self, level):
-        self.__init__(level=level)
+    def reset(self):
+        self.__init__()

@@ -2,8 +2,8 @@ import math
 
 import pygame
 
-from envs.v0.src.sight_line_first import SightLineFirst
-from envs.v0.src.sight_line_snd import SightLineSecond
+from envs.flappy_bird.src.sight_line_first import SightLineFirst
+from envs.flappy_bird.src.sight_line_snd import SightLineSecond
 
 
 class Lidar:

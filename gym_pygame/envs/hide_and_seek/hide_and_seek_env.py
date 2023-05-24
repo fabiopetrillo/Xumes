@@ -7,9 +7,9 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR, VIEW_GRID_SIZE, LEVEL_TEST
+from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR
 from envs.hide_and_seek.src.board import Board
-from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT, get_tile_from_position
+from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT
 from envs.hide_and_seek.src.ground import Ground
 from envs.hide_and_seek.src.wall import Wall
 
@@ -20,7 +20,7 @@ class HideAndSeekEnv(gym.Env):
     previous_points = 0
 
     def __init__(self, render_mode=None):
-        self.board = Board(level=LEVEL_TEST)
+        self.board = Board()
         self.board_size_x, self.board_size_y = self.board.size_x, self.board.size_y
         board_total_size_x, board_total_size_y = BOARD_SIZE
         self.width = board_total_size_x * TILE_SIZE
@@ -28,19 +28,11 @@ class HideAndSeekEnv(gym.Env):
         self.dt = 0.1
         self.time_since_point = 0
         self.coin_x, self.coin_y = 0, 0
-
-        lidar = [[self.coin_x - line.end_x, self.coin_y - line.end_y, 0 if line.type == Wall else 1] for line in
-                 self.board.lidar.sight_lines]
-        self.lidars = [lidar for _ in range(5)]
         self.observation_space = spaces.Dict(
             {
-                # "position_in_tile": spaces.Box(0, 1, shape=(2,), dtype=float),
-                # "position": spaces.Box(0, 1, shape=(4,2), dtype=float),
                 "position": spaces.Box(-1, float('inf'), shape=(len(self.board.lidar.sight_lines), 6), dtype=float),
-                "coin": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
+                "coin": spaces.Box(0, float('inf'), shape=(3,), dtype=float),
                 "enemy": spaces.Box(0, float('inf'), shape=(2,), dtype=float),
-
-                # "around": spaces.Box(0, 1, shape=(VIEW_GRID_SIZE, VIEW_GRID_SIZE), dtype=float),
             }
         )
 
@@ -64,38 +56,32 @@ class HideAndSeekEnv(gym.Env):
             if ground.has_coin:
                 distance_coin_map[np.abs(ground.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x) + np.abs(
                     ground.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y)] = ground
-        try:
+
+        if distance_coin_map.keys():
             coin = distance_coin_map[min(distance_coin_map.keys())]
             self.coin_x, self.coin_y = coin.x * TILE_SIZE + TILE_SIZE // 2, coin.y * TILE_SIZE + TILE_SIZE // 2
-        except:
+        else:
             self.coin_x, self.coin_y = 0, 0
 
         distance_enemy_map = {}
         for enemy in self.board.enemies:
             distance_enemy_map[np.abs(enemy.x * TILE_SIZE + TILE_SIZE // 2 - player_center_x) + np.abs(
                 enemy.y * TILE_SIZE + TILE_SIZE // 2 - player_center_y)] = enemy
-        try:
+        if distance_enemy_map.keys():
             enemy = distance_enemy_map[min(distance_enemy_map.keys())]
             self.enemy_x, self.enemy_y = enemy.x, enemy.y
-        except:
+        else:
             self.enemy_x, self.enemy_y = 0, 0
 
         lidar = [[np.abs(self.coin_x - line.end_x), np.abs(self.coin_y - line.end_y),
                   np.abs(self.enemy_x - line.end_x), np.abs(self.enemy_y - line.end_y),
                   line.distance,
                   0 if line.type == Wall else 1 if line.type == Ground else -1] for line in self.board.lidar.sight_lines]
-        # self.lidars.pop(0)
-        # self.lidars.append(lidar)
         return {
-            # "around": type_obs,
             "enemy": np.array([np.abs(self.enemy_x - player_center_x), np.abs(self.enemy_y - player_center_y)]),
-            "coin": np.array([np.abs(self.coin_x - player_center_x), np.abs(self.coin_y - player_center_y)]),
+            "coin": np.array([np.abs(self.coin_x - player_center_x), np.abs(self.coin_y - player_center_y), self.board.number_coins]),
             "position": np.array(lidar)
-            # "position": np.array([[top_left_x, top_left_y], [top_right_x, top_right_y], [bottom_left_x, bottom_left_y], [bottom_right_x, bottom_right_y]])
-            # "position": np.array([[(top_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_left_corner_y% TILE_SIZE) * 1.0 / TILE_SIZE], [(top_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (top_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_left_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_left_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE], [(bottom_right_corner_x % TILE_SIZE) * 1.0 / TILE_SIZE, (bottom_right_corner_y % TILE_SIZE) * 1.0 / TILE_SIZE]]),
-            # "position_in_tile": np.array([tile_x, tile_y]),
         }
-        # "position": np.array([self.board.player.x % TILE_SIZE * 1.0 / TILE_SIZE, self.board.player.y % TILE_SIZE * 1.0 / TILE_SIZE])}
 
     def _get_info(self):
         return {
@@ -105,8 +91,8 @@ class HideAndSeekEnv(gym.Env):
     def reset(self, seed=None, **kwargs):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-        level = random.choice(range(len(self.board.level_names)))
-        self.board.reset(level=level)
+
+        self.board.reset()
         self.board_size_x, self.board_size_y = self.board.size_x, self.board.size_y
         self.time_since_point = 0
         observation = self._get_obs()
@@ -130,10 +116,10 @@ class HideAndSeekEnv(gym.Env):
         reward = 0
         terminated = False
         if self.board.player.check_if_coin():
-            reward = 1
+            reward = 5
         if self.board.check_no_more_coins():
             terminated = True
-            reward = 2
+            reward = 10
         if self.board.is_caught_by_enemy(self.dt):
             reward = -1
             terminated = True

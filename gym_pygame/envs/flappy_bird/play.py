@@ -1,9 +1,9 @@
 import pygame
 
-from envs.v0.params import HEIGHT, WIDTH
-from envs.v0.src.lidar import Lidar
-from envs.v0.src.pipe_generator import PipeGenerator
-from envs.v0.src.player import Player
+from envs.flappy_bird.params import HEIGHT, WIDTH
+from envs.flappy_bird.src.lidar import Lidar
+from envs.flappy_bird.src.pipe_generator import PipeGenerator
+from envs.flappy_bird.src.player import Player
 
 BACKGROUND_COLOR = (137, 207, 240)
 

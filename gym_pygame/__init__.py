@@ -1,8 +1,8 @@
 from gymnasium.envs.registration import register
 
 register(
-    id="gym_pygame/RLFlappy-v0",
-    entry_point="gym_pygame.envs.v0:FlappyEnv",
+    id="gym_pygame/RLFlappy-flappy_bird",
+    entry_point="gym_pygame.envs.flappy_bird:FlappyEnv",
     max_episode_steps=2000,
 )
 

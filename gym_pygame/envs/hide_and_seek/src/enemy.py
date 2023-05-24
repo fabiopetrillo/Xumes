@@ -148,7 +148,7 @@ class Enemy(Entity, ABC):
         distance_player = np.sqrt(
             np.power(player_tile_x - enemy_tile_x, 2) + np.power(player_tile_y - enemy_tile_y, 2))
 
-        tile_to_check = []
+        tile_check = False
 
         # Here we gather all tile between the enemy and the player
         if distance_player > 1:
@@ -167,14 +167,12 @@ class Enemy(Entity, ABC):
                 dist_y += diff_y
                 # Get the tile and add it to the to check list
                 tile_x, tile_y = get_tile_from_position(dist_x, dist_y)
-                if 0 < tile_x <= self.board.size_x-1 and 0 < tile_y <= self.board.size_y-1 and (tile_x, tile_y) not in tile_to_check:
-                    tile_to_check.append((tile_x, tile_y))
+                if 0 < tile_x <= self.board.size_x-1 and 0 < tile_y <= self.board.size_y-1 and (tile_x, tile_y):
+                    # Here we check if the enemy can actually see the player (no wall between them)
 
-        # Here we check if the enemy can actually see the player (no wall between them)
-        tile_check = False
-        for tile_x, tile_y in tile_to_check:
-            if isinstance(self.board.board[tile_x][tile_y], Wall):
-                tile_check = True
+                    if isinstance(self.board.board[tile_x][tile_y], Wall):
+                        tile_check = True
+                        break
 
         # If the enemy remembers the player or
         # If he sees him (no wall between) and if he is enough close
@@ -193,7 +191,7 @@ class Enemy(Entity, ABC):
         center_x, center_y = self.center()
         goal_center_x, goal_center_y = self.board.player.center()
         distance = np.sqrt(np.power(center_x - goal_center_x, 2) + np.power(center_y - goal_center_y, 2))
-        return distance < 44
+        return distance < 46
 
     def center(self):
         size_x, size_y = ENEMY_SIZE
