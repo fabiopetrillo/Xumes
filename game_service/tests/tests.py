@@ -1,6 +1,6 @@
 from abc import ABC
+from typing import Type
 
-from game_service.state_decoder import StateDecoder
 from game_service.state_observable import StateObservable
 from game_service.state_observer import ConcreteStateObserver
 
@@ -11,7 +11,7 @@ class Test:
         super().__init__()
         self.__v = v
         self.__list = []
-        self.observable_state = StateObservable(self, TestState)
+        self.observable_state = TestState(self)
         self.observable_state.attach(ConcreteStateObserver.get_instance())
 
     def get_v(self):
@@ -33,7 +33,7 @@ class Test:
         return self.__list
 
 
-class TestState(StateDecoder[Test], ABC):
+class TestState(StateObservable[Type[Test]], ABC):
 
     def state(self):
         return {

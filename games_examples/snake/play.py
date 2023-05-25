@@ -3,6 +3,9 @@ import sys
 import random
 from pygame.math import Vector2
 
+from games_examples.snake.observables import SnakeObservable, FruitObservable
+from games_examples.snake.observers import SnakeGameObserver
+
 cell_size = 30
 cell_number = 15
 
@@ -12,6 +15,8 @@ class Snake:
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
         self.direction = Vector2(1, 0)
         self.new_block = False
+        self.observable = SnakeObservable(self)  # Need to be added
+        self.observable.attach(SnakeGameObserver.get_instance())  # Need to be added
 
     def draw_snake(self, screen):
         for block in self.body:
@@ -31,6 +36,8 @@ class Snake:
             body_copy.insert(0, body_copy[0] + self.direction)
             self.body = body_copy[:]
 
+        self.observable.notify()  # Need to be added
+
     def add_block(self):
         self.new_block = True
 
@@ -40,18 +47,20 @@ class Fruit:
         self.pos = None
         self.y = None
         self.x = None
+        self.observable = FruitObservable(self)  # Need to be added
+        self.observable.attach(SnakeGameObserver.get_instance())  # Need to be added
         self.randomize()
 
     def draw_fruit(self, screen):
         fruit_rect = pygame.Rect(
             int(self.pos.x * cell_size), int(self.pos.y * cell_size), cell_size, cell_size)
-        # screen.blit(apple.fruit_rect)
         pygame.draw.rect(screen, (200, 100, 50), fruit_rect)
 
     def randomize(self):
         self.x = random.randint(0, cell_number - 1)
         self.y = random.randint(0, cell_number - 1)
         self.pos = Vector2(self.x, self.y)
+        self.observable.notify()  # Need to be added
 
 
 def game_over():
@@ -118,6 +127,7 @@ class Main:
             self.draw_elements()
             pygame.display.update()
             self.clock.tick(60)
+            print(SnakeGameObserver.get_instance().state())
 
 
 if __name__ == "__main__":

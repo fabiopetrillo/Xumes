@@ -7,7 +7,7 @@ class StateObserver(ABC):
         self._state = {}
 
     def update(self, obs) -> None:
-        self._state[(obs.__class__, id(obs))] = obs.state()
+        self._state[(obs.object.__class__, id(obs.object))] = obs.state()
 
     def state(self):
         return self._state

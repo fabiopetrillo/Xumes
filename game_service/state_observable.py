@@ -1,13 +1,13 @@
+from abc import ABC, abstractmethod
 from typing import Dict
 
 from game_service.state_observer import StateObserver
 
 
-class StateObservable:
+class StateObservable(ABC):
 
-    def __init__(self, observable_object, state_decoder_class):
+    def __init__(self, observable_object):
         self._observers = []
-        self._state_decoder = state_decoder_class(self)
         self._observable_object = observable_object
 
     def attach(self, observer: StateObserver) -> None:
@@ -22,11 +22,10 @@ class StateObservable:
         for observer in self._observers:
             observer.update(self)
 
+    @abstractmethod
     def state(self) -> Dict:
-        if self._state_decoder:
-            return self._state_decoder.state()
-        else:
-            raise Exception("State decoder not defined!")
+        pass
 
-    def get_observable_object(self):
+    @property
+    def object(self):
         return self._observable_object
