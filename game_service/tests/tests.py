@@ -5,30 +5,29 @@ from game_service.state_observable import StateObservable
 from game_service.state_observer import ConcreteStateObserver
 
 
-class Test(StateObservable, ABC):
+class Test:
 
     def __init__(self, v):
         super().__init__()
         self.__v = v
         self.__list = []
-
-    def set_state_decoder(self):
-        return TestState(self)
+        self.observable_state = StateObservable(self, TestState)
+        self.observable_state.attach(ConcreteStateObserver.get_instance())
 
     def get_v(self):
         return self.__v
 
     def set_v(self, v):
         self.__v = v
-        self.notify()
+        self.observable_state.notify()
 
     def add_element(self, v):
         self.__list.append(v)
-        self.notify()
+        self.observable_state.notify()
 
     def set_l(self, new_l):
         self.__list = new_l
-        self.notify()
+        self.observable_state.notify()
 
     def get_l(self):
         return self.__list
@@ -38,14 +37,13 @@ class TestState(StateDecoder[Test], ABC):
 
     def state(self):
         return {
-            "__v": self._observable.get_v(),
-            "__list": self._observable.get_l()
+            "__v": self.object.get_v(),
+            "__list": self.object.get_l()
         }
 
 
 state_observer = ConcreteStateObserver.get_instance()
 test = Test(v=0)
-test.attach(state_observer)
 
 print(state_observer.state())
 

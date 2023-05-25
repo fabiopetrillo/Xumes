@@ -5,7 +5,6 @@ class StateObserver(ABC):
 
     def __init__(self):
         self._state = {}
-        self._state_strategy = None
 
     def update(self, obs) -> None:
         self._state[(obs.__class__, id(obs))] = obs.state()
