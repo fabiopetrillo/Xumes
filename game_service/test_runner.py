@@ -4,21 +4,21 @@ from typing import TypeVar, final
 from game_service.game_element_state import GameElementState
 from game_service.state_observable import StateObservable
 
-GameLoopT = TypeVar("GameLoopT")
+GLST = TypeVar("GLST")
+GLOBJ = TypeVar("GLOBJ")
 
 
-class TestRunner(StateObservable, ABC):
-    class GameLoop:
-        pass
+class _TestRunner(StateObservable[GLOBJ, GLST], ABC):
 
-    def __init__(self):
-        super().__init__(TestRunner.GameLoop())
+    def __init__(self, game_loop_object: GLOBJ):
+        super().__init__(game_loop_object)
         self._test_client = None
-        self._state = "playing"
+        self._game_state = "playing"
+        self._game_loop_object = game_loop_object
 
     @final
     def update_state(self, state) -> None:
-        self._state = state
+        self._game_state = state
         self.notify()
 
     @property
@@ -29,6 +29,11 @@ class TestRunner(StateObservable, ABC):
     @final
     def set_client(self, client):
         self._test_client = client
+
+    @final
+    @property
+    def game_loop(self):
+        return self._game_loop_object
 
     @abstractmethod
     def run_test(self) -> None:
@@ -43,9 +48,9 @@ class TestRunner(StateObservable, ABC):
         pass
 
 
-class JsonTestRunner(TestRunner, ABC):
+class JsonTestRunner(_TestRunner, ABC):
 
     def state(self):
         return GameElementState({
-            "state": self._state
+            "state": self._game_state
         })

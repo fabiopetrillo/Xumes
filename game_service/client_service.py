@@ -3,14 +3,14 @@ from threading import Thread, Condition
 from game_service.communication_service import ICommunicationService
 from game_service.event_factory import IEventFactory
 from game_service.game_state_observer import IGameStateObserver
-from game_service.test_runner import TestRunner
+from game_service.test_runner import _TestRunner
 
 
 class ClientService:
 
     def __init__(self,
                  observer: IGameStateObserver,
-                 test_runner: TestRunner,
+                 test_runner: _TestRunner,
                  event_factory: IEventFactory,
                  communication_service: ICommunicationService):
 
@@ -19,7 +19,6 @@ class ClientService:
         self.condition = Condition()
         self.observer = observer
         self.test_runner = test_runner
-        self.test_runner.attach(observer)
         self.test_runner.set_client(self)
         self.test_runner.update_state("playing")
 
@@ -43,9 +42,6 @@ class ClientService:
         self.app_thread.join()
 
     def wait(self):
-        # Reset the state
-
-        self.test_runner.update_state("playing")
 
         # Clear every previous events
         self.event_factory.clear()

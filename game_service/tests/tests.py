@@ -1,4 +1,4 @@
-from game_service.client_service import ClientService, TestRunner
+from game_service.client_service import ClientService, _TestRunner
 from game_service.state_observable import StateObservable
 from game_service.tests.observers import ConcreteStateObserver
 
@@ -40,7 +40,7 @@ class TestState(StateObservable):
         }
 
 
-class GameLoopContainer(TestRunner):
+class GameLoopContainer(_TestRunner):
 
     def __init__(self):
         super().__init__()

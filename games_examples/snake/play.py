@@ -70,7 +70,28 @@ class Fruit:
         self.observable.notify()  # Need to be added
 
 
-class Main(JsonTestRunner, ABC):
+class MainTestRunner(JsonTestRunner, ABC):
+
+    def run_test(self) -> None:
+        while True:
+            self.test_client.wait()
+            for event in pygame.event.get():
+                self.game_loop.check_events(event)
+            self.game_loop.update()
+            self.game_loop.clock.tick(0)
+
+    def reset(self) -> None:
+        self.game_loop.snake.observable.detach_all()
+        self.game_loop.fruit.observable.detach_all()
+
+        self.game_loop.snake = Snake()
+        self.game_loop.fruit = Fruit()
+
+    def quit_screen(self) -> None:
+        pass
+
+
+class Main:
     def __init__(self):
         super().__init__()
         pygame.init()
@@ -85,6 +106,9 @@ class Main(JsonTestRunner, ABC):
         self.snake = Snake()
         self.fruit = Fruit()
 
+        self.test_runner = MainTestRunner(self)
+        self.test_runner.attach(JsonGameStateObserver.get_instance())
+
     def update(self):
         self.snake.move_snake()
         self.check_collision()
@@ -98,18 +122,18 @@ class Main(JsonTestRunner, ABC):
         if self.fruit.pos == self.snake.body[0]:
             self.fruit.randomize()
             self.snake.add_block()
-            self.update_state("fruit_ate")
+            self.test_runner.update_state("fruit_ate")
 
     def game_over(self):
-        self.reset()
+        self.test_runner.reset()
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
-            self.update_state("lose")
+            self.test_runner.update_state("lose")
             self.game_over()
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
-                self.update_state("lose")
+                self.test_runner.update_state("lose")
                 self.game_over()
 
     def check_events(self, event):
@@ -142,34 +166,14 @@ class Main(JsonTestRunner, ABC):
             pygame.display.update()
             self.clock.tick(60)
 
-    def run_test(self) -> None:
-        while True:
-            self.test_client.wait()
-            for event in pygame.event.get():
-                self.check_events(event)
-            self.update()
-            self.screen.fill((175, 215, 70))
-            self.draw_elements()
-            pygame.display.update()
-            self.clock.tick(0)
-
-    def reset(self) -> None:
-        self.snake.observable.detach_all()
-        self.fruit.observable.detach_all()
-
-        self.snake = Snake()
-        self.fruit = Fruit()
-
-    def quit_screen(self) -> None:
-        pass
-
 
 if __name__ == "__main__":
 
     if len(sys.argv) == 2:
         if sys.argv[1] == "-test":
+            main = Main()
             client_service = ClientService(observer=JsonGameStateObserver.get_instance(),
-                                           test_runner=Main(),
+                                           test_runner=main.test_runner,
                                            event_factory=PygameEventFactory(),
                                            communication_service=CommunicationServiceRestApi())
             client_service.run()
