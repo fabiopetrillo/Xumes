@@ -1,8 +1,6 @@
-from abc import ABC
-from typing import Type
-
+from game_service.client_service import ClientService, TestRunner
 from game_service.state_observable import StateObservable
-from game_service.state_observer import ConcreteStateObserver
+from game_service.tests.observers import ConcreteStateObserver
 
 
 class Test:
@@ -11,7 +9,7 @@ class Test:
         super().__init__()
         self.__v = v
         self.__list = []
-        self.observable_state = TestState(self)
+        self.observable_state: StateObservable[Test] = TestState(self)
         self.observable_state.attach(ConcreteStateObserver.get_instance())
 
     def get_v(self):
@@ -33,7 +31,7 @@ class Test:
         return self.__list
 
 
-class TestState(StateObservable[Type[Test]], ABC):
+class TestState(StateObservable):
 
     def state(self):
         return {
@@ -42,16 +40,21 @@ class TestState(StateObservable[Type[Test]], ABC):
         }
 
 
-state_observer = ConcreteStateObserver.get_instance()
-test = Test(v=0)
+class GameLoopContainer(TestRunner):
 
-print(state_observer.state())
+    def __init__(self):
+        super().__init__()
+        self.test = Test(v=0)
 
-test.set_v(5)
-test.add_element(1)
-test.add_element(2)
-print(state_observer.state())
+    def run(self):
+        while True:
+            self.test_client()
+            self.test.set_v(self.test.get_v() + 1)
 
-test.add_element(3)
+    def run_test(self) -> None:
+        self.run()
 
-print(state_observer.state())
+
+if __name__ == "__main__":
+    client_service = ClientService(ConcreteStateObserver.get_instance(), GameLoopContainer, PygameEventFactory)
+    client_service.run()

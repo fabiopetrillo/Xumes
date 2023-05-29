@@ -1,16 +1,6 @@
 from abc import ABC
 
-
-class StateObserver(ABC):
-
-    def __init__(self):
-        self._state = {}
-
-    def update(self, obs) -> None:
-        self._state[(obs.object.__class__, id(obs.object))] = obs.state()
-
-    def state(self):
-        return self._state
+from game_service.state_observer import StateObserver
 
 
 class ConcreteStateObserver(StateObserver, ABC):
