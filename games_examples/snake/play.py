@@ -70,10 +70,6 @@ class Fruit:
         self.observable.notify()  # Need to be added
 
 
-def game_over():
-    pygame.quit()
-
-
 class Main(JsonTestRunner, ABC):
     def __init__(self):
         super().__init__()
@@ -104,14 +100,17 @@ class Main(JsonTestRunner, ABC):
             self.snake.add_block()
             self.update_state("fruit_ate")
 
+    def game_over(self):
+        self.reset()
+
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
             self.update_state("lose")
-            game_over()
+            self.game_over()
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
                 self.update_state("lose")
-                game_over()
+                self.game_over()
 
     def check_events(self, event):
         if event.type == pygame.QUIT:
@@ -157,14 +156,6 @@ class Main(JsonTestRunner, ABC):
     def reset(self) -> None:
         self.snake.observable.detach_all()
         self.fruit.observable.detach_all()
-
-        pygame.init()
-        self.screen = pygame.display.set_mode(
-            (cell_number * cell_size, cell_number * cell_size))
-        self.clock = pygame.time.Clock()
-
-        self.SCREEN_UPDATE = pygame.USEREVENT
-        pygame.time.set_timer(self.SCREEN_UPDATE, 150)
 
         self.snake = Snake()
         self.fruit = Fruit()

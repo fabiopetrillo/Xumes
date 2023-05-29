@@ -17,7 +17,6 @@ class CommunicationServiceRestApi(ICommunicationService):
     def action(self, client_service):
         @self.app.route("/", methods=['POST'])
         def post():
-            print(request.json)
             client_service.update_event(request.json['event'])
             for input_str in request.json['inputs']:
                 try:
@@ -25,6 +24,7 @@ class CommunicationServiceRestApi(ICommunicationService):
                 except KeyNotFoundException:
                     return f"key {input_str} not found!"
                 client_service.inputs.append(key_input)
+
             with client_service.condition:
                 client_service.condition.notify()
             return "input send!"

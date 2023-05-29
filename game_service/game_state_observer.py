@@ -13,12 +13,7 @@ class IGameStateObserver(Generic[ST]):
         pass
 
     def get_state(self) -> ST:
-        pass
-
-    def __call__(self, *args, **kwargs):
-        pass
-
-    def __str__(self):
+        # Return only the changes
         pass
 
 
@@ -30,13 +25,16 @@ class JsonGameStateObserver(Dict, IGameStateObserver):
         self[id(obs.object)]['label'] = str(obs.object.__class__)
 
     def remove_state(self, obs):
-        self.pop(id(obs.object))
+        if id(obs.object) in self.keys():
+            self.pop(id(obs.object))
 
     def get_state(self):
-        return self()
+        state = json.dumps(self)
+        self.clear()
+        return state
 
     def __call__(self, *args, **kwargs):
-        return json.dumps(self)
+        return
 
     @classmethod
     def get_instance(cls):
