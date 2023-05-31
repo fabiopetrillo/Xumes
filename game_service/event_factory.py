@@ -1,6 +1,6 @@
 from typing import final
 
-from game_service.client_event import IClientEvent
+from game_service.game_event import IGameEvent
 from game_service.exceptions.key_not_found_exception import KeyNotFoundException
 
 
@@ -10,7 +10,7 @@ class IEventFactory:
         pass
 
     @final
-    def find_input(self, input_str: str) -> IClientEvent:
+    def find_input(self, input_str: str) -> IGameEvent:
         if input_str == "up":
             return self.up()
         elif input_str == "down":
@@ -22,15 +22,15 @@ class IEventFactory:
 
         raise KeyNotFoundException()
 
-    def up(self) -> IClientEvent:
+    def up(self) -> IGameEvent:
         pass
 
-    def down(self) -> IClientEvent:
+    def down(self) -> IGameEvent:
         pass
 
-    def left(self) -> IClientEvent:
+    def left(self) -> IGameEvent:
         pass
 
-    def right(self) -> IClientEvent:
+    def right(self) -> IGameEvent:
         pass
 

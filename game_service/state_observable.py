@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, final
+from typing import TypeVar, Generic, final, List
 
 from game_service.game_element_state import GameElementState
 from game_service.game_state_observer import IGameStateObserver
@@ -10,14 +10,15 @@ ST = TypeVar("ST")
 
 class StateObservable(Generic[OBJ, ST], ABC):
 
-    def __init__(self, observable_object: OBJ):
+    def __init__(self, observable_object: OBJ, observers: List[IGameStateObserver]):
         self._observers = []
-        self._observable_object: OBJ = observable_object
+        self._object = observable_object
+        for observer in observers:
+            self.attach(observer)
 
     @final
     def attach(self, observer: IGameStateObserver) -> None:
         self._observers.append(observer)
-        observer.update_state(self)
 
     @final
     def detach(self, observer: IGameStateObserver) -> None:
@@ -27,21 +28,33 @@ class StateObservable(Generic[OBJ, ST], ABC):
 
     @final
     def detach_all(self):
-        for observer in self._observers:
-            observer.remove_state(self)
+        if self._observers is not None and self._observers:
+            for observer in self._observers:
+                observer.remove_state(self)
 
         self._observers.clear()
 
     @final
     def notify(self):
-        for observer in self._observers:
-            observer.update_state(self)
+        if self._observers is not None and self._observers:
+            for observer in self._observers:
+                observer.update_state(self)
 
     @abstractmethod
     def state(self) -> GameElementState[ST]:
         pass
 
-    @property
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
     @final
+    @property
+    def observers(self):
+        return self._observers
+
+    @final
+    @property
     def object(self):
-        return self._observable_object
+        return self._object
+

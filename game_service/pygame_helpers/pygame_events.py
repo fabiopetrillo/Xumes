@@ -1,6 +1,6 @@
 import pygame
 
-from game_service.client_event import IClientEvent
+from game_service.game_event import IGameEvent
 
 
 def key_down(key: pygame.constants):
@@ -13,7 +13,7 @@ def key_up(key: pygame.constants):
     pygame.event.post(event)
 
 
-class Up(IClientEvent):
+class Up(IGameEvent):
 
     def press(self) -> None:
         key_down(key=pygame.K_UP)
@@ -22,7 +22,7 @@ class Up(IClientEvent):
         key_up(key=pygame.K_DOWN)
 
 
-class Down(IClientEvent):
+class Down(IGameEvent):
 
     def press(self) -> None:
         key_down(pygame.K_DOWN)
@@ -31,7 +31,7 @@ class Down(IClientEvent):
         key_up(pygame.K_DOWN)
 
 
-class Left(IClientEvent):
+class Left(IGameEvent):
 
     def press(self) -> None:
         key_down(pygame.K_LEFT)
@@ -40,7 +40,7 @@ class Left(IClientEvent):
         key_up(pygame.K_LEFT)
 
 
-class Right(IClientEvent):
+class Right(IGameEvent):
 
     def press(self) -> None:
         key_down(pygame.K_RIGHT)

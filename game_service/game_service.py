@@ -6,7 +6,7 @@ from game_service.game_state_observer import IGameStateObserver
 from game_service.test_runner import _TestRunner
 
 
-class ClientService:
+class GameService:
 
     def __init__(self,
                  observer: IGameStateObserver,
@@ -29,7 +29,7 @@ class ClientService:
         self.communication_service.observe(self)
         self.communication_service.action(self)
 
-        self.test_runner.quit_screen()
+        self.test_runner.delete_screen()
 
     def run(self):
         self.app_thread = Thread(target=self.communication_service.run)

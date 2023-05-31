@@ -1,6 +1,6 @@
 
 
-class IClientEvent:
+class IGameEvent:
 
     def press(self) -> None:
         pass
