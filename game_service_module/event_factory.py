@@ -1,7 +1,7 @@
 from typing import final
 
-from game_service.game_event import IGameEvent
-from game_service.exceptions.key_not_found_exception import KeyNotFoundException
+from game_service_module.game_event import IGameEvent
+from game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
 
 
 class IEventFactory:

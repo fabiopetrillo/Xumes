@@ -1,7 +1,7 @@
 from flask import Flask, request
 
-from game_service.communication_service import ICommunicationService
-from game_service.exceptions.key_not_found_exception import KeyNotFoundException
+from game_service_module.communication_service import ICommunicationService
+from game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
 
 
 class CommunicationServiceRestApi(ICommunicationService):

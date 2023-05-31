@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, final, List
 
-from game_service.game_element_state import GameElementState
-from game_service.game_state_observer import IGameStateObserver
+from game_service_module.game_element_state import GameElementState
+from game_service_module.game_state_observer import IGameStateObserver
 
 OBJ = TypeVar("OBJ")
 ST = TypeVar("ST")
@@ -10,9 +10,10 @@ ST = TypeVar("ST")
 
 class StateObservable(Generic[OBJ, ST], ABC):
 
-    def __init__(self, observable_object: OBJ, observers: List[IGameStateObserver]):
+    def __init__(self, observable_object: OBJ, observers: List[IGameStateObserver], name: str):
         self._observers = []
         self._object = observable_object
+        self._name = name
         for observer in observers:
             self.attach(observer)
 
@@ -44,9 +45,10 @@ class StateObservable(Generic[OBJ, ST], ABC):
     def state(self) -> GameElementState[ST]:
         pass
 
-    @abstractmethod
+    @property
+    @final
     def name(self) -> str:
-        pass
+        return self._name
 
     @final
     @property

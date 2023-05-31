@@ -1,15 +1,15 @@
 from abc import ABC
 
-from game_service.game_element_state import GameElementState
-from game_service.state_observable import StateObservable
+from game_service_module.game_element_state import GameElementState
+from game_service_module.state_observable import StateObservable
 from games_examples.snake.src.fruit import Fruit
 from games_examples.snake.src.snake import Snake
 
 
 class FruitObservable(Fruit, StateObservable, ABC):
 
-    def __init__(self, observers):
-        StateObservable.__init__(self, observable_object=self, observers=observers)
+    def __init__(self, observers, name):
+        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         Fruit.__init__(self)
         self.notify()
 
@@ -23,14 +23,11 @@ class FruitObservable(Fruit, StateObservable, ABC):
             "y": self.y
         })
 
-    def name(self) -> str:
-        return "fruit"
-
 
 class SnakeObservable(Snake, StateObservable, ABC):
 
-    def __init__(self, observers):
-        StateObservable.__init__(self, observable_object=self, observers=observers)
+    def __init__(self, observers, name):
+        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         Snake.__init__(self)
         self.notify()
 
@@ -42,6 +39,3 @@ class SnakeObservable(Snake, StateObservable, ABC):
         return GameElementState({
             "body": [{"x": vector.x, "y": vector.y} for vector in self.body],
         })
-
-    def name(self) -> str:
-        return "snake"
