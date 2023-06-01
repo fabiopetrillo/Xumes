@@ -3,13 +3,13 @@ from abc import ABC
 
 import pygame
 
-from game_service_module.game_service import GameService
-from game_service_module.game_state_observer import JsonGameStateObserver
-from game_service_module.pygame_helpers.pygame_event_factory import PygameEventFactory
-from game_service_module.rest_helpers.communication_service_rest_api import CommunicationServiceRestApi
-from game_service_module.test_runner import JsonTestRunner
+from framework.game_service_module.game_service import GameService
+from framework.game_service_module.game_state_observer import JsonGameStateObserver
+from framework.game_service_module.pygame_helpers.pygame_event_factory import PygameEventFactory
+from framework.game_service_module.rest_helpers.communication_service_rest_api import CommunicationServiceRestApi
+from framework.game_service_module.test_runner import JsonTestRunner
 from games_examples.snake.play import Main
-from games_examples.snake.test.snake_observables import SnakeObservable, FruitObservable
+from games_examples.snake.test_game_service.snake_observables import SnakeObservable, FruitObservable
 
 
 class MainTestRunner(Main, JsonTestRunner, ABC):

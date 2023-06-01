@@ -1,8 +1,8 @@
 import pygame
 
-from game_service_module.game_event import IGameEvent
-from game_service_module.event_factory import IEventFactory
-from game_service_module.pygame_helpers.pygame_events import Up, Down, Left, Right
+from framework.game_service_module.game_event import IGameEvent
+from framework.game_service_module.event_factory import IEventFactory
+from framework.game_service_module.pygame_helpers.pygame_events import Up, Down, Left, Right
 
 
 class PygameEventFactory(IEventFactory):

@@ -1,6 +1,6 @@
 import pygame
 
-from game_service_module.game_event import IGameEvent
+from framework.game_service_module.game_event import IGameEvent
 
 
 def key_down(key: pygame.constants):

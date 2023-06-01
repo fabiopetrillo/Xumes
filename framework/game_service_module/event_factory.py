@@ -1,7 +1,7 @@
 from typing import final
 
-from game_service_module.game_event import IGameEvent
-from game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
+from framework.game_service_module.game_event import IGameEvent
+from framework.game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
 
 
 class IEventFactory:
@@ -19,8 +19,20 @@ class IEventFactory:
             return self.left()
         elif input_str == "right":
             return self.right()
+        elif input_str == "nothing":
+            return self.nothing()
 
         raise KeyNotFoundException()
+
+    def nothing(self) -> IGameEvent:
+        class Nothing(IGameEvent):
+            def press(self) -> None:
+                pass
+
+            def release(self) -> None:
+                pass
+
+        return Nothing()
 
     def up(self) -> IGameEvent:
         pass
@@ -33,4 +45,3 @@ class IEventFactory:
 
     def right(self) -> IGameEvent:
         pass
-

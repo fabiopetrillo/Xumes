@@ -1,9 +1,9 @@
 from threading import Thread, Condition
 
-from game_service_module.communication_service import ICommunicationService
-from game_service_module.event_factory import IEventFactory
-from game_service_module.game_state_observer import IGameStateObserver
-from game_service_module.test_runner import _TestRunner
+from framework.game_service_module.communication_service import ICommunicationService
+from framework.game_service_module.event_factory import IEventFactory
+from framework.game_service_module.game_state_observer import IGameStateObserver
+from framework.game_service_module.test_runner import _TestRunner
 
 
 class GameService:

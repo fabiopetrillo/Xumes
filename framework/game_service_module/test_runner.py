@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import final
 
-from game_service_module.game_element_state import GameElementState
-from game_service_module.state_observable import StateObservable
+from framework.game_service_module.game_element_state import GameElementState
+from framework.game_service_module.state_observable import StateObservable
 
 
 class _TestRunner(StateObservable, ABC):
