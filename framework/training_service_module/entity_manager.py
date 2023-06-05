@@ -2,17 +2,28 @@ from abc import abstractmethod
 from typing import Dict, final
 
 from framework.training_service_module.game_element_state import GameElementState
-from framework.training_service_module.game_element_state_builder import IGameElementStateBuilder
-from framework.training_service_module.state_entity import IStateEntity
+from framework.training_service_module.i_game_element_state_builder import IGameElementStateBuilder
+from framework.training_service_module.i_state_entity import IStateEntity
 
 
-class EntityManager:
+class EntityManager(IStateEntity):
 
     def __init__(self,
                  game_element_state_builder: IGameElementStateBuilder
                  ):
         self._game_element_state_builder = game_element_state_builder
-        self._entities: Dict[str, IStateEntity] = {}
+        self._entities: Dict[str, IStateEntity] = {
+            "test_runner": self
+        }
+        self._game_state: str = ""
+
+    def update(self, state) -> None:
+        self._game_state = state["state"]
+
+    @property
+    @final
+    def game_state(self):
+        return self._game_state
 
     @final
     def get_all(self):

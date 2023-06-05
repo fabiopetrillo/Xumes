@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, final, List
 
 from framework.game_service_module.game_element_state import GameElementState
-from framework.game_service_module.game_state_observer import IGameStateObserver
+from framework.game_service_module.i_game_state_observer import IGameStateObserver
 
 OBJ = TypeVar("OBJ")
 ST = TypeVar("ST")

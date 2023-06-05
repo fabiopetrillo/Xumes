@@ -2,7 +2,7 @@ import gym_pygame
 import gymnasium as gym
 from stable_baselines3 import PPO
 
-from envs.flappy_bird.params import ENV_NAME, TEST_NAME
+from gym_envs.flappy_bird.params import ENV_NAME, TEST_NAME
 
 env = gym.make(f"gym_pygame/{ENV_NAME}", render_mode="human")
 model = PPO('MultiInputPolicy', env, verbose=1)

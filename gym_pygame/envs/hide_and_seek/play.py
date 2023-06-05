@@ -1,8 +1,8 @@
 import pygame
 
-from envs.hide_and_seek.params import HEIGHT, WIDTH, BACKGROUND_COLOR, TILE_SIZE, BOARD_SIZE
-from envs.hide_and_seek.src.board import Board
-from envs.hide_and_seek.src.lidar import Lidar
+from gym_envs.hide_and_seek.params import HEIGHT, WIDTH, BACKGROUND_COLOR, TILE_SIZE, BOARD_SIZE
+from gym_envs.hide_and_seek.src.board import Board
+from gym_envs.hide_and_seek.src.lidar import Lidar
 
 
 class Game:

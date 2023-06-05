@@ -38,4 +38,5 @@ class SnakeObservable(Snake, StateObservable, ABC):
     def state(self):
         return GameElementState({
             "body": [{"x": vector.x, "y": vector.y} for vector in self.body],
+            "direction": {"x": self.direction.x, "y": self.direction.y}
         })

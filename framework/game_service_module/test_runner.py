@@ -31,6 +31,14 @@ class _TestRunner(StateObservable, ABC):
         pass
 
     @abstractmethod
+    def run_test_render(self) -> None:
+        pass
+
+    @abstractmethod
+    def random_reset(self) -> None:
+        pass
+
+    @abstractmethod
     def reset(self) -> None:
         pass
 

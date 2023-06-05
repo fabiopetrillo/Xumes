@@ -41,8 +41,8 @@ class Main:
             self.fruit_ate()
 
     def game_over(self):
-        pass
-        # update state lose
+        self.snake = Snake()
+        self.fruit = Fruit()
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
@@ -80,3 +80,8 @@ class Main:
             self.draw_elements()
             pygame.display.update()
             self.clock.tick(60)
+
+
+if __name__ == "__main__":
+    main = Main()
+    main.run()

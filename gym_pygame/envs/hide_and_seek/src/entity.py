@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 
-from envs.hide_and_seek.params import TILE_SIZE
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.params import TILE_SIZE
+from gym_envs.hide_and_seek.src.wall import Wall
 
 CONTROL_TOP = "top"
 CONTROL_DOWN = "down"

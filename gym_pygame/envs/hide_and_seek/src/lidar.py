@@ -3,11 +3,11 @@ import math
 import numpy as np
 import pygame
 
-from envs.hide_and_seek.params import BOARD_SIZE, NB_RAYS
-from envs.hide_and_seek.src.entity import get_tile_from_position
-from envs.hide_and_seek.src.ground import Ground
-from envs.hide_and_seek.src.sight_line_first import SightLineFirst
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.params import BOARD_SIZE, NB_RAYS
+from gym_envs.hide_and_seek.src.entity import get_tile_from_position
+from gym_envs.hide_and_seek.src.ground import Ground
+from gym_envs.hide_and_seek.src.sight_line_first import SightLineFirst
+from gym_envs.hide_and_seek.src.wall import Wall
 
 
 class Lidar:
@@ -44,7 +44,7 @@ class Lidar:
                     self.tiles_enemies_map[self.board.board[enemy_x][enemy_y]] = [enemy]
 
         for line in self.sight_lines:
-            line.reset()
+            line.random_reset()
             line.vision()
 
 
@@ -60,4 +60,4 @@ class Lidar:
 
     def reset(self):
         for line in self.sight_lines:
-            line.reset()
+            line.random_reset()

@@ -1,5 +1,5 @@
 
-from framework.training_service_module.state_entity import IStateEntity
+from framework.training_service_module.i_state_entity import IStateEntity
 
 
 class FruitEntity(IStateEntity):

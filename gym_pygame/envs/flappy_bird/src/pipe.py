@@ -1,6 +1,6 @@
 import pygame
 
-from envs.flappy_bird.params import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT, PIPE_SPACE
+from gym_envs.flappy_bird.params import PIPE_WIDTH, PIPE_SPEED, SIZE, LEFT_POSITION, HEIGHT, PIPE_SPACE
 
 
 class Pipe:

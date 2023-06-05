@@ -2,8 +2,8 @@ import random
 import numpy as np
 import pygame
 
-from envs.flappy_bird.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE, LEFT_POSITION
-from envs.flappy_bird.src.pipe import Pipe
+from gym_envs.flappy_bird.params import SPACE_BETWEEN_PIPES, PIPE_WIDTH, PIPE_SPEED, WIDTH, HEIGHT, PIPE_SPACE, LEFT_POSITION
+from gym_envs.flappy_bird.src.pipe import Pipe
 
 
 class PipeGenerator:

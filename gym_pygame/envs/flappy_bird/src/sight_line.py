@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 import pygame
 
-from envs.flappy_bird.params import HEIGHT, WIDTH
+from gym_envs.flappy_bird.params import HEIGHT, WIDTH
 
 
 def line_rect_intersection(line_start, line_end, rect):

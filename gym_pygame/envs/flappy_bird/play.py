@@ -1,9 +1,9 @@
 import pygame
 
-from envs.flappy_bird.params import HEIGHT, WIDTH
-from envs.flappy_bird.src.lidar import Lidar
-from envs.flappy_bird.src.pipe_generator import PipeGenerator
-from envs.flappy_bird.src.player import Player
+from gym_envs.flappy_bird.params import HEIGHT, WIDTH
+from gym_envs.flappy_bird.src.lidar import Lidar
+from gym_envs.flappy_bird.src.pipe_generator import PipeGenerator
+from gym_envs.flappy_bird.src.player import Player
 
 BACKGROUND_COLOR = (137, 207, 240)
 
@@ -60,9 +60,9 @@ class Game:
             self.dt = self.clock.tick(60) / 1000
 
     def reset(self):
-        self.pipe_generator.reset()
-        self.player.reset()
-        self.lidar.reset()
+        self.pipe_generator.random_reset()
+        self.player.random_reset()
+        self.lidar.random_reset()
         self.terminated = False
 
     def render(self):

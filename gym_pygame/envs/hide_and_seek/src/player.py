@@ -2,10 +2,10 @@ from abc import ABC
 
 import pygame
 
-from envs.hide_and_seek.params import PLAYER_SIZE, PLAYER_SPEED
-from envs.hide_and_seek.src.entity import RIGHT, LEFT, TOP, Entity, CONTROL_TOP, CONTROL_DOWN, CONTROL_LEFT, CONTROL_RIGHT, \
+from gym_envs.hide_and_seek.params import PLAYER_SIZE, PLAYER_SPEED
+from gym_envs.hide_and_seek.src.entity import RIGHT, LEFT, TOP, Entity, CONTROL_TOP, CONTROL_DOWN, CONTROL_LEFT, CONTROL_RIGHT, \
     get_tile_from_position
-from envs.hide_and_seek.src.ground import Ground
+from gym_envs.hide_and_seek.src.ground import Ground
 
 
 class Player(Entity, ABC):

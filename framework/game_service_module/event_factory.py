@@ -1,6 +1,6 @@
 from typing import final
 
-from framework.game_service_module.game_event import IGameEvent
+from framework.game_service_module.i_game_event import IGameEvent
 from framework.game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
 
 

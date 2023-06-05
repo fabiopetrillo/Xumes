@@ -3,13 +3,13 @@ from typing import List
 
 import numpy as np
 
-from envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE, BOARD_SIZE
-from envs.hide_and_seek.src.entity import Entity
-from envs.hide_and_seek.src.enemy import Enemy
-from envs.hide_and_seek.src.ground import Ground
-from envs.hide_and_seek.src.lidar import Lidar
-from envs.hide_and_seek.src.player import Player
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.params import TILE_SIZE, PLAYER_SIZE, BOARD_SIZE
+from gym_envs.hide_and_seek.src.entity import Entity
+from gym_envs.hide_and_seek.src.enemy import Enemy
+from gym_envs.hide_and_seek.src.ground import Ground
+from gym_envs.hide_and_seek.src.lidar import Lidar
+from gym_envs.hide_and_seek.src.player import Player
+from gym_envs.hide_and_seek.src.wall import Wall
 
 
 def print_graph(graph):

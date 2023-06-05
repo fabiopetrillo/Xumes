@@ -2,7 +2,7 @@ import gym_pygame
 from stable_baselines3 import PPO
 
 import gymnasium as gym
-from envs.flappy_bird.params import ENV_NAME, TEST_NAME
+from gym_envs.flappy_bird.params import ENV_NAME, TEST_NAME
 
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")

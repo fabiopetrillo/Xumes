@@ -1,4 +1,4 @@
-from envs.hide_and_seek.src.tile import Tile
+from gym_envs.hide_and_seek.src.tile import Tile
 
 
 class Wall(Tile):
