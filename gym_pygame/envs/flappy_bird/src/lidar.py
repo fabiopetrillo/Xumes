@@ -2,8 +2,8 @@ import math
 
 import pygame
 
-from envs.flappy_bird.src.sight_line_first import SightLineFirst
-from envs.flappy_bird.src.sight_line_snd import SightLineSecond
+from gym_envs.flappy_bird.src.sight_line_first import SightLineFirst
+from gym_envs.flappy_bird.src.sight_line_snd import SightLineSecond
 
 
 class Lidar:
@@ -40,4 +40,4 @@ class Lidar:
 
     def reset(self):
         for line in self.sight_lines:
-            line.reset()
+            line.random_reset()

@@ -5,9 +5,9 @@ from typing import Union
 import numpy as np
 import pygame
 
-from envs.hide_and_seek.src.entity import get_tile_from_position
-from envs.hide_and_seek.src.ground import Ground
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.src.entity import get_tile_from_position
+from gym_envs.hide_and_seek.src.ground import Ground
+from gym_envs.hide_and_seek.src.wall import Wall
 
 
 def line_rect_intersection(line_start, line_end, rect):

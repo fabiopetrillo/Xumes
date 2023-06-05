@@ -4,7 +4,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
+from gym_envs.hide_and_seek.params import ENV_NAME, TEST_NAME
 
 env = gym.make(f"gym_pygame/{ENV_NAME}", render_mode="human")
 model = PPO('MultiInputPolicy', env, verbose=1)

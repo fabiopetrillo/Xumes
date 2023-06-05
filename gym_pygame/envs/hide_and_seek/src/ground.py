@@ -1,7 +1,7 @@
 import pygame
 
-from envs.hide_and_seek.params import TILE_SIZE
-from envs.hide_and_seek.src.tile import Tile
+from gym_envs.hide_and_seek.params import TILE_SIZE
+from gym_envs.hide_and_seek.src.tile import Tile
 
 
 class Ground(Tile):

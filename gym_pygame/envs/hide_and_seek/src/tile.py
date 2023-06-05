@@ -2,7 +2,7 @@ from abc import ABC
 
 import pygame
 
-from envs.hide_and_seek.params import TILE_SIZE
+from gym_envs.hide_and_seek.params import TILE_SIZE
 
 
 class Tile(ABC):

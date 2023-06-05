@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from envs.flappy_bird.src.sight_line import SightLine
+from gym_envs.flappy_bird.src.sight_line import SightLine
 
 
 class SightLineSecond(SightLine):

@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-from envs.flappy_bird.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED, PIPE_SPACE
+from gym_envs.flappy_bird.params import JUMP_SPEEDUP, FALL_SPEEDUP, HEIGHT, SIZE, LEFT_POSITION, PIPE_SPEED, PIPE_SPACE
 
 PLAYER_COLOR = "yellow"
 

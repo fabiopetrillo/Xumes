@@ -5,12 +5,12 @@ from typing import Optional, Dict, List
 import numpy as np
 import pygame
 
-from envs.hide_and_seek.params import ENEMY_SIZE, ENEMY_VIEW_DIST, ENEMY_MEMORY, ENEMY_SPEED
-from envs.hide_and_seek.src.entity import Entity, CONTROL_DOWN, CONTROL_TOP, CONTROL_LEFT, CONTROL_RIGHT, \
+from gym_envs.hide_and_seek.params import ENEMY_SIZE, ENEMY_VIEW_DIST, ENEMY_MEMORY, ENEMY_SPEED
+from gym_envs.hide_and_seek.src.entity import Entity, CONTROL_DOWN, CONTROL_TOP, CONTROL_LEFT, CONTROL_RIGHT, \
     get_tile_from_position
-from envs.hide_and_seek.src.tile import Tile
-from envs.hide_and_seek.src.utils.PriorityQueue import PriorityQueue
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.src.tile import Tile
+from gym_envs.hide_and_seek.src.utils.PriorityQueue import PriorityQueue
+from gym_envs.hide_and_seek.src.wall import Wall
 
 
 def heuristic(a: Tile, b: Tile) -> float:

@@ -7,11 +7,11 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR
-from envs.hide_and_seek.src.board import Board
-from envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT
-from envs.hide_and_seek.src.ground import Ground
-from envs.hide_and_seek.src.wall import Wall
+from gym_envs.hide_and_seek.params import BOARD_SIZE, TILE_SIZE, BACKGROUND_COLOR
+from gym_envs.hide_and_seek.src.board import Board
+from gym_envs.hide_and_seek.src.entity import CONTROL_TOP, CONTROL_RIGHT, CONTROL_DOWN, CONTROL_LEFT
+from gym_envs.hide_and_seek.src.ground import Ground
+from gym_envs.hide_and_seek.src.wall import Wall
 
 
 class HideAndSeekEnv(gym.Env):
@@ -92,7 +92,7 @@ class HideAndSeekEnv(gym.Env):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
 
-        self.board.reset()
+        self.board.random_reset()
         self.board_size_x, self.board_size_y = self.board.size_x, self.board.size_y
         self.time_since_point = 0
         observation = self._get_obs()

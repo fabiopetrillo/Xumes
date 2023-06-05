@@ -3,7 +3,7 @@ import gymnasium as gym
 
 from stable_baselines3 import PPO, A2C
 
-from envs.hide_and_seek.params import ENV_NAME, TEST_NAME
+from gym_envs.hide_and_seek.params import ENV_NAME, TEST_NAME
 
 
 env = gym.make(f"gym_pygame/{ENV_NAME}")

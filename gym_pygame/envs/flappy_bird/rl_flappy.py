@@ -5,10 +5,10 @@ import numpy as np
 import pygame
 from gymnasium import spaces
 
-from envs.flappy_bird.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
-from envs.flappy_bird.src.lidar import Lidar
-from envs.flappy_bird.src.pipe_generator import PipeGenerator
-from envs.flappy_bird.src.player import Player
+from gym_envs.flappy_bird.params import HEIGHT, LIDAR_MAX_DIST, WIDTH
+from gym_envs.flappy_bird.src.lidar import Lidar
+from gym_envs.flappy_bird.src.pipe_generator import PipeGenerator
+from gym_envs.flappy_bird.src.player import Player
 
 # Screen
 BACKGROUND_COLOR = (137, 207, 240)
@@ -60,12 +60,12 @@ class FlappyEnv(gym.Env):
         info = self._get_info()
 
         if option == "demo":
-            self.pipe_generator.reset()
-            self.player.reset()
+            self.pipe_generator.random_reset()
+            self.player.random_reset()
         else:
             self.pipe_generator.reset_random()
             self.player.reset_random(self.pipe_generator.pipes)
-        self.lidar.reset()
+        self.lidar.random_reset()
         self.terminated = False
         self.previous_points = 0
 

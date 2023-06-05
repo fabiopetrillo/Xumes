@@ -2,8 +2,8 @@ from abc import ABC
 
 import numpy as np
 
-from envs.hide_and_seek.src.entity import get_tile_from_position
-from envs.hide_and_seek.src.sight_line import SightLine
+from gym_envs.hide_and_seek.src.entity import get_tile_from_position
+from gym_envs.hide_and_seek.src.sight_line import SightLine
 
 
 class SightLineFirst(SightLine, ABC):
