@@ -66,15 +66,12 @@ class StableBaselinesTrainer(MarkovTrainingService):
         return self.convert_terminated() or self._entity_manager.game_state == "reset" or self._entity_manager.game_state == "random_reset"
 
     @final
-    def push_action(self, actions):
-        self._communication_service.push_actions(
-            actions=self.convert_actions(actions)
-        )
+    def push_raw_actions(self, actions):
+        self.push_actions(actions=self.convert_actions(actions))
 
     @final
     def get_obs(self) -> OBST:
-        for state in self._communication_service.get_states():
-            self._entity_manager.convert(state)
+        self.retrieve_state()
         return self.convert_obs()
 
     @abstractmethod

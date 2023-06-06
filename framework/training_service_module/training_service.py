@@ -41,6 +41,15 @@ class TrainingService:
         self._communication_service.push_event("reset")
 
     @final
+    def push_actions(self, actions):
+        self._communication_service.push_actions(actions)
+
+    @final
+    def retrieve_state(self) -> None:
+        for state in self._communication_service.get_states():
+            self._entity_manager.convert(state)
+
+    @final
     @property
     def game_state(self):
         return self._entity_manager.game_state
@@ -61,7 +70,7 @@ class MarkovTrainingService(TrainingService, ABC):
         pass
 
     @abstractmethod
-    def push_action(self, actions):
+    def push_raw_actions(self, actions):
         pass
 
     @abstractmethod
