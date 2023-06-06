@@ -6,17 +6,17 @@ import gymnasium as gym
 from gymnasium import Space
 from gymnasium.core import RenderFrame, ActType, ObsType
 
-from framework.training_service_module.trainer import _Trainer
+from framework.training_service_module.training_service import MarkovTrainingService
 
 
 class GymAdapter(gym.Env):
 
     def __init__(self,
-                 trainer: _Trainer,
+                 training_service: MarkovTrainingService,
                  observation_space: Space[ObsType],
                  action_space: Space[ActType]
                  ):
-        self._trainer = trainer
+        self._training_service = training_service
         self.observation_space = observation_space
         self.action_space = action_space
 
@@ -26,17 +26,17 @@ class GymAdapter(gym.Env):
             seed: int | None = None,
             options: dict[str, Any] | None = None,
     ) -> tuple[ObsType, dict[str, Any]]:
-        if "random" in options and options["random"]:
-            self._trainer.random_reset()
+        if options and "random" in options and options["random"]:
+            self._training_service.random_reset()
         else:
-            self._trainer.reset()
-        return self._trainer.get_obs(), {}
+            self._training_service.reset()
+        return self._training_service.get_obs(), {}
 
     def step(self, action: ActType) -> Tuple[ObsType, SupportsFloat, bool, bool, Dict[str, Any]]:
-        self._trainer.push_action(action)
-        obs = self._trainer.get_obs()
-        reward = self._trainer.reward()
-        terminated = self._trainer.terminated()
+        self._training_service.push_action(action)
+        obs = self._training_service.get_obs()
+        reward = self._training_service.reward()
+        terminated = self._training_service.terminated()
         return obs, reward, terminated, False, {}
 
     def render(self) -> RenderFrame | list[RenderFrame] | None:
