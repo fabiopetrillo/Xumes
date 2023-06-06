@@ -1,7 +1,7 @@
 from typing import List
 
 
-class ICommunicationService:
+class ICommunicationServiceTraining:
 
     def push_event(self, event) -> None:
         pass

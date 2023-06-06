@@ -1,16 +1,16 @@
 import numpy as np
 
 from framework.training_service_module.entity_manager import EntityManager
-from framework.training_service_module.i_observation_maker import IObservationMaker
+from framework.training_service_module.i_state_converter import IStateConverter
 from games_examples.snake.play import cell_number
 
 
-class SnakeObservationMaker(IObservationMaker):
+class SnakeObservationMaker(IStateConverter):
 
     def __init__(self):
         self.distance = float('inf')
 
-    def get_obs(self, entity_manager: EntityManager):
+    def convert_obs(self, entity_manager: EntityManager):
         snake = entity_manager.get("snake")
         snake_head = snake.body[0]
         fruit = entity_manager.get("fruit")
@@ -34,7 +34,7 @@ class SnakeObservationMaker(IObservationMaker):
             "direction_left": np.array([1 if snake.direction == (-1, 0) else 0]),
         }
 
-    def get_reward(self, entity_manager: EntityManager) -> float:
+    def convert_reward(self, entity_manager: EntityManager) -> float:
         snake = entity_manager.get("snake")
         fruit = entity_manager.get("fruit")
 
@@ -55,5 +55,5 @@ class SnakeObservationMaker(IObservationMaker):
         else:
             return close_reward
 
-    def get_terminated(self, entity_manager) -> bool:
+    def convert_terminated(self, entity_manager) -> bool:
         return entity_manager.game_state == "lose" or entity_manager.game_state == "reset" or entity_manager.game_state == "random_reset"

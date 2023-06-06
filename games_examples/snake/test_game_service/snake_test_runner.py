@@ -102,7 +102,7 @@ if __name__ == "__main__":
         game_service = GameService(observer=JsonGameStateObserver.get_instance(),
                                    test_runner=MainTestRunner(observers=[JsonGameStateObserver.get_instance()]),
                                    event_factory=PygameEventFactory(),
-                                   communication_service=CommunicationServiceGameMq())
+                                   communication_service=CommunicationServiceGameMq(ip="localhost"))
         if sys.argv[1] == "-test":
             game_service.run()
         if sys.argv[1] == "-render":

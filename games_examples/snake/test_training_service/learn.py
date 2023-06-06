@@ -5,7 +5,8 @@ import stable_baselines3
 
 from framework.training_service_module.i_game_element_state_builder import JsonGameElementStateBuilder
 from framework.training_service_module.implementations.gym_impl.stable_baselines_trainer import StableBaselinesTrainer
-from framework.training_service_module.implementations.mq_impl.communication_service_mq import CommunicationServiceMq
+from framework.training_service_module.implementations.mq_impl.communication_service_training_mq import \
+    CommunicationServiceTrainingMq
 from framework.training_service_module.training_service import TrainingService
 from games_examples.snake.test_training_service.entities.snake_entity_manager import SnakeEntityManager
 from games_examples.snake.test_training_service.game_obs_maker import SnakeObservationMaker
@@ -37,7 +38,7 @@ if __name__ == "__main__":
             algorithm_type="MultiInputPolicy",
             algorithm=stable_baselines3.PPO
         ),
-        communication_service=CommunicationServiceMq(),
+        communication_service=CommunicationServiceTrainingMq(),
         action_converter=SnakeActionConverter(),
         observation_maker=SnakeObservationMaker()
     )

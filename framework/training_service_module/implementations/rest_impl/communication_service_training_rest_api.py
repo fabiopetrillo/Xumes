@@ -2,10 +2,10 @@ from typing import List
 
 import requests
 
-from framework.training_service_module.i_communication_service import ICommunicationService
+from framework.training_service_module.i_communication_service_training import ICommunicationServiceTraining
 
 
-class CommunicationServiceRestApi(ICommunicationService):
+class CommunicationServiceTrainingRestApi(ICommunicationServiceTraining):
 
     def __init__(self, url: str):
         self.url = url

@@ -9,12 +9,12 @@ from framework.game_service_module.exceptions.key_not_found_exception import Key
 
 class CommunicationServiceGameMq(ICommunicationServiceGame):
 
-    def __init__(self):
+    def __init__(self, ip):
         context = zmq.Context()
 
         print("Connecting to training server...")
         self.socket = context.socket(zmq.REQ)
-        self.socket.connect("tcp://localhost:5555")
+        self.socket.connect(f"tcp://{ip}:5555")
 
     def observe(self, client_service) -> None:
 

@@ -3,10 +3,10 @@ from typing import List
 
 import zmq
 
-from framework.training_service_module.i_communication_service import ICommunicationService
+from framework.training_service_module.i_communication_service_training import ICommunicationServiceTraining
 
 
-class CommunicationServiceMq(ICommunicationService):
+class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
     def __init__(self):
         print("Training server creation...")
         context = zmq.Context()

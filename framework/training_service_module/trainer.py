@@ -1,5 +1,7 @@
 from abc import abstractmethod
-from typing import final
+from typing import final, TypeVar
+
+OBST = TypeVar("OBST")
 
 
 class _Trainer:
@@ -16,7 +18,7 @@ class _Trainer:
         self._training_service.push_action(actions)
 
     @final
-    def get_obs(self):
+    def get_obs(self) -> OBST:
         return self._training_service.get_obs()
 
     @final
