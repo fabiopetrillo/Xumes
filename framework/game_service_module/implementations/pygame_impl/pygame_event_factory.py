@@ -2,7 +2,7 @@ import pygame
 
 from framework.game_service_module.i_game_event import IGameEvent
 from framework.game_service_module.event_factory import IEventFactory
-from framework.game_service_module.implementations.pygame_impl.pygame_events import Up, Down, Left, Right
+from framework.game_service_module.implementations.pygame_impl.pygame_events import Up, Down, Left, Right, Space
 
 
 class PygameEventFactory(IEventFactory):
@@ -22,3 +22,5 @@ class PygameEventFactory(IEventFactory):
     def right(self) -> IGameEvent:
         return Right()
 
+    def space(self) -> IGameEvent:
+        return Space()

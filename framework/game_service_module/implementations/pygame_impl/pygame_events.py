@@ -49,3 +49,12 @@ class Right(IGameEvent):
 
     def release(self) -> None:
         key_up(pygame.K_RIGHT)
+
+
+class Space(IGameEvent):
+
+    def press(self) -> None:
+        key_down(pygame.K_SPACE)
+
+    def release(self) -> None:
+        key_up(pygame.K_SPACE)

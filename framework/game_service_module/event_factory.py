@@ -27,6 +27,8 @@ class IEventFactory:
             return self.left()
         elif input_str == "right":
             return self.right()
+        elif input_str == "space":
+            return self.space()
         elif input_str == "nothing":
             return self.nothing()
 
@@ -56,4 +58,7 @@ class IEventFactory:
         raise NotImplementedError
 
     def right(self) -> IGameEvent:
+        raise NotImplementedError
+
+    def space(self) -> IGameEvent:
         raise NotImplementedError
