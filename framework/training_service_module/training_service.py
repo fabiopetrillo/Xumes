@@ -18,19 +18,26 @@ class TrainingService:
 
     @abstractmethod
     def train(self):
-        pass
+        """
+        Implementation of the training algorithm.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def save(self, path: str):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def load(self, path: str):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def play(self, timesteps: int):
-        pass
+        """
+        Use the algorithm not in training mode.
+        :param timesteps: Number maximum of step (action to perform).
+        """
+        raise NotImplementedError
 
     @final
     def random_reset(self):
@@ -46,6 +53,9 @@ class TrainingService:
 
     @final
     def retrieve_state(self) -> None:
+        """
+        Call the game service and update the state.
+        """
         for state in self._communication_service.get_states():
             self._entity_manager.convert(state)
 
@@ -63,16 +73,33 @@ class MarkovTrainingService(TrainingService, ABC):
 
     @abstractmethod
     def get_obs(self) -> OBST:
-        pass
+        """
+        Method needed in the Markov Decision Process.
+        Convert game state to observation.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def reward(self) -> float:
-        pass
+        """
+        Method needed in the Markov Decision Process.
+        Convert game state to reward.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def push_raw_actions(self, actions):
-        pass
+        """
+        Method needed in the Markov Decision Process.
+        Convert actions (ex: list of int), to list of str.
+        :param actions: Any type of actions.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def terminated(self) -> bool:
-        pass
+        """
+        Method needed in the Markov Decision Process.
+        Get if the episode is terminated from the game state.
+        """
+        raise NotImplementedError

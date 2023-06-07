@@ -1,2 +1,0 @@
-class KeyNotFoundException(Exception):
-    pass

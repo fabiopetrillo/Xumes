@@ -14,6 +14,11 @@ class _TestRunner(StateObservable, ABC):
 
     @final
     def update_state(self, state) -> None:
+        """
+        Method used to notify changes in the game state,
+        use that method when overloading game methods.
+        :param state: a game state (ex: "alive", "dead").
+        """
         self._game_state = state
         self.notify()
 
@@ -28,23 +33,42 @@ class _TestRunner(StateObservable, ABC):
 
     @abstractmethod
     def run_test(self) -> None:
-        pass
+        """
+        Run a game loop without rendering.\n
+        The game loop has to start with : self.test_client.wait()
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def run_test_render(self) -> None:
-        pass
+        """
+        Run a game loop with rendering.\n
+        The game loop has to start with : self.test_client.wait()
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def random_reset(self) -> None:
-        pass
+        """
+        Perform a random reset in the game. A random reset,
+        is a reset from a random state of the game and not from the beginning.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def reset(self) -> None:
-        pass
+        """
+        Perform a reset from the beginning of the game.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def delete_screen(self) -> None:
-        pass
+        """
+        If the game engine able it, implement a way to delete the
+        screen.
+        """
+        raise NotImplementedError
 
 
 class JsonTestRunner(_TestRunner, ABC):

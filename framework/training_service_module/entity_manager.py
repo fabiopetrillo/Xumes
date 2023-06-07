@@ -2,22 +2,26 @@ from abc import abstractmethod
 from typing import Dict, final
 
 from framework.training_service_module.game_element_state import GameElementState
-from framework.training_service_module.i_game_element_state_builder import IGameElementStateBuilder
+from framework.training_service_module.i_game_element_state_builder import IGameElementStateConverter
 from framework.training_service_module.i_state_entity import IStateEntity
 
 
 class EntityManager(IStateEntity):
 
     def __init__(self,
-                 game_element_state_builder: IGameElementStateBuilder
+                 game_element_state_converter: IGameElementStateConverter
                  ):
-        self._game_element_state_builder = game_element_state_builder
+        self._game_element_state_converter = game_element_state_converter
         self._entities: Dict[str, IStateEntity] = {
             "test_runner": self
         }
         self._game_state: str = ""
 
     def update(self, state) -> None:
+        """
+        Update the game state when receive it.
+        :param state: game state (ex: "alive", "dead").
+        """
         self._game_state = state["state"]
 
     @property
@@ -27,6 +31,10 @@ class EntityManager(IStateEntity):
 
     @final
     def get_all(self):
+        """
+        Get every game observables entities.
+        :return: every entity
+        """
         return self._entities
 
     @final
@@ -43,7 +51,11 @@ class EntityManager(IStateEntity):
 
     @final
     def convert(self, state_wrapper):
-        ges = self._game_element_state_builder.build(state_wrapper)
+        """
+        Convert the game element, and update or add it in the state.
+        :param state_wrapper: game element from the list receive.
+        """
+        ges = self._game_element_state_converter.convert(state_wrapper)
         if ges.name in self._entities:
             self._update(ges)
         else:
@@ -51,4 +63,9 @@ class EntityManager(IStateEntity):
 
     @abstractmethod
     def build_entity(self, game_element_state: GameElementState) -> IStateEntity:
-        pass
+        """
+        Implements a way to redirect the building of game entities.
+        Need to call build method from the implemented game entities.
+        :param game_element_state:
+        """
+        raise NotImplementedError

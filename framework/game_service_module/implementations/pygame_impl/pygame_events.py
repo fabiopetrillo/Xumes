@@ -4,11 +4,13 @@ from framework.game_service_module.i_game_event import IGameEvent
 
 
 def key_down(key: pygame.constants):
+    # Create and post event "keydown"
     event = pygame.event.Event(pygame.KEYDOWN, key=key)
     pygame.event.post(event)
 
 
 def key_up(key: pygame.constants):
+    # Create and post event "keyup"
     event = pygame.event.Event(pygame.KEYUP, key=key)
     pygame.event.post(event)
 

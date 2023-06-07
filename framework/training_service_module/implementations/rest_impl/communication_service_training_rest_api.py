@@ -10,14 +10,14 @@ class CommunicationServiceTrainingRestApi(ICommunicationServiceTraining):
     def __init__(self, url: str):
         self.url = url
 
-    def push_event(self, event) -> None:
+    def push_event(self, event: str) -> None:
         requests.post(self.url,
                       json={
                           'event': event,
                           'inputs': []
                       })
 
-    def push_actions(self, actions) -> None:
+    def push_actions(self, actions: List[str]) -> None:
         requests.post(self.url,
                       json={
                           'inputs': actions,
@@ -25,4 +25,5 @@ class CommunicationServiceTrainingRestApi(ICommunicationServiceTraining):
                       })
 
     def get_states(self) -> List:
+        # Use .items to convert dict to list of tuple (KEY, VALUE).
         return requests.get(self.url).json().items()

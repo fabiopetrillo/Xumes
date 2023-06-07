@@ -19,16 +19,28 @@ class StateObservable(Generic[OBJ, ST], ABC):
 
     @final
     def attach(self, observer: IGameStateObserver) -> None:
+        """
+        Attach method of the observable.
+        :param observer: GameStateObserver implementation.
+        """
         self._observers.append(observer)
 
     @final
     def detach(self, observer: IGameStateObserver) -> None:
+        """
+        Detach method of the observable.
+        :param observer: GameStateObserver implementation.
+        """
         if observer in self._observers:
             observer.remove_state(self)
             self._observers.remove(observer)
 
     @final
     def detach_all(self):
+        """
+        Detach every observer, we used this method when we want to
+        destroy the object.
+        """
         if self._observers is not None and self._observers:
             for observer in self._observers:
                 observer.remove_state(self)
@@ -37,13 +49,20 @@ class StateObservable(Generic[OBJ, ST], ABC):
 
     @final
     def notify(self):
+        """
+        Notify method of the observable.
+        """
         if self._observers is not None and self._observers:
             for observer in self._observers:
                 observer.update_state(self)
 
     @abstractmethod
     def state(self) -> GameElementState[ST]:
-        pass
+        """
+        Give a representation method of a game element state.
+        Mandatory for every class we want to observe.
+        """
+        raise NotImplementedError
 
     @property
     @final

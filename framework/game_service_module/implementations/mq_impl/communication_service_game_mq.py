@@ -1,10 +1,9 @@
 import json
-import time
 
 import zmq
 
 from framework.game_service_module.i_communication_service_game import ICommunicationServiceGame
-from framework.game_service_module.exceptions.key_not_found_exception import KeyNotFoundException
+from framework.game_service_module.errors.key_not_found_error import KeyNotFoundError
 
 
 class CommunicationServiceGameMq(ICommunicationServiceGame):
@@ -16,29 +15,31 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
         self.socket = context.socket(zmq.REQ)
         self.socket.connect(f"tcp://{ip}:5555")
 
-    def observe(self, client_service) -> None:
+    def observe(self, game_service) -> None:
+        self.socket.send(json.dumps(game_service.observer.get_state()).encode("utf-8"))
 
-
-        # with client_service.get_state_condition:
-        #     client_service.get_state_condition.wait()
-        self.socket.send(json.dumps(client_service.observer.get_state()).encode("utf-8"))
-
-    def action(self, client_service) -> None:
+    def action(self, game_service) -> None:
+        # Get message from training service
         message = eval(self.socket.recv().decode("utf-8"))
-        client_service.update_event(message['event'])
+
+        game_service.update_event(message['event'])
+        # For every input try the build a game event
+        # And add it to inputs list.
         for input_str in message['inputs']:
             try:
-                key_input = client_service.event_factory.find_input(input_str)
-                client_service.inputs.append(key_input)
-            except KeyNotFoundException:
+                key_input = game_service.event_factory.find_input(input_str)
+                game_service.inputs.append(key_input)
+            except KeyNotFoundError:
                 pass
 
-        with client_service.game_update_condition:
-            client_service.game_update_condition.notify()
+        # Notify that the game is ready to update.
+        with game_service.game_update_condition:
+            game_service.game_update_condition.notify()
 
-    def run(self, client_service):
+    def run(self, game_service):
         while True:
-            with client_service.get_state_condition:
-                client_service.get_state_condition.wait()
-            self.observe(client_service)
-            self.action(client_service)
+            # Wait the game loop to finish iteration
+            with game_service.get_state_condition:
+                game_service.get_state_condition.wait()
+            self.observe(game_service)
+            self.action(game_service)

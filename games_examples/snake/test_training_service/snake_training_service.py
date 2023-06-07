@@ -8,7 +8,7 @@ from gymnasium import spaces
 
 from framework.training_service_module.entity_manager import EntityManager
 from framework.training_service_module.i_communication_service_training import ICommunicationServiceTraining
-from framework.training_service_module.i_game_element_state_builder import JsonGameElementStateBuilder
+from framework.training_service_module.i_game_element_state_builder import JsonGameElementStateConverter
 from framework.training_service_module.implementations.gym_impl.stable_baselines_trainer import StableBaselinesTrainer, \
     OBST
 from framework.training_service_module.implementations.mq_impl.communication_service_training_mq import \
@@ -95,7 +95,7 @@ class SnakeTrainingService(StableBaselinesTrainer, ABC):
 if __name__ == "__main__":
     training_service = SnakeTrainingService(
         entity_manager=SnakeEntityManager(
-            JsonGameElementStateBuilder()
+            JsonGameElementStateConverter()
         ),
         communication_service=CommunicationServiceTrainingMq(),
         observation_space=spaces.Dict({
