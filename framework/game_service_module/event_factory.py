@@ -15,7 +15,7 @@ class IEventFactory:
     @final
     def find_input(self, input_str: str) -> IGameEvent:
         """
-        Build and return a GameEvent from a input string.
+        Build and return a GameEvent from an input string.
         :param input_str: representation of an action.
         :return: Corresponding GameEvent
         """

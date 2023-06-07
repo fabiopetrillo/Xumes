@@ -78,4 +78,3 @@ class StateObservable(Generic[OBJ, ST], ABC):
     @property
     def object(self):
         return self._object
-

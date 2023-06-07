@@ -2,6 +2,7 @@ import json
 from typing import List
 
 import zmq
+from zmq import ZMQError
 
 from framework.training_service_module.i_communication_service_training import ICommunicationServiceTraining
 
@@ -19,7 +20,7 @@ class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
                               'event': event,
                               'inputs': []
                             }).encode("utf-8"))
-        except Exception:
+        except ZMQError:
             pass
 
     def push_actions(self, actions: List[str]) -> None:

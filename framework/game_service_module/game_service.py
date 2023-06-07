@@ -57,7 +57,7 @@ class GameService:
 
     def stop(self):
         """
-        Stop the both threads.
+        Stop both threads.
         """
         self.game_thread.join()
         self.app_thread.join()
