@@ -13,8 +13,8 @@ from framework.training_service_module.implementations.gym_impl.stable_baselines
 from framework.training_service_module.implementations.mq_impl.communication_service_training_mq import \
     CommunicationServiceTrainingMq
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST
-from games_examples.flappy_bird.rl_testing.training_side.entities.flappy_bird_entity_manager import FlappyBirdEntityManager
-from games_examples.flappy_bird.rl_testing.training_side.helpers.lidar import Lidar
+from games_examples.flappy_bird.testing.training_side.entities.flappy_bird_entity_manager import FlappyBirdEntityManager
+from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
 
 
 class FlappyBirdTrainingService(StableBaselinesTrainer):

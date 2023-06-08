@@ -9,7 +9,7 @@ from framework.game_service_module.implementations.mq_impl.communication_service
 from framework.game_service_module.implementations.pygame_impl.pygame_event_factory import PygameEventFactory
 from framework.game_service_module.test_runner import JsonTestRunner
 from games_examples.flappy_bird.play import Game, BACKGROUND_COLOR
-from games_examples.flappy_bird.rl_testing.game_side.flappy_bird_observables import BirdObservable, \
+from games_examples.flappy_bird.testing.game_side.flappy_bird_observables import BirdObservable, \
     PipeGeneratorObservable
 
 

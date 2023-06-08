@@ -13,7 +13,7 @@ from framework.game_service_module.implementations.pygame_impl.pygame_event_fact
 from framework.game_service_module.test_runner import JsonTestRunner
 from games_examples.snake.play import Main
 from games_examples.snake.src.fruit import cell_number
-from games_examples.snake.test_game_service.snake_observables import SnakeObservable, FruitObservable
+from games_examples.snake.testing.test_game_service.snake_observables import SnakeObservable, FruitObservable
 
 
 class MainTestRunner(Main, JsonTestRunner, ABC):

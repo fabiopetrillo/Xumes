@@ -2,8 +2,8 @@ import math
 from abc import abstractmethod, ABC
 
 from games_examples.flappy_bird.params import HEIGHT, WIDTH
-from games_examples.flappy_bird.rl_testing.training_side.entities.bird_entity import BirdEntity
-from games_examples.flappy_bird.rl_testing.training_side.entities.pipes_entity import PipesEntity
+from games_examples.flappy_bird.testing.training_side.entities.bird_entity import BirdEntity
+from games_examples.flappy_bird.testing.training_side.entities.pipes_entity import PipesEntity
 
 
 def line_rect_intersection(line_start, line_end, rect):

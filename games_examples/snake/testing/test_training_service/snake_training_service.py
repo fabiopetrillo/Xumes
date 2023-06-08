@@ -14,7 +14,7 @@ from framework.training_service_module.implementations.gym_impl.stable_baselines
 from framework.training_service_module.implementations.mq_impl.communication_service_training_mq import \
     CommunicationServiceTrainingMq
 from games_examples.snake.play import cell_number
-from games_examples.snake.test_training_service.entities.snake_entity_manager import SnakeEntityManager
+from games_examples.snake.testing.test_training_service.entities.snake_entity_manager import SnakeEntityManager
 
 
 class SnakeTrainingService(StableBaselinesTrainer, ABC):

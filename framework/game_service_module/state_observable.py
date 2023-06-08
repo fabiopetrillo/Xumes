@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, final, List
 
@@ -10,30 +12,46 @@ ST = TypeVar("ST")
 
 class StateObservable(Generic[OBJ, ST], ABC):
 
-    def __init__(self, observable_object: OBJ, observers: List[IGameStateObserver], name: str):
-        self._observers = []
+    def __init__(self, observable_object: OBJ, observers: IGameStateObserver | List[IGameStateObserver], name: str):
+        self._observers: List[IGameStateObserver] = []
         self._object = observable_object
         self._name = name
-        for observer in observers:
-            self.attach(observer)
+        if isinstance(observers, List):
+            for observer in observers:
+                self.attach(observer)
+        else:
+            self.attach(observers)
 
     @final
-    def attach(self, observer: IGameStateObserver) -> None:
+    def attach(self, observer: IGameStateObserver | List[IGameStateObserver]) -> None:
         """
         Attach method of the observable.
         :param observer: GameStateObserver implementation.
         """
-        self._observers.append(observer)
+        observers_temp = set(self._observers.copy())
+        if isinstance(observer, List):
+            for observer in observer:
+                observers_temp.add(observer)
+        else:
+            observers_temp.add(observer)
+        self._observers.clear()
+        self._observers.extend(list(observers_temp))
 
     @final
-    def detach(self, observer: IGameStateObserver) -> None:
+    def detach(self, observer: IGameStateObserver | List[IGameStateObserver]) -> None:
         """
         Detach method of the observable.
         :param observer: GameStateObserver implementation.
         """
-        if observer in self._observers:
-            observer.remove_state(self)
-            self._observers.remove(observer)
+        if isinstance(observer, List):
+            for observer in observer:
+                if observer in self._observers:
+                    observer.remove_state(self)
+                    self._observers.remove(observer)
+        else:
+            if observer in self._observers:
+                observer.remove_state(self)
+                self._observers.remove(observer)
 
     @final
     def detach_all(self):

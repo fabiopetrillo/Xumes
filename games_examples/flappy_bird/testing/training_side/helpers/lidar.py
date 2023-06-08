@@ -1,8 +1,8 @@
 import math
 
-from games_examples.flappy_bird.rl_testing.training_side.entities.bird_entity import BirdEntity
-from games_examples.flappy_bird.rl_testing.training_side.entities.pipes_entity import PipesEntity
-from games_examples.flappy_bird.rl_testing.training_side.helpers.sight_line import SightLineFirst
+from games_examples.flappy_bird.testing.training_side.entities.bird_entity import BirdEntity
+from games_examples.flappy_bird.testing.training_side.entities.pipes_entity import PipesEntity
+from games_examples.flappy_bird.testing.training_side.helpers.sight_line import SightLineFirst
 
 
 class Lidar:

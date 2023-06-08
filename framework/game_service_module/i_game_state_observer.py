@@ -29,6 +29,13 @@ class IGameStateObserver(Generic[ST]):
         """
         raise NotImplementedError
 
+    def __hash__(self):
+        """
+        Every game state observer has to be hashable.
+        :return: A hash of the object
+        """
+        raise NotImplementedError
+
 
 class JsonGameStateObserver(Dict, IGameStateObserver):
     instance = None
@@ -41,6 +48,7 @@ class JsonGameStateObserver(Dict, IGameStateObserver):
                 if base.__name__ != "ABC" and base.__name__ != obs.object.__class__.__name__:
                     return base.__name__
                 return "error"
+
         self[obs.name]['__type__'] = base_class()
 
     def remove_state(self, obs):
@@ -57,3 +65,6 @@ class JsonGameStateObserver(Dict, IGameStateObserver):
         if JsonGameStateObserver.instance is None:
             JsonGameStateObserver.instance = JsonGameStateObserver()
         return JsonGameStateObserver.instance
+
+    def __hash__(self):
+        return id(self).__hash__()
