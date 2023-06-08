@@ -1,4 +1,4 @@
-from framework.training_service_module.i_state_entity import IStateEntity
+from framework.src.training_service_module.i_state_entity import IStateEntity
 
 
 class SnakeEntity(IStateEntity):

@@ -5,12 +5,12 @@ from abc import ABC
 import pygame
 from pygame import Vector2
 
-from framework.game_service_module.game_service import GameService
-from framework.game_service_module.i_game_state_observer import JsonGameStateObserver
-from framework.game_service_module.implementations.mq_impl.communication_service_game_mq import \
+from framework.src.game_service_module.game_service import GameService
+from framework.src.game_service_module.i_game_state_observer import JsonGameStateObserver
+from framework.src.game_service_module.implementations.mq_impl.communication_service_game_mq import \
     CommunicationServiceGameMq
-from framework.game_service_module.implementations.pygame_impl.pygame_event_factory import PygameEventFactory
-from framework.game_service_module.test_runner import JsonTestRunner
+from framework.src.game_service_module.implementations.pygame_impl.pygame_event_factory import PygameEventFactory
+from framework.src.game_service_module.test_runner import JsonTestRunner
 from games_examples.snake.play import Main
 from games_examples.snake.src.fruit import cell_number
 from games_examples.snake.testing.test_game_service.snake_observables import SnakeObservable, FruitObservable
