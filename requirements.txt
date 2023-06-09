@@ -1,7 +1,0 @@
-gymnasium~=0.28.1
-flask~=2.3.2
-pygame~=2.4.0
-setuptools~=66.0.0
-requests~=2.30.0
-numpy~=1.24.3
-pyzmq~=25.1.0

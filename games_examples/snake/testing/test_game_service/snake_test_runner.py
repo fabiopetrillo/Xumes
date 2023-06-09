@@ -5,12 +5,12 @@ from abc import ABC
 import pygame
 from pygame import Vector2
 
-from framework.src.game_service_module.game_service import GameService
-from framework.src.game_service_module.i_game_state_observer import JsonGameStateObserver
-from framework.src.game_service_module.implementations.mq_impl.communication_service_game_mq import \
+from src.xumes import GameService
+from src.xumes import JsonGameStateObserver
+from src.xumes import \
     CommunicationServiceGameMq
-from framework.src.game_service_module.implementations.pygame_impl.pygame_event_factory import PygameEventFactory
-from framework.src.game_service_module.test_runner import JsonTestRunner
+from src.xumes import PygameEventFactory
+from src.xumes import JsonTestRunner
 from games_examples.snake.play import Main
 from games_examples.snake.src.fruit import cell_number
 from games_examples.snake.testing.test_game_service.snake_observables import SnakeObservable, FruitObservable
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                                    test_runner=MainTestRunner(observers=[JsonGameStateObserver.get_instance()]),
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))
-        if sys.argv[1] == "-test":
+        if sys.argv[1] == "-tests":
             game_service.run()
         if sys.argv[1] == "-render":
             game_service.run_render()

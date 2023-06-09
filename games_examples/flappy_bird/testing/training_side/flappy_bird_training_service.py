@@ -5,23 +5,18 @@ import numpy as np
 import stable_baselines3
 from gymnasium.vector.utils import spaces
 
-from framework.src.training_service_module.entity_manager import EntityManager
-from framework.src.training_service_module.i_communication_service_training import ICommunicationServiceTraining
-from framework.src.training_service_module.i_game_element_state_builder import JsonGameElementStateConverter
-from framework.src.training_service_module.implementations.gym_impl.stable_baselines_trainer import StableBaselinesTrainer, \
-    OBST
-from framework.src.training_service_module.implementations.mq_impl.communication_service_training_mq import \
-    CommunicationServiceTrainingMq
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST
 from games_examples.flappy_bird.testing.training_side.entities.flappy_bird_entity_manager import FlappyBirdEntityManager
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
+from xumes.training_module import StableBaselinesTrainer, CommunicationServiceTrainingMq, JsonGameElementStateConverter, \
+    EntityManager
 
 
 class FlappyBirdTrainingService(StableBaselinesTrainer):
 
     def __init__(self,
                  entity_manager: EntityManager,
-                 communication_service: ICommunicationServiceTraining,
+                 communication_service,
                  observation_space,
                  action_space,
                  max_episode_length: int,
@@ -35,7 +30,7 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
         self.bird = None
         self.lidar = None
 
-    def convert_obs(self) -> OBST:
+    def convert_obs(self):
         if not self.pipes:
             self.pipes = self.get_entity("pipes")
         if not self.bird:

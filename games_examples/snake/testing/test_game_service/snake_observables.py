@@ -1,7 +1,7 @@
 from abc import ABC
 
-from framework.src.game_service_module.game_element_state import GameElementState
-from framework.src.game_service_module.state_observable import StateObservable
+from src.xumes import GameElementState
+from src.xumes import StateObservable
 from games_examples.snake.src.fruit import Fruit
 from games_examples.snake.src.snake import Snake
 

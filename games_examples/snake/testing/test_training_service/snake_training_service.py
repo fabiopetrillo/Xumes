@@ -6,12 +6,12 @@ import numpy as np
 import stable_baselines3
 from gymnasium import spaces
 
-from framework.src.training_service_module.entity_manager import EntityManager
-from framework.src.training_service_module.i_communication_service_training import ICommunicationServiceTraining
-from framework.src.training_service_module.i_game_element_state_builder import JsonGameElementStateConverter
-from framework.src.training_service_module.implementations.gym_impl.stable_baselines_trainer import StableBaselinesTrainer, \
+from src.xumes import EntityManager
+from src.xumes import ICommunicationServiceTraining
+from src.xumes import JsonGameElementStateConverter
+from src.xumes import StableBaselinesTrainer, \
     OBST
-from framework.src.training_service_module.implementations.mq_impl.communication_service_training_mq import \
+from src.xumes import \
     CommunicationServiceTrainingMq
 from games_examples.snake.play import cell_number
 from games_examples.snake.testing.test_training_service.entities.snake_entity_manager import SnakeEntityManager
