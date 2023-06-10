@@ -75,7 +75,7 @@ class StableBaselinesTrainer(MarkovTrainingService):
         return self.convert_obs()
 
     @abstractmethod
-    def convert_obs(self) -> OBST:
+    def convert_obs(self) -> OBST: # TODO Change pass to raise NotImplementedError 
         pass
 
     @abstractmethod
