@@ -69,7 +69,7 @@ class TrainingService:
         return self._entity_manager.get(name)
 
 
-class MarkovTrainingService(TrainingService, ABC):
+class MarkovTrainingService(TrainingService, ABC): # TODO Move class to implementations folder 
 
     @abstractmethod
     def get_obs(self) -> OBST:
