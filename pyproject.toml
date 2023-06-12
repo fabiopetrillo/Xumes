@@ -5,7 +5,7 @@ authors = [
   { name="Vincent Mastain", email="vincentmastain@gmail.com" },
 ]
 description = "A game test tool."
-readme = "README.md"
+readme = "README.rst"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -25,8 +25,8 @@ dependencies = [
 
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 [tool.setuptools]
 py-modules = []
 [project.urls]
