@@ -1,5 +1,12 @@
 class ICommunicationServiceGame:
+    """
+      The `ICommunicationServiceGame` interface provides methods for communication between the game and the training server.
 
+      Methods:
+          observe: Send the game state to the training server.
+          action: Wait for the training server to send an action.
+          run: Start the communication service (e.g., start the app of a REST API).
+    """
     def observe(self, game_service) -> None:
         """
         Send the game state to the training server.

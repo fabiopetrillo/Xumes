@@ -8,7 +8,25 @@ OBST = TypeVar("OBST")
 
 
 class TrainingService:
+    """
+    The `TrainingService` class is responsible for managing the training process of a game.
 
+    Attributes:
+        _entity_manager: An instance of `EntityManager` responsible for managing game entities.
+        _communication_service: An object implementing the `ICommunicationServiceTraining` interface for communication.
+
+    Methods:
+        train(): Implementation of the training algorithm.
+        save(path): Saves the training model to a file specified by the `path`.
+        load(path): Loads a training model from a file specified by the `path`.
+        play(timesteps): Uses the algorithm in non-training mode for a specified number of `timesteps`.
+        random_reset(): Requests a random reset of the game through the communication service.
+        reset(): Requests a reset of the game through the communication service.
+        push_actions(actions): Pushes a list of `actions` to the communication service.
+        retrieve_state(): Calls the game service to retrieve and update the game state.
+        game_state: Property representing the game state from the entity manager.
+        get_entity(name): Retrieves an entity from the entity manager by `name`.
+    """
     def __init__(self,
                  entity_manager: EntityManager,
                  communication_service: ICommunicationServiceTraining,
@@ -69,7 +87,7 @@ class TrainingService:
         return self._entity_manager.get(name)
 
 
-class MarkovTrainingService(TrainingService, ABC): # TODO Move class to implementations folder 
+class MarkovTrainingService(TrainingService, ABC):  # TODO Move class to implementations folder
 
     @abstractmethod
     def get_obs(self) -> OBST:

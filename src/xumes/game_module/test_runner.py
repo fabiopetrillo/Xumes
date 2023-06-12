@@ -5,7 +5,22 @@ from xumes.game_module.state_observable import StateObservable
 
 
 class _TestRunner(StateObservable, ABC):
+    """
+       The `_TestRunner` class is an abstract base class for implementing game test loop functionality and managing game state.
 
+       Attributes:
+           _test_client: The client object associated with the test runner.
+           _game_state: The current state of the game.
+
+       Methods:
+           update_state(state): Notifies changes in the game state. This method should be used when overloading game methods.
+           set_client(client): Sets the client object for the test runner.
+           run_test(): Runs a game loop without rendering. The game loop should start with `self.test_client.wait()`.
+           run_test_render(): Runs a game loop with rendering. The game loop should start with `self.test_client.wait()`.
+           random_reset(): Performs a random reset in the game, starting from a random state.
+           reset(): Performs a reset from the beginning of the game.
+           delete_screen(): Deletes the screen if the game engine supports it.
+       """
     def __init__(self, game_loop_object, observers):
         self._test_client = None
         self._game_state = "playing"

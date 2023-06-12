@@ -11,7 +11,24 @@ ST = TypeVar("ST")
 
 
 class StateObservable(Generic[OBJ, ST], ABC):
+    """
+    The `StateObservable` class is an abstract base class for observable game states.
 
+    Attributes:
+        _observers: A list of `IGameStateObserver` instances subscribed to the observable.
+        _object: The observable object.
+        _name: The name of the observable.
+
+    Methods:
+        attach(observer): Attaches an observer to the observable.
+        detach(observer): Detaches an observer from the observable.
+        detach_all(): Detaches all observers from the observable.
+        notify(): Notifies all observers of a state change.
+        state(): Provides a representation method of a game element state.
+        name: Property representing the name of the observable.
+        observers: Property representing the list of observers.
+        object: Property representing the observable object.
+    """
     def __init__(self, observable_object: OBJ, observers: IGameStateObserver | List[IGameStateObserver], name: str):
         self._observers: List[IGameStateObserver] = []
         self._object = observable_object

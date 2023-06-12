@@ -4,7 +4,13 @@ ST = TypeVar("ST")
 
 
 class IStateEntity:
+    """
+    The `IStateEntity` interface defines the methods for managing the state of an entity in the game.
 
+    Methods:
+        update: Updates the entity's attributes from a state.
+        build: Builds an `IStateEntity` object from a state.
+    """
     def update(self, state: ST) -> None:
         """
         Updates his attributes from a state.

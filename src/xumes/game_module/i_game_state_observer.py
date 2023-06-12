@@ -4,7 +4,14 @@ ST = TypeVar("ST")
 
 
 class IGameStateObserver(Generic[ST]):
+    """
+       The `IGameStateObserver` interface defines the methods for observing and interacting with game state observables.
 
+       Methods:
+           update_state: Update or add an observable inside the observer.
+           remove_state: Remove an observable from the collection.
+           get_state: Get the changes between the last retrieval of state and now.
+    """
     def update_state(self, obs) -> None:
         """
         Update or add an observable inside the observer.

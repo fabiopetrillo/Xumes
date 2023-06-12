@@ -7,7 +7,24 @@ from xumes.training_module.i_game_element_state_converter import IGameElementSta
 
 
 class EntityManager(IStateEntity):
+    """
+       The `EntityManager` class is responsible for managing game entities and updating the game state.
 
+       Attributes:
+           _game_element_state_converter: An object implementing the `IGameElementStateConverter` interface for converting game elements to states.
+           _entities: A dictionary mapping entity names to their corresponding `IStateEntity` instances.
+           _game_state: The current game state.
+
+       Methods:
+           update(state): Updates the game state when received.
+           game_state: Property representing the current game state.
+           get_all(): Retrieves all game observable entities.
+           get(name): Retrieves an entity by its name.
+           _update(game_element_state): Updates an existing game entity with the provided `game_element_state`.
+           _add(game_element_state): Adds a new game entity with the provided `game_element_state`.
+           convert(state_wrapper): Converts a game element, updates or adds it to the state.
+           build_entity(game_element_state): Builds a game entity based on the provided `game_element_state`.
+    """
     def __init__(self,
                  game_element_state_converter: IGameElementStateConverter
                  ):

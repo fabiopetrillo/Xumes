@@ -5,7 +5,19 @@ from xumes.game_module.errors.key_not_found_error import KeyNotFoundError
 
 
 class IEventFactory:
+    """
+      The `IEventFactory` interface provides methods for managing and creating game events.
 
+      Methods:
+          clear: Remove every event from the event queue.
+          find_input: Build and return a GameEvent from an input string.
+          nothing: Return a "nothing" game event that does not perform any action.
+          up: Create and return a game event for the "up" action.
+          down: Create and return a game event for the "down" action.
+          left: Create and return a game event for the "left" action.
+          right: Create and return a game event for the "right" action.
+          space: Create and return a game event for the "space" action.
+    """
     def clear(self) -> None:
         """
         Remove every event from the event queue.
