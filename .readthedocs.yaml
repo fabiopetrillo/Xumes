@@ -3,7 +3,12 @@
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
-version: 
+version: 2
+python:
+  # Install our python package before building the docs
+  install:
+    - method: pip
+      path: .
 
 # Set the OS, Python version and other tools you might need
 build:
@@ -21,8 +26,4 @@ sphinx:
 #    - pdf
 #    - epub
 
-python:
-  # Install our python package before building the docs
-  install:
-    - method: pip
-      path: .
+
