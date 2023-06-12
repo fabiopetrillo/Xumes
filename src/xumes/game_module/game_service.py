@@ -1,3 +1,4 @@
+import threading
 from threading import Thread, Condition
 
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
@@ -14,8 +15,7 @@ class GameService:
                  event_factory: IEventFactory,
                  communication_service: ICommunicationServiceGame):
 
-        self.app_thread = None
-        self.game_thread = None
+        self.comm_thread = None
         self.game_update_condition = Condition()
         self.get_state_condition = Condition()
 
@@ -29,38 +29,36 @@ class GameService:
         self.inputs = []
 
         self.communication_service = communication_service
-        self.communication_service.observe(self)
-        self.communication_service.action(self)
+
+    def run_communication_service(self):
+        self.comm_thread = Thread(target=self.communication_service.run, args=[self])
+        self.comm_thread.start()
+
+    def run_test_runner(self, run_func):
+        assert threading.current_thread() is threading.main_thread()
+        run_func()
 
     def run(self):
         """
-        Run two threads:\n
         - The communication service thread, used to send state and get actions.\n
-        - The game thread, used to make run the game loop.
+        - The game on the main thread, used to make run the game loop.
         """
-        self.app_thread = Thread(target=self.communication_service.run, args=[self])
-        self.game_thread = Thread(target=self.test_runner.run_test)
-        self.app_thread.start()
-        self.game_thread.start()
-
+        self.run_communication_service()
+        self.run_test_runner(self.test_runner.run_test)
         self.test_runner.delete_screen()
 
     def run_render(self):
         """
         Same has run but for the game thread, we run with rendering.
         """
-        self.app_thread = Thread(target=self.communication_service.run, args=[self])
-        self.game_thread = Thread(target=self.test_runner.run_test_render)
-
-        self.app_thread.start()
-        self.game_thread.start()
+        self.run_communication_service()
+        self.run_test_runner(self.test_runner.run_test_render)
 
     def stop(self):
         """
         Stop both threads.
         """
-        self.game_thread.join()
-        self.app_thread.join()
+        self.comm_thread.join()
 
     def wait(self):
         """
