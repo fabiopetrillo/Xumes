@@ -2,12 +2,12 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'Xumes'
+copyright = '2023, Vincent Mastain'
+author = 'Vincent Mastain'
 
-release = '0.1'
-version = '0.1.0'
+release = '0.0'
+version = '0.0.13'
 
 # -- General configuration
 
