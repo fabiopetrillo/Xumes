@@ -1,4 +1,4 @@
-from framework.src.training_service_module.i_state_entity import IStateEntity
+from xumes.training_module import IStateEntity
 
 
 class BirdEntity(IStateEntity):

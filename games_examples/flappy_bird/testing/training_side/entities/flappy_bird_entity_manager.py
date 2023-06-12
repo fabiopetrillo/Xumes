@@ -1,13 +1,11 @@
-from framework.src.training_service_module.entity_manager import EntityManager
-from framework.src.training_service_module.game_element_state import GameElementState
-from framework.src.training_service_module.i_state_entity import IStateEntity
 from games_examples.flappy_bird.testing.training_side.entities.bird_entity import BirdEntity
 from games_examples.flappy_bird.testing.training_side.entities.pipes_entity import PipesEntity
+from xumes.training_module import EntityManager
 
 
 class FlappyBirdEntityManager(EntityManager):
 
-    def build_entity(self, game_element_state: GameElementState) -> IStateEntity:
+    def build_entity(self, game_element_state):
         if game_element_state.type == "Player":
             return BirdEntity.build(game_element_state.state)
         if game_element_state.type == "PipeGenerator":
