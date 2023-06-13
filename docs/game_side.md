@@ -32,14 +32,14 @@ class Entity:
 ```
 
 #### Class creation
-To create the EntityObservable class, we need to define a new adapter class that inherits from Entity and StateObservable. Make sure to extend from Entity first and then from StateObservable.
+To create the `EntityObservable` class, we need to define a new adapter class that inherits from `Entity` and `StateObservable`. Make sure to extend from `Entity` first and then from `StateObservable`.
 
 ```python
 class EntityObservable(Entity, StateObservable):
 ```
 
 #### Constructor
-The constructor of EntityObservable should include the parameters of Entity as well as observers and name.
+The constructor of `EntityObservable` should include the parameters of `Entity` as well as observers and name.
 ```python
     def __init__(self, val1, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
@@ -48,7 +48,7 @@ The constructor of EntityObservable should include the parameters of Entity as w
 ```
 
 #### State modification notification
-To notify the framework when an object changes its state, you need to overload every method that modifies the state. Call the corresponding method of Entity and then notify the observers.
+To notify the framework when an object changes its state, you need to overload every method that modifies the state. Call the corresponding method of `Entity` and then notify the observers.
 ```python
     def method1(self):
         Entity.method1(self)
@@ -66,7 +66,7 @@ Implement a method to represent the state of the object. You can use dictionarie
 ```
 
 #### EntityObservable's implementation
-Here's the complete code for the EntityObservable class:
+Here's the complete code for the `EntityObservable` class:
 
 ```python
 class EntityObservable(Entity, StateObservable):

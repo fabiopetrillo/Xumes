@@ -2,7 +2,7 @@ import threading
 from threading import Thread, Condition
 
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
-from xumes.game_module.i_event_factory import IEventFactory
+from xumes.game_module.i_event_factory import EventFactory
 from xumes.game_module.i_game_state_observer import IGameStateObserver
 from xumes.game_module.test_runner import _TestRunner
 
@@ -15,7 +15,7 @@ class GameService:
     Attributes:
         observer (IGameStateObserver): An object implementing the `IGameStateObserver` interface, used to observe the game state.
         test_runner (_TestRunner): An object responsible for executing the test and updating the game state.
-        event_factory (IEventFactory): An object implementing the `IEventFactory` interface, used to create events within the game.
+        event_factory (EventFactory): An object implementing the `IEventFactory` interface, used to create events within the game.
         communication_service (ICommunicationServiceGame): An object responsible for communication with other the training service.
 
     Methods:
@@ -30,7 +30,7 @@ class GameService:
     def __init__(self,
                  observer: IGameStateObserver,
                  test_runner: _TestRunner,
-                 event_factory: IEventFactory,
+                 event_factory: EventFactory,
                  communication_service: ICommunicationServiceGame):
 
         self.comm_thread = None
