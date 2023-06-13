@@ -21,7 +21,7 @@ dependencies = [
     "sb3_contrib>=2.0.0a1",
     "stable_baselines3>=2.0.0a1",
     "requests>=2.30.0",
-    "myst-parser>=1.0.0"
+    "mkdocs>=1.4.3"
 ]
 
 
