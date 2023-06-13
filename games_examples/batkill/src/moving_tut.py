@@ -3,8 +3,8 @@ import sys
 import os
 import random
 
-from games_examples.batkill.src.backend_player import StandardPlayer
 from games_examples.batkill.src.helpers import generator_from_formatter, image_generator
+from games_examples.batkill.src.backend_player import StandardPlayer, MOVE_LEFT, MOVE_RIGHT, JUMP, ATTACK
 from games_examples.batkill.src.spritesheet import SpriteSheet
 
 '''
@@ -51,24 +51,24 @@ class Player(pygame.sprite.Sprite):
 
         self.image = next(self.idle_right)
         rect = self.image.get_rect()
-        self.sp = StandardPlayer(x=300, y=694, ground_y=653, rect=rect, x_step=12)
+        self.sp = StandardPlayer(x=300, y=653, ground_y=653, rect=rect, x_step=12)
 
     @property
     def rect(self):
         return self.sp.rect
 
     def control(self, actions=None):
-        """
+        '''
         control player movement
-        """
+        '''
         if actions is None:
             actions = []
         self.sp.update(actions)
 
     def update(self):
-        """
+        '''
         Update sprite position
-        """
+        '''
 
         self.sp.rect.x = self.sp.x
         self.sp.rect.y = self.sp.y
@@ -194,7 +194,7 @@ player_list.add(player)
 steps = 5  # how fast to move
 pygame.font.init()
 score_font = pygame.font.SysFont(os.path.join('static', 'fonts', 'SourceCodePro-Medium.ttf'), 30)
-score_surface = score_font.render("score : ", True, "blue")
+score_surface = score_font.render()
 
 '''
 Main loop
@@ -202,7 +202,7 @@ Main loop
 loop = 0
 enemies = pygame.sprite.Group()
 
-while main:
+while main == True:
     loop += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -224,7 +224,7 @@ while main:
     player.control(player_actions)
     world.blit(backdrop, backdropbox)
 
-    score_surface = score_font.render("score : ", True, "blue")
+    score_surface = score_font.render()
     world.blit(score_surface, (10, 10))
     new_bat = maybe_create_bat(score)
     if new_bat:

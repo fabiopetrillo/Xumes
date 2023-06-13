@@ -1,3 +1,4 @@
+from games_examples.batkill.src.attack import Attack
 from games_examples.batkill.src.backend_player import StandardPlayer
 
 MOVE_RIGHT = 'MOVE_RIGHT'
