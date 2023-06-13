@@ -1,12 +1,9 @@
-from abc import ABC
-
-
 from games_examples.flappy_bird.src.pipe_generator import PipeGenerator
 from games_examples.flappy_bird.src.player import Player
 from xumes.game_module import StateObservable, GameElementState
 
 
-class BirdObservable(Player, StateObservable, ABC):
+class BirdObservable(Player, StateObservable):
 
     def __init__(self, position, game, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
@@ -27,7 +24,7 @@ class BirdObservable(Player, StateObservable, ABC):
         })
 
 
-class PipeGeneratorObservable(PipeGenerator, StateObservable, ABC):
+class PipeGeneratorObservable(PipeGenerator, StateObservable):
 
     def __init__(self, game, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
