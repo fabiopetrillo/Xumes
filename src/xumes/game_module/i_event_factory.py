@@ -6,7 +6,7 @@ from xumes.game_module.i_game_event import IGameEvent
 
 class EventFactory(ABC):
     """
-      The `IEventFactory` interface provides methods for managing and creating game events.
+      The `EventFactory` abstract class provides methods for managing and creating game events.
 
       Methods:
           clear: Remove every event from the event queue.

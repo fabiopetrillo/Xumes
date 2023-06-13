@@ -1,4 +1,4 @@
-# Game module implementation
+# Game side
 
 ## Description
 To implement the game module, you need to create two types of objects:
@@ -10,7 +10,7 @@ To implement the game module, you need to create two types of objects:
 
 In our example we suppose that we have a game with one game element `Entity` and one unique game loop class named `Main`.
 
-### StateObservable
+### 1. StateObservable
 
 We need to implement the `StateObservable` class for the `Entity` object.
 
@@ -86,7 +86,7 @@ class EntityObservable(Entity, StateObservable):
         })
 ```
 
-### TestRunner
+### 2. TestRunner
 
 Let's suppose the `Main` is implemented like this:
 

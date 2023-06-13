@@ -1,2 +1,10 @@
 site_name: Xumes
 theme: readthedocs
+
+nav:
+  - Home: 'index.md'
+  - "What's Xumes?": 'description.md'
+  - Installation: 'usage.md'
+  - Implementation:
+      - "Game side": 'game_side.md'
+      - "Training side": 'training_side.md'
