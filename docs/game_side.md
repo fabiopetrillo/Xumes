@@ -24,7 +24,7 @@ class Entity:
         self.attr2 = val2
         ...
 
-    def method1(self):
+    def method1(self, val):
         ...
 
     def method2(self):
@@ -50,8 +50,8 @@ The constructor of `EntityObservable` should include the parameters of `Entity` 
 #### State modification notification
 To notify the framework when an object changes its state, you need to overload every method that modifies the state. Call the corresponding method of `Entity` and then notify the observers.
 ```python
-    def method1(self):
-        Entity.method1(self)
+    def method1(self, val):
+        Entity.method1(self, val)
         self.notify()
 ```
 
