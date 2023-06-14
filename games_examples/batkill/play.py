@@ -26,7 +26,7 @@ bat_sprite_path = os.path.join('static', 'sprites', 'Bat')
 background = os.path.join('static', 'backgrounds', 'forest', 'background.png')
 adventurer_sprites = os.path.join('static', 'sprites', 'adventurer')
 
-class Batkill():
+class Game():
     worldx = 928
     worldy = 793
 
@@ -83,7 +83,7 @@ class Batkill():
             player_actions.append(ATTACK)
         return player_actions
 
-    def run(self) -> bool:
+    def run(self) -> None:
 
         while True:
             moving_towards = False
@@ -160,6 +160,6 @@ class Batkill():
 
 
 if __name__ == "__main__":
-    game = Batkill(max_bats=2, bat_speed=6, attack_cooldown=10, jump=True)
+    game = Game(max_bats=2, bat_speed=6, attack_cooldown=10, jump=True)
     game.run()
         
