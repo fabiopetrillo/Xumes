@@ -8,7 +8,7 @@ from xumes.game_module.implementations.pygame_impl.pygame_event_factory import P
 from xumes.game_module.implementations.rest_impl.json_game_state_observer import JsonGameStateObserver
 from xumes.game_module.implementations.rest_impl.json_test_runner import JsonTestRunner
 
-from games_examples.batkill.play import Game, bat_sprite_path, adventurer_sprites, background
+from games_examples.batkill.play import Game, worldx
 from games_examples.batkill.testing.game_side.batkill_observables import PlayerObservable, BatObservable
 
 
@@ -36,6 +36,20 @@ class BatKillerTestRunner(Game, JsonTestRunner):
 
     #        self.bat = BatObservable(self, observers=observers, name="bat")
 
+    def _check_facing_nearest_bat(self):
+        distance = worldx
+        for idx, bat in self.sorted_bats.items():
+            if bat is not None:
+                d = bat.rect.x - self.player.sp.rect.x
+                abs_d = abs(d)
+                if abs_d < abs(distance):
+                    distance = d
+        facing_nearest = (distance > 0 and self.player.sp.facing > 0) or (distance < 0 and self.player.sp.facing < 0)
+        if facing_nearest and len([x for x in self.sorted_bats.values() if x is not None]) > 0:
+            return True
+        else:
+            return False
+
     def run_test(self) -> None:
         while True:
             self.test_client.wait()
@@ -54,6 +68,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                 if new_bat:
                     for k, v in self.sorted_bats.items():
                         if v is None:
+                            new_bat.name = "bat_"+str(k)
                             self.sorted_bats[k] = new_bat
                             self.player_list.add(new_bat)
                             self.enemies.add(new_bat)
@@ -62,19 +77,12 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             for idx, bat in self.sorted_bats.items():
                 if bat is not None:
                     bat.update()
-                    if bat.direction == -1:
-                        if bat.rect.x < self.player.sp.rect.x:
-                            moving_towards = True
-                    else:
-                        if bat.rect.x > self.player.sp.rect.x:
-                            moving_towards = True
-
                     if self.player.sp.attack.attack_poly is not None and not bat.dying:
                         killed = self.player.sp.attack.attack_poly.rect.colliderect(bat.collider_rect)
                         if killed:
                             bat.die()
                             attained_score += 1
-                    if bat.dead or bat.rect.x > self.worldx or bat.rect.x < 0:
+                    if bat.dead or bat.rect.x > worldx or bat.rect.x < 0:
                         self.enemies.remove(bat)
                         bat.kill()
                         self.sorted_bats[idx] = None
@@ -83,13 +91,13 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         bat.die()
                         self.lives -= 1
 
+            self.player.facing_nearest_bat = self._check_facing_nearest_bat()
             self.score += attained_score
 
     def run_test_render(self) -> None:
         while True:
             self.test_client.wait()
 
-            moving_towards = False
             attained_score = 0
             action = self.input()  # Command(self.gameInput()).key_pressed
 
@@ -112,19 +120,12 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             for idx, bat in self.sorted_bats.items():
                 if bat is not None:
                     bat.update()
-                    if bat.direction == -1:
-                        if bat.rect.x < self.player.sp.rect.x:
-                            moving_towards = True
-                    else:
-                        if bat.rect.x > self.player.sp.rect.x:
-                            moving_towards = True
-
                     if self.player.sp.attack.attack_poly is not None and not bat.dying:
                         killed = self.player.sp.attack.attack_poly.rect.colliderect(bat.collider_rect)
                         if killed:
                             bat.die()
                             attained_score += 1
-                    if bat.dead or bat.rect.x > self.worldx or bat.rect.x < 0:
+                    if bat.dead or bat.rect.x > worldx or bat.rect.x < 0:
                         self.enemies.remove(bat)
                         bat.kill()
                         self.sorted_bats[idx] = None
@@ -133,6 +134,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         bat.die()
                         self.lives -= 1
 
+            self.player.facing_nearest_bat = self._check_facing_nearest_bat()
             self.score += attained_score
 
             self.render(custom_message='Manual Play')
@@ -145,6 +147,9 @@ class BatKillerTestRunner(Game, JsonTestRunner):
 
         self.player.notify()
         self.bat.notify()
+
+    def random_reset(self) -> None:
+        self.reset()
 
     def delete_screen(self) -> None:
         pass

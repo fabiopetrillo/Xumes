@@ -26,9 +26,12 @@ bat_sprite_path = os.path.join('static', 'sprites', 'Bat')
 background = os.path.join('static', 'backgrounds', 'forest', 'background.png')
 adventurer_sprites = os.path.join('static', 'sprites', 'adventurer')
 
+worldx = 928
+worldy = 793
+
+
 class Game():
-    worldx = 928
-    worldy = 793
+
 
     def __init__(self, max_bats=2, bat_speed=6, attack_cooldown=10, jump=False) -> None:
         self.max_bats = max_bats
@@ -53,7 +56,7 @@ class Game():
         self.fps = 30  # frame rate
         self.clock = pygame.time.Clock()
 
-        self.world = pygame.display.set_mode([self.worldx, self.worldy])
+        self.world = pygame.display.set_mode([worldx, worldy])
         self.backdrop = pygame.image.load(background).convert()
         self.backdropbox = self.world.get_rect()
         self.player = Player(adventurer_sprites, self.attack_cooldown)  # spawn player        
@@ -88,7 +91,7 @@ class Game():
         while True:
             moving_towards = False
             attained_score = 0
-            action = self.input() #Command(self.gameInput()).key_pressed
+            action = self.input()
 
 
             if action is None:
@@ -122,7 +125,7 @@ class Game():
                         if killed:
                             bat.die()
                             attained_score += 1
-                    if bat.dead or bat.rect.x > self.worldx or bat.rect.x < 0:
+                    if bat.dead or bat.rect.x > worldx or bat.rect.x < 0:
                         self.enemies.remove(bat)
                         bat.kill()
                         self.sorted_bats[idx] = None

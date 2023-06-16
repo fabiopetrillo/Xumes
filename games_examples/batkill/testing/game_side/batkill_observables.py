@@ -12,6 +12,7 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
     def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         StandardPlayer.__init__(self, ground_y=ground_y, rect=rect, collider_rect=collider_rect, x_step=x_step, attack_cooldown=attack_cooldown)
+        self.facing_nearest_bat = False
         self.notify()
 
     def update(self, actions, dt):
@@ -25,7 +26,13 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
                 "y": self.y
             },
             "direction": self.facing,
-            "jump_stage": self.jump_stage
+            "jump": self.jumping,
+            "attack_state": self.attack.attack_state,
+            "attack_duration": self.attack.attack_duration,
+            "cool_down_state": self.attack.cool_down_state,
+            "cool_down_duration": self.attack.cool_down_duration,
+            "attack_rect": self.attack.get_attack_poly(self.rect(), self.facing).rect,
+            "facing_nearest_bat": self.facing_nearest_bat
         })
 
 
@@ -47,5 +54,6 @@ class BatObservable(Bat, StateObservable, ABC):
             },
             "direction": self.direction,
             "speed": self.step,
-            "dead": self.dead
+            "dead": self.dead,
+            "collider_rect": self.collider_rect
         })
