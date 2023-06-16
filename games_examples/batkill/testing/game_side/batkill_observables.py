@@ -9,10 +9,11 @@ from games_examples.batkill.src.spriteful_bat import Bat
 
 class PlayerObservable(StandardPlayer, StateObservable, ABC):
 
-    def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, observers, name):
+    def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, bat_collider_rect, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         StandardPlayer.__init__(self, ground_y=ground_y, rect=rect, collider_rect=collider_rect, x_step=x_step, attack_cooldown=attack_cooldown)
         self.facing_nearest_bat = False
+        self.bat_collider_rect = bat_collider_rect
         self.notify()
 
     def update(self, actions, dt):
@@ -31,7 +32,7 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
             "attack_duration": self.attack.attack_duration,
             "cool_down_state": self.attack.cool_down_state,
             "cool_down_duration": self.attack.cool_down_duration,
-            "attack_rect": self.attack.get_attack_poly(self.rect(), self.facing).rect,
+            "attack_rect": self.attack.get_attack_poly(self.rect, self.facing).rect.colliderect(self.bat_collider_rect),
             "facing_nearest_bat": self.facing_nearest_bat,
             "lives": self.lives,
             "score": self.score
@@ -45,7 +46,7 @@ class BatObservable(Bat, StateObservable, ABC):
         self.notify()
 
     def update(self):
-        super().update(self)
+        super().update()
         self.notify()
 
     def state(self):

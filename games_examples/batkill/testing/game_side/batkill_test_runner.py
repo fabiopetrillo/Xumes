@@ -13,12 +13,12 @@ from games_examples.batkill.testing.game_side.batkill_observables import PlayerO
 
 
 # Method random_bat have to be override in order to have BatObservable
-def random_bat(sprite_path, current_score, base_prob=20, base_speed=6):
+def random_bat(observers, name, sprite_path, current_score, base_prob=20, base_speed=6):
     current_score = 0 if current_score < 0 else current_score
     current_odds = base_prob - current_score / 15
     speed = int(base_speed * (1 + current_score / 20))
     if (random.random() * current_odds) + 1 > current_odds:
-        return BatObservable(direction=random.choice([-1, 1]), step=speed, sprite_path=sprite_path)
+        return BatObservable(direction=random.choice([-1, 1]), step=speed, sprite_path=sprite_path, observers=observers, name=name)
     else:
         return None
 
@@ -31,11 +31,12 @@ class BatKillerTestRunner(Game, JsonTestRunner):
 
         collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
         rect = pygame.Rect(300, 653, 100, 74)
-        self.player.sp = PlayerObservable.__init__(self, ground_y=653, rect=rect, collider_rect=collider_rect,
-                                                   x_step=12, attack_cooldown=self.attack_cooldown, observers=observers,
-                                                   name="player")
+        self.player.sp = PlayerObservable(ground_y=653, rect=rect, collider_rect=collider_rect,
+                                          x_step=12, attack_cooldown=self.attack_cooldown, observers=observers,
+                                          name="player", bat_collider_rect=pygame.Rect(0, 0, 0, 0))
+        self.obs = observers
 
-    #        self.bat = BatObservable(self, observers=observers, name="bat")
+    #   self.bat = BatObservable(self, observers=observers, name="bat")
 
     def _check_facing_nearest_bat(self):
         distance = worldx
@@ -55,7 +56,6 @@ class BatKillerTestRunner(Game, JsonTestRunner):
         if self.player.sp.lives < 1:
             self.update_state("lose")
 
-
     def run_test(self) -> None:
         while True:
             self.test_client.wait()
@@ -70,11 +70,13 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             self.player.control(action, self.dt)
 
             if any([v is None for v in self.sorted_bats.values()]):
-                new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
-                                     base_speed=self.bat_speed)
-                if new_bat:
-                    for k, v in self.sorted_bats.items():
-                        if v is None:
+
+                for k, v in self.sorted_bats.items():
+                    if v is None:
+                        new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
+                                             base_speed=self.bat_speed, observers=self.obs, name="bat"+str(k))
+                        if new_bat:
+                            #self.player.sp.bat_collider_rect = new_bat.collider_rect
                             self.sorted_bats[k] = new_bat
                             self.player_list.add(new_bat)
                             self.enemies.add(new_bat)
@@ -83,6 +85,8 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             for idx, bat in self.sorted_bats.items():
                 if bat is not None:
                     bat.update()
+                    if bat.collider_rect is not None:
+                        self.player.sp.bat_collider_rect = bat.collider_rect
                     if self.player.sp.attack.attack_poly is not None and not bat.dying:
                         killed = self.player.sp.attack.attack_poly.rect.colliderect(bat.collider_rect)
                         if killed:
@@ -114,11 +118,13 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             self.player.control(action, self.dt)
 
             if any([v is None for v in self.sorted_bats.values()]):
-                new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
-                                     base_speed=self.bat_speed)
-                if new_bat:
-                    for k, v in self.sorted_bats.items():
-                        if v is None:
+
+                for k, v in self.sorted_bats.items():
+                    if v is None:
+                        new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
+                                             base_speed=self.bat_speed, observers=self.obs, name="bat"+str(k))
+                        if new_bat:
+                            # self.player.sp.bat_collider_rect = new_bat.collider_rect
                             self.sorted_bats[k] = new_bat
                             self.player_list.add(new_bat)
                             self.enemies.add(new_bat)
@@ -127,6 +133,8 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             for idx, bat in self.sorted_bats.items():
                 if bat is not None:
                     bat.update()
+                    if bat.collider_rect is not None:
+                        self.player.sp.bat_collider_rect = bat.collider_rect
                     if self.player.sp.attack.attack_poly is not None and not bat.dying:
                         killed = self.player.sp.attack.attack_poly.rect.colliderect(bat.collider_rect)
                         if killed:
@@ -148,12 +156,14 @@ class BatKillerTestRunner(Game, JsonTestRunner):
 
     def reset(self) -> None:
         self.player.detach_all()
-        self.bat.detach_all()
+        for bat in self.sorted_bats():
+            bat.detach_all()
 
         self.initialize_values()
 
         self.player.notify()
-        self.bat.notify()
+        for bat in self.sorted_bats():
+            bat.notify()
 
     def random_reset(self) -> None:
         self.reset()
@@ -169,7 +179,7 @@ if __name__ == "__main__":
                                    test_runner=BatKillerTestRunner(observers=[JsonGameStateObserver.get_instance()]),
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))
-        if sys.argv[1] == "-tests":
+        if sys.argv[1] == "-test":
             game_service.run()
         if sys.argv[1] == "-render":
             game_service.run_render()

@@ -9,6 +9,8 @@ ATTACK = 'ATTACK'
 class StandardPlayer:
     def __init__(self,
                  ground_y,
+                 x=300,
+                 y=653,
                  x_step=8,
                  jump_step=10,
                  jump_stages=11,
@@ -24,6 +26,8 @@ class StandardPlayer:
         self.score = 0
         self.lives = 5
 
+        self.x = x
+        self.y = y
 
         self.max_x = max_x
         self.min_x = min_x

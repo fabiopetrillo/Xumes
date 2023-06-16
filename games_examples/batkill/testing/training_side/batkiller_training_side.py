@@ -1,5 +1,4 @@
 import sys
-#from abc import ABC
 from typing import List
 
 import numpy as np
@@ -33,43 +32,45 @@ class BatKillerTrainingService(StableBaselinesTrainer):
     def convert_obs(self):
 
         player = self.get_entity("player")
+        print(player)
+
         dct = {
-            'player_x': np.array([(player.position.x / worldx) * 2 - 1]),
-            'player_y': np.array([(player.position.x / worldy) * 2 - 1]),
+            'player_x': np.array([(player.position[0] / worldx) * 2 - 1]),
+            'player_y': np.array([(player.position[1] / worldy) * 2 - 1]),
             'player_direction': np.array([player.direction]),
             'player_attack': np.array([(
                                      player.attack_state / player.attack_duration) * 2 - 1]),
             'player_cooldown': np.array([(
                                        player.cool_down_state / player.cool_down_duration) * 2 - 1])
         }
-        for idx in range(6):
+        for i in range(6):
             try:
-                bat = self.get_entity("bat_" + str(idx))
+                bat = self.get_entity("bat_" + str(i))
             except KeyError:
                 break
             if bat.dead is not True:
                 dct[f'bat_{idx}_alive'] = np.array([1])
                 dct[f'bat_{idx}_direction'] = np.array([bat.direction])
-                dct[f'bat_{idx}_x'] = np.array([(bat.position.x / worldx) * 2 - 1])
+                dct[f'bat_{idx}_x'] = np.array([(bat.position[0] / worldx) * 2 - 1])
                 dct[f'bat_{idx}_speed'] = np.array([bat.speed])
-                dct[f'bat_{idx}_distance_to_player'] = np.array([(bat.position.x - player.position.x) / worldx])
+                dct[f'bat_{idx}_distance_to_player'] = np.array([(bat.position[0] - player.position[0]) / worldx])
                 if bat.direction == -1:
-                    if bat.position.x > player.position.x:
+                    if bat.position[0] > player.position[0]:
                         bat_facing_player = 1
                     else:
                         bat_facing_player = -1
                 else:
-                    if bat.position.x < player.position.x:
+                    if bat.position[0] < player.position[0]:
                         bat_facing_player = 1
                     else:
                         bat_facing_player = -1
                 if player.direction == -1:
-                    if player.position.x > bat.position.x:
+                    if player.position[0] > bat.position[0]:
                         player_facing_bat = 1
                     else:
                         player_facing_bat = -1
                 else:
-                    if player.position_x < bat.position.x:
+                    if player.position[0] < bat.position[0]:
                         player_facing_bat = 1
                     else:
                         player_facing_bat = -1
@@ -77,7 +78,7 @@ class BatKillerTrainingService(StableBaselinesTrainer):
                     attack_rect = player.attack_rect
                     if (
                             bat.collider_rect and
-                            attack_rect.colliderect(bat.collider_rect) and
+                            attack_rect and
                             player.cool_down_state == 0 and
                             player.attack_state == 0
                     ):
@@ -155,16 +156,16 @@ class BatKillerTrainingService(StableBaselinesTrainer):
 
         for i in range(6):
             try:
-                bat = self.get_entity("bat_" + str(i))
+                bat = self.get_entity("bat_"+str(i))
             except KeyError:
                 break
             if bat.direction == -1:
-                if bat.position.x < self.player.position.x:
+                if bat.position[0] < player.position[0]:
                     reward += 0.1
             else:
-                if bat.position.x > self.player.position.x:
+                if bat.position[0] > player.position[0]:
                     reward += 0.1
-            if player.attack_rect.colliderect(bat.collider_rect):
+            if player.attack_rect:
                 reward += 5
 
         return reward
@@ -172,11 +173,11 @@ class BatKillerTrainingService(StableBaselinesTrainer):
 
 if __name__ == "__main__":
 
-    dct = {'player_x': spaces.Box(-1, 1, shape=(1,)),
-           'player_y': spaces.Box(-1, 1, shape=(1,)),
-           'player_direction': spaces.Box(-1, 1, shape=(1,)),
-           'player_attack': spaces.Box(-1, 1, shape=(1,)),
-           'player_cooldown': spaces.Box(-1, 1, shape=(1,))
+    dct = {'player_x': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
+           'player_y': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
+           'player_direction': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
+           'player_attack': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
+           'player_cooldown': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
            }
     for idx in range(6):
         dct[f'bat_{idx}_alive'] = spaces.Box(-1, 1, dtype=np.int16, shape=(1,))
