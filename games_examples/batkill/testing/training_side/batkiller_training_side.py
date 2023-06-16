@@ -26,6 +26,10 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         super().__init__(entity_manager, communication_service, observation_space, action_space, max_episode_length,
                          total_timesteps, algorithm_type, algorithm)
 
+        self.score = 0
+        self.lives = 5
+        self.actions = ["nothing", "nothing", "nothing"]
+
     def convert_obs(self):
 
         player = self.get_entity("player")
@@ -98,18 +102,60 @@ class BatKillerTrainingService(StableBaselinesTrainer):
 
         return dct
 
+    def convert_terminated(self) -> bool:
+        return self.game_state == "lose"
+
+    def convert_actions(self, raws_actions) -> List[str]:
+        if raws_actions == [0, 0, 0]:
+            self.actions = ["nothing", "nothing", "nothing"]
+        if raws_actions == [0, 1, 0]:
+            self.actions = ["nothing", "up", "nothing"]
+        if raws_actions == [0, 0, 1]:
+            self.actions = ["nothing", "nothing", "space"]
+        if raws_actions == [0, 1, 1]:
+            self.actions = ["nothing", "up", "space"]
+        if raws_actions == [1, 0, 0]:
+            self.actions = ["left", "nothing", "nothing"]
+        if raws_actions == [1, 1, 0]:
+            self.actions = ["left", "up", "nothing"]
+        if raws_actions == [1, 0, 1]:
+            self.actions = ["left", "nothing", "space"]
+        if raws_actions == [1, 1, 1]:
+            self.actions = ["left", "up", "space"]
+        if raws_actions == [2, 0, 0]:
+            self.actions = ["right", "nothing", "nothing"]
+        if raws_actions == [2, 1, 0]:
+            self.actions = ["right", "up", "nothing"]
+        if raws_actions == [2, 0, 1]:
+            self.actions = ["right", "nothing", "space"]
+        if raws_actions == [2, 1, 1]:
+            self.actions = ["right", "up", "space"]
+        return self.actions
+
     def convert_reward(self):
 
         player = self.get_entity("player")
 
         reward = 0
 
+        if "space" in self.actions:
+            reward -= 0.1
+        if "up" in self.actions:
+            reward -= 0.2
+
+        if player.score > self.score:
+            reward += 5
+            self.score = player.score
+        if player.lives < self.lives:
+            self.lives = player.lives
+            reward -= 5
+
         if player.facing_nearest_bat is True:
             reward += 0.2
 
-        for idx in range(6):
+        for i in range(6):
             try:
-                bat = self.get_entity("bat_" + str(idx))
+                bat = self.get_entity("bat_" + str(i))
             except KeyError:
                 break
             if bat.direction == -1:
@@ -124,19 +170,35 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         return reward
 
 
-
-
-
-
 if __name__ == "__main__":
+
+    dct = {'player_x': spaces.Box(-1, 1, shape=(1,)),
+           'player_y': spaces.Box(-1, 1, shape=(1,)),
+           'player_direction': spaces.Box(-1, 1, shape=(1,)),
+           'player_attack': spaces.Box(-1, 1, shape=(1,)),
+           'player_cooldown': spaces.Box(-1, 1, shape=(1,))
+           }
+    for idx in range(6):
+        dct[f'bat_{idx}_alive'] = spaces.Box(-1, 1, dtype=np.int16, shape=(1,))
+        dct[f'bat_{idx}_direction'] = spaces.Box(-1, 1, dtype=np.int16, shape=(1,))
+        dct[f'bat_{idx}_x'] = spaces.Box(-1, 1, shape=(1,))
+        dct[f'bat_{idx}_speed'] = spaces.Box(0, 100, shape=(1,))
+        dct[f'bat_{idx}_distance_to_player'] = spaces.Box(-1, 1, shape=(1,))
+        dct[f'bat_{idx}_bat_facing_player'] = spaces.Box(-1, 1, shape=(1,))
+        dct[f'bat_{idx}_player_facing_bat'] = spaces.Box(-1, 1, shape=(1,))
+        dct[f'bat_{idx}_in_attack_range'] = spaces.Box(-1, 1, shape=(1,))
+
     training_service = BatKillerTrainingService(
         entity_manager=BatKillerEntityManager(
             JsonGameElementStateConverter()
         ),
         communication_service=CommunicationServiceTrainingMq(),
-        observation_space=spaces.Dict(
-
-        )
+        observation_space=spaces.Dict(dct),
+        action_space=spaces.MultiDiscrete([3, 2, 2]),
+        max_episode_length=1000,
+        total_timesteps=100000,
+        algorithm_type="MultiInputPolicy",
+        algorithm=stable_baselines3.PPO
     )
 
     if len(sys.argv) == 2:

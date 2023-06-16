@@ -32,7 +32,9 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
             "cool_down_state": self.attack.cool_down_state,
             "cool_down_duration": self.attack.cool_down_duration,
             "attack_rect": self.attack.get_attack_poly(self.rect(), self.facing).rect,
-            "facing_nearest_bat": self.facing_nearest_bat
+            "facing_nearest_bat": self.facing_nearest_bat,
+            "lives": self.lives,
+            "score": self.score
         })
 
 

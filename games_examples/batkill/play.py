@@ -22,9 +22,11 @@ from games_examples.batkill.src.backend_player import MOVE_LEFT, MOVE_RIGHT, JUM
 
 ###
 
-bat_sprite_path = os.path.join('static', 'sprites', 'Bat')
-background = os.path.join('static', 'backgrounds', 'forest', 'background.png')
-adventurer_sprites = os.path.join('static', 'sprites', 'adventurer')
+current_directory = os.path.dirname(__file__)
+
+bat_sprite_path = os.path.join(current_directory, 'static', 'sprites', 'Bat')
+background = os.path.join(current_directory, 'static', 'backgrounds', 'forest', 'background.png')
+adventurer_sprites = os.path.join(current_directory, 'static', 'sprites', 'adventurer')
 
 worldx = 928
 worldy = 793
@@ -39,19 +41,16 @@ class Game():
         self.attack_cooldown = attack_cooldown
         self.jump = jump
         self.initialize_values()
-    
+
     def initialize_values(self) -> None:
 
         pygame.init()
         pygame.font.init()
-        
+
         self.deterministic_bats = False
         self.sorted_bats = {n: None for n in range(self.max_bats)}
 
         self.loop = 0
-
-        self.lives = 5
-        self.score = 0
 
         self.fps = 30  # frame rate
         self.clock = pygame.time.Clock()
@@ -64,8 +63,8 @@ class Game():
         self.player_list.add(self.player)
 
         self.score_font = pygame.font.SysFont(os.path.join('static', 'fonts', 'SourceCodePro-Medium.ttf'), 30)
-        self.score_surface = self.score_font.render(f"SCORE: {round(self.score * 1000)}, LIVES: {self.lives}", True,
-                                                      (0, 0, 0, 0))
+        self.score_surface = self.score_font.render(f"SCORE: {round(self.player.sp.score * 1000)}, LIVES: {self.player.sp.lives}",
+                                                    True, (0, 0, 0, 0))
 
         self.enemies = pygame.sprite.Group()
         self.running = True
@@ -101,7 +100,8 @@ class Game():
             self.player.control(action, self.dt)
 
             if any([v is None for v in self.sorted_bats.values()]):
-                new_bat = random_bat(current_score=self.score, sprite_path=bat_sprite_path, base_speed=self.bat_speed)
+                new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
+                                     base_speed=self.bat_speed)
                 if new_bat:
                     for k, v in self.sorted_bats.items():
                         if v is None:
@@ -132,9 +132,9 @@ class Game():
                         del bat
                     elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(bat.collider_rect):
                         bat.die()
-                        self.lives -= 1
+                        self.player.sp.lives -= 1
 
-            self.score += attained_score
+            self.player.sp.score += attained_score
 
             self.render(custom_message='Manual Play')
 
@@ -145,8 +145,8 @@ class Game():
                 self.running = False
                 sys.exit()
         self.world.blit(self.backdrop, self.backdropbox)
-        score_surface = self.score_font.render(f"BATS KILLED: {round(self.score)}, LIVES: {self.lives}", True,
-                                               (0, 0, 0, 0))
+        score_surface = self.score_font.render(f"BATS KILLED: {round(self.player.sp.score)}, LIVES: {self.player.sp.lives}",
+                                               True, (0, 0, 0, 0))
         self.world.blit(score_surface, (10, 10))
         if session is not None:
             session_surface = self.score_font.render(str(session), True, (0, 0, 0, 0))
@@ -165,4 +165,3 @@ class Game():
 if __name__ == "__main__":
     game = Game(max_bats=2, bat_speed=6, attack_cooldown=10, jump=True)
     game.run()
-        

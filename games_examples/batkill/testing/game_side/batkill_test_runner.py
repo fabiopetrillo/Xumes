@@ -8,7 +8,7 @@ from xumes.game_module.implementations.pygame_impl.pygame_event_factory import P
 from xumes.game_module.implementations.rest_impl.json_game_state_observer import JsonGameStateObserver
 from xumes.game_module.implementations.rest_impl.json_test_runner import JsonTestRunner
 
-from games_examples.batkill.play import Game, worldx
+from games_examples.batkill.play import Game, worldx, bat_sprite_path
 from games_examples.batkill.testing.game_side.batkill_observables import PlayerObservable, BatObservable
 
 
@@ -26,13 +26,14 @@ def random_bat(sprite_path, current_score, base_prob=20, base_speed=6):
 class BatKillerTestRunner(Game, JsonTestRunner):
 
     def __init__(self, observers):
-        Game.__init__(self)
+        Game.__init__(self, max_bats=2, bat_speed=6, attack_cooldown=10, jump=False)
         JsonTestRunner.__init__(self, game_loop_object=self, observers=observers)
 
         collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
         rect = pygame.Rect(300, 653, 100, 74)
         self.player.sp = PlayerObservable.__init__(self, ground_y=653, rect=rect, collider_rect=collider_rect,
-                                                   x_step=12, attack_cooldown=self.attack_cooldown)
+                                                   x_step=12, attack_cooldown=self.attack_cooldown, observers=observers,
+                                                   name="player")
 
     #        self.bat = BatObservable(self, observers=observers, name="bat")
 
@@ -50,12 +51,17 @@ class BatKillerTestRunner(Game, JsonTestRunner):
         else:
             return False
 
+    def game_over(self):
+        if self.player.sp.lives < 1:
+            self.update_state("lose")
+
+
     def run_test(self) -> None:
         while True:
             self.test_client.wait()
 
             attained_score = 0
-            action = self.input()  # Command(self.gameInput()).key_pressed
+            action = self.input()
 
             if action is None:
                 action = []
@@ -64,11 +70,11 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             self.player.control(action, self.dt)
 
             if any([v is None for v in self.sorted_bats.values()]):
-                new_bat = random_bat(current_score=self.score, sprite_path=bat_sprite_path, base_speed=self.bat_speed)
+                new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
+                                     base_speed=self.bat_speed)
                 if new_bat:
                     for k, v in self.sorted_bats.items():
                         if v is None:
-                            new_bat.name = "bat_"+str(k)
                             self.sorted_bats[k] = new_bat
                             self.player_list.add(new_bat)
                             self.enemies.add(new_bat)
@@ -87,19 +93,19 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         bat.kill()
                         self.sorted_bats[idx] = None
                         del bat
-                    elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(bat.collider_rect):
+                    elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(
+                            bat.collider_rect):
                         bat.die()
-                        self.lives -= 1
+                        self.player.sp.lives -= 1
 
-            self.player.facing_nearest_bat = self._check_facing_nearest_bat()
-            self.score += attained_score
+            self.player.sp.score += attained_score
 
     def run_test_render(self) -> None:
         while True:
             self.test_client.wait()
 
             attained_score = 0
-            action = self.input()  # Command(self.gameInput()).key_pressed
+            action = self.input()
 
             if action is None:
                 action = []
@@ -108,7 +114,8 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             self.player.control(action, self.dt)
 
             if any([v is None for v in self.sorted_bats.values()]):
-                new_bat = random_bat(current_score=self.score, sprite_path=bat_sprite_path, base_speed=self.bat_speed)
+                new_bat = random_bat(current_score=self.player.sp.score, sprite_path=bat_sprite_path,
+                                     base_speed=self.bat_speed)
                 if new_bat:
                     for k, v in self.sorted_bats.items():
                         if v is None:
@@ -130,14 +137,14 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         bat.kill()
                         self.sorted_bats[idx] = None
                         del bat
-                    elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(bat.collider_rect):
+                    elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(
+                            bat.collider_rect):
                         bat.die()
-                        self.lives -= 1
+                        self.player.sp.lives -= 1
 
-            self.player.facing_nearest_bat = self._check_facing_nearest_bat()
-            self.score += attained_score
+            self.player.sp.score += attained_score
 
-            self.render(custom_message='Manual Play')
+            self.render()
 
     def reset(self) -> None:
         self.player.detach_all()
@@ -168,5 +175,5 @@ if __name__ == "__main__":
             game_service.run_render()
 
     else:
-        game = Game()
+        game = Game(max_bats=2, bat_speed=6, attack_cooldown=10, jump=False)
         game.run()

@@ -21,6 +21,8 @@ class StandardPlayer:
                  ):
 
         self.rect = rect
+        self.score = 0
+        self.lives = 5
 
 
         self.max_x = max_x
