@@ -30,12 +30,13 @@ adventurer_sprites = os.path.join(current_directory, 'static', 'sprites', 'adven
 
 worldx = 928
 worldy = 793
+nb_bats = 2
 
 
 class Game():
 
 
-    def __init__(self, max_bats=2, bat_speed=6, attack_cooldown=10, jump=False) -> None:
+    def __init__(self, max_bats=nb_bats, bat_speed=6, attack_cooldown=10, jump=False) -> None:
         self.max_bats = max_bats
         self.bat_speed = bat_speed
         self.attack_cooldown = attack_cooldown
@@ -163,5 +164,5 @@ class Game():
 
 
 if __name__ == "__main__":
-    game = Game(max_bats=2, bat_speed=6, attack_cooldown=10, jump=True)
+    game = Game(max_bats=nb_bats, bat_speed=6, attack_cooldown=10, jump=True)
     game.run()

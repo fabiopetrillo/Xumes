@@ -5,8 +5,8 @@ import numpy as np
 import stable_baselines3
 from gymnasium import spaces
 
-from games_examples.batkill.testing.training_side.entites.batkiller_entity import BatKillerEntityManager
-from games_examples.batkill.play import worldx, worldy
+from games_examples.batkill.testing.training_side.entites.batkiller_entity_manager import BatKillerEntityManager
+from games_examples.batkill.play import worldx, worldy, nb_bats
 from xumes.training_module import StableBaselinesTrainer, CommunicationServiceTrainingMq, JsonGameElementStateConverter, \
     EntityManager
 
@@ -27,12 +27,11 @@ class BatKillerTrainingService(StableBaselinesTrainer):
 
         self.score = 0
         self.lives = 5
-        self.actions = ["nothing", "nothing", "nothing"]
+        self.actions = ["nothing" for _ in range(3)]
 
     def convert_obs(self):
 
         player = self.get_entity("player")
-        print(player)
 
         dct = {
             'player_x': np.array([(player.position[0] / worldx) * 2 - 1]),
@@ -43,12 +42,13 @@ class BatKillerTrainingService(StableBaselinesTrainer):
             'player_cooldown': np.array([(
                                        player.cool_down_state / player.cool_down_duration) * 2 - 1])
         }
-        for i in range(6):
+        for idx in range(nb_bats):
             try:
-                bat = self.get_entity("bat_" + str(i))
+                bat = self.get_entity("bat_"+str(idx))
+                is_dead = bat.dead
             except KeyError:
-                break
-            if bat.dead is not True:
+                is_dead = True
+            if not is_dead:
                 dct[f'bat_{idx}_alive'] = np.array([1])
                 dct[f'bat_{idx}_direction'] = np.array([bat.direction])
                 dct[f'bat_{idx}_x'] = np.array([(bat.position[0] / worldx) * 2 - 1])
@@ -107,30 +107,10 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         return self.game_state == "lose"
 
     def convert_actions(self, raws_actions) -> List[str]:
-        if raws_actions == [0, 0, 0]:
-            self.actions = ["nothing", "nothing", "nothing"]
-        if raws_actions == [0, 1, 0]:
-            self.actions = ["nothing", "up", "nothing"]
-        if raws_actions == [0, 0, 1]:
-            self.actions = ["nothing", "nothing", "space"]
-        if raws_actions == [0, 1, 1]:
-            self.actions = ["nothing", "up", "space"]
-        if raws_actions == [1, 0, 0]:
-            self.actions = ["left", "nothing", "nothing"]
-        if raws_actions == [1, 1, 0]:
-            self.actions = ["left", "up", "nothing"]
-        if raws_actions == [1, 0, 1]:
-            self.actions = ["left", "nothing", "space"]
-        if raws_actions == [1, 1, 1]:
-            self.actions = ["left", "up", "space"]
-        if raws_actions == [2, 0, 0]:
-            self.actions = ["right", "nothing", "nothing"]
-        if raws_actions == [2, 1, 0]:
-            self.actions = ["right", "up", "nothing"]
-        if raws_actions == [2, 0, 1]:
-            self.actions = ["right", "nothing", "space"]
-        if raws_actions == [2, 1, 1]:
-            self.actions = ["right", "up", "space"]
+        direction = ["nothing", "left", "right"]
+        position = ["nothing", "up"]
+        attack = ["nothing", "space"]
+        self.actions = [direction[raws_actions[0]], position[raws_actions[1]], attack[raws_actions[2]]]
         return self.actions
 
     def convert_reward(self):
@@ -154,17 +134,20 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         if player.facing_nearest_bat is True:
             reward += 0.2
 
-        for i in range(6):
+        #FIX ME
+        for i in range(nb_bats):
             try:
                 bat = self.get_entity("bat_"+str(i))
+                is_dead = bat.dead
             except KeyError:
-                break
-            if bat.direction == -1:
-                if bat.position[0] < player.position[0]:
-                    reward += 0.1
-            else:
-                if bat.position[0] > player.position[0]:
-                    reward += 0.1
+                is_dead = True
+            if not is_dead:
+                if bat.direction == -1:
+                    if bat.position[0] < player.position[0]:
+                        reward += 0.1
+                else:
+                    if bat.position[0] > player.position[0]:
+                        reward += 0.1
             if player.attack_rect:
                 reward += 5
 
@@ -179,7 +162,7 @@ if __name__ == "__main__":
            'player_attack': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
            'player_cooldown': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
            }
-    for idx in range(6):
+    for idx in range(nb_bats):
         dct[f'bat_{idx}_alive'] = spaces.Box(-1, 1, dtype=np.int16, shape=(1,))
         dct[f'bat_{idx}_direction'] = spaces.Box(-1, 1, dtype=np.int16, shape=(1,))
         dct[f'bat_{idx}_x'] = spaces.Box(-1, 1, shape=(1,))

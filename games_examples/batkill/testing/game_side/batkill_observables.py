@@ -9,14 +9,14 @@ from games_examples.batkill.src.spriteful_bat import Bat
 
 class PlayerObservable(StandardPlayer, StateObservable, ABC):
 
-    def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, bat_collider_rect, observers, name):
+    def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         StandardPlayer.__init__(self, ground_y=ground_y, rect=rect, collider_rect=collider_rect, x_step=x_step, attack_cooldown=attack_cooldown)
         self.facing_nearest_bat = False
-        self.bat_collider_rect = bat_collider_rect
+        self.bool_attack_rect = False
         self.notify()
 
-    def update(self, actions, dt):
+    def update(self, actions=None, dt=None):
         super().update(actions=actions, dt=dt)
         self.notify()
 
@@ -32,7 +32,7 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
             "attack_duration": self.attack.attack_duration,
             "cool_down_state": self.attack.cool_down_state,
             "cool_down_duration": self.attack.cool_down_duration,
-            "attack_rect": self.attack.get_attack_poly(self.rect, self.facing).rect.colliderect(self.bat_collider_rect),
+            "attack_rect": self.bool_attack_rect,
             "facing_nearest_bat": self.facing_nearest_bat,
             "lives": self.lives,
             "score": self.score
@@ -43,6 +43,7 @@ class BatObservable(Bat, StateObservable, ABC):
     def __init__(self, direction, step, sprite_path, *groups, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
         Bat.__init__(self, direction, step, sprite_path, *groups)
+        self.bool_collider_rect = False
         self.notify()
 
     def update(self):
@@ -52,11 +53,11 @@ class BatObservable(Bat, StateObservable, ABC):
     def state(self):
         return GameElementState({
             "position": {
-                "x": self.x,
-                "y": self.y
+                "x": self.rect.x,
+                "y": self.rect.y
             },
             "direction": self.direction,
             "speed": self.step,
             "dead": self.dead,
-            "collider_rect": self.collider_rect
+            "collider_rect": self.bool_collider_rect
         })
