@@ -44,5 +44,4 @@ class Pipe:
     def is_player_passed(self):
         if self.position + PIPE_WIDTH / 2 <= SIZE + LEFT_POSITION and not self.player_passed:
             self.player_passed = True
-            self.player.points += 1
-            self.player.reward = True
+            self.player.gain_point()

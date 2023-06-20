@@ -1,13 +1,11 @@
 import math
 
-from games_examples.flappy_bird.testing.training_side.entities.bird_entity import BirdEntity
-from games_examples.flappy_bird.testing.training_side.entities.pipes_entity import PipesEntity
 from games_examples.flappy_bird.testing.training_side.helpers.sight_line import SightLineFirst
 
 
 class Lidar:
 
-    def __init__(self, pipes: PipesEntity, bird: BirdEntity):
+    def __init__(self, pipes, bird):
         self.pipes = pipes
         self.bird = bird
         self.sight_lines = [

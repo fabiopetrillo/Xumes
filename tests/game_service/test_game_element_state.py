@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.xumes import GameElementState
+from xumes.game_module import GameElementState
 
 
 class TestObject:

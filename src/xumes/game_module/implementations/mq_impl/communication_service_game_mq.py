@@ -1,5 +1,4 @@
 import json
-import threading
 
 import zmq
 
@@ -17,7 +16,9 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
         self.socket.connect(f"tcp://{ip}:5555")
 
     def observe(self, game_service) -> None:
-        self.socket.send(json.dumps(game_service.observer.get_state()).encode("utf-8"))
+        # Send the game state to training service
+        state = game_service.observer.get_state()
+        self.socket.send(json.dumps(state).encode("utf-8"))
 
     def action(self, game_service) -> None:
         # Get message from training service

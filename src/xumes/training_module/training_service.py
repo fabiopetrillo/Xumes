@@ -27,6 +27,7 @@ class TrainingService:
         game_state: Property representing the game state from the entity manager.
         get_entity(name): Retrieves an entity from the entity manager by `name`.
     """
+
     def __init__(self,
                  entity_manager: EntityManager,
                  communication_service: ICommunicationServiceTraining,
@@ -84,7 +85,13 @@ class TrainingService:
 
     @final
     def get_entity(self, name: str):
-        return self._entity_manager.get(name)
+        try:
+            return self._entity_manager.get(name)
+        except KeyError:
+            return None
+
+    def __getattr__(self, item):
+        return self.get_entity(item)
 
 
 class MarkovTrainingService(TrainingService, ABC):  # TODO Move class to implementations folder

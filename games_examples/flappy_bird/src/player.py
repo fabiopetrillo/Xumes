@@ -63,7 +63,7 @@ class Player:
 
     def collision(self):
         if self.position > HEIGHT - SIZE:
-            self.game.terminated = True
+            self.game.end_game()
 
     def draw(self, canvas):
         pygame.draw.rect(canvas, PLAYER_COLOR, (LEFT_POSITION, self.position, SIZE, SIZE))
@@ -74,5 +74,10 @@ class Player:
                                       False, (0, 0, 0))
         canvas.blit(text_surface, (0, 0))
 
+    def gain_point(self):
+        self.points += 1
+        self.reward = True
+
+    @property
     def center(self):
         return LEFT_POSITION + SIZE / 2, self.position + SIZE / 2

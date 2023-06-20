@@ -1,7 +1,8 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from src.xumes import _TestRunner, JsonTestRunner
+from xumes.game_module import JsonTestRunner
+from xumes.game_module.test_runner import _TestRunner
 
 
 # noinspection PyPep8Naming

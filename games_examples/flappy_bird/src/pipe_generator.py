@@ -61,4 +61,4 @@ class PipeGenerator:
         canvas.blit(text_surface, (0, 20))
 
     def end(self):
-        self.game.terminated = True
+        self.game.end_game()

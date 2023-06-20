@@ -2,8 +2,6 @@ import math
 from abc import abstractmethod, ABC
 
 from games_examples.flappy_bird.params import HEIGHT, WIDTH
-from games_examples.flappy_bird.testing.training_side.entities.bird_entity import BirdEntity
-from games_examples.flappy_bird.testing.training_side.entities.pipes_entity import PipesEntity
 
 
 def line_rect_intersection(line_start, line_end, rect):
@@ -57,7 +55,7 @@ class SightLine:
     def color(self):
         pass
 
-    def __init__(self, bird: BirdEntity, angle):
+    def __init__(self, bird, angle):
         self.bird = bird
         self.angle = angle
         self.max_length = 2000
@@ -80,8 +78,8 @@ class SightLine:
     def check_collision_pipe(self, pipe):
 
         intersections = []
-        intersections.extend(line_rect_intersection(self.bird.center, self.end_virtual_position(), pipe.rect1))
-        intersections.extend(line_rect_intersection(self.bird.center, self.end_virtual_position(), pipe.rect2))
+        intersections.extend(line_rect_intersection(self.bird.center, self.end_virtual_position(), tuple(pipe.rect1)))
+        intersections.extend(line_rect_intersection(self.bird.center, self.end_virtual_position(), tuple(pipe.rect2)))
 
         x_player, y_player = self.bird.center
 
@@ -96,7 +94,7 @@ class SightLine:
         return distance
 
     @abstractmethod
-    def vision(self, pipes: PipesEntity):
+    def vision(self, pipes):
         pass
 
     def check_collision_ground(self):
