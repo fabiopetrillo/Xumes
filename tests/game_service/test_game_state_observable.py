@@ -224,8 +224,8 @@ class TestGameStateObservable(TestCase):
         a = A(B(1), C(2))
 
         s = GameStateObservable(a, name="s", state=[State("b"), State("c")])
-
-        self.assertEqual(State("b"), s._find_state(State("b")))
+        f = s._find_state([State("b")])
+        self.assertEqual([State("b")], f)
 
     def test_shortest_state2(self):
         class A:

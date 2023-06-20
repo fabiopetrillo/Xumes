@@ -13,9 +13,9 @@ from xumes.game_module.state_observable import State
 
 class FlappyBirdTestRunner(JsonTestRunner):
 
-    def __init__(self, observers):
+    def __init__(self):
         self.game = Game()
-        JsonTestRunner.__init__(self, game_loop_object=self.game, observers=observers)
+        JsonTestRunner.__init__(self, game_loop_object=self.game)
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["end_game", "reset"]))
         self.game.player = self.bind(Player(position=HEIGHT // 2, game=self.game),
                                      name="player", state=[
@@ -95,8 +95,7 @@ class FlappyBirdTestRunner(JsonTestRunner):
 if __name__ == "__main__":
 
     if len(sys.argv) == 2:
-        game_service = GameService(observer=JsonGameStateObserver.get_instance(),
-                                   test_runner=FlappyBirdTestRunner(observers=[JsonGameStateObserver.get_instance()]),
+        game_service = GameService(test_runner=FlappyBirdTestRunner(),
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))
         if sys.argv[1] == "-test":

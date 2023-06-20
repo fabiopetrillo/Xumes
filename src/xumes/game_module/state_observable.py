@@ -420,15 +420,16 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             if isinstance(states, State):
                 states = [states]
 
-            for state in states:
-                if state.methods_to_observe:
-                    for method in state.methods_to_observe:
-                        if method not in self._methods_to_observe:
-                            self._methods_to_observe[method] = [state]
-                        else:
-                            self._methods_to_observe[method].append(state)
-                if state.attributes:
-                    fill_methods_to_observe(state.attributes)
+            if states:
+                for state in states:
+                    if state.methods_to_observe:
+                        for method in state.methods_to_observe:
+                            if method not in self._methods_to_observe:
+                                self._methods_to_observe[method] = [state]
+                            else:
+                                self._methods_to_observe[method].append(state)
+                    if state.attributes:
+                        fill_methods_to_observe(state.attributes)
 
         fill_methods_to_observe(self._state)
 
@@ -440,13 +441,14 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             if isinstance(states, State):
                 states = [states]
 
-            for state in states:
-                self._attributes.append(state.name)
-                if state.attributes:
-                    if isinstance(state.attributes, State):
-                        state.attributes = [state.attributes]
-                    for attribute in state.attributes:
-                        fill_attributes(attribute)
+            if states:
+                for state in states:
+                    self._attributes.append(state.name)
+                    if state.attributes:
+                        if isinstance(state.attributes, State):
+                            state.attributes = [state.attributes]
+                        for attribute in state.attributes:
+                            fill_attributes(attribute)
 
         fill_attributes(self._state)
 
@@ -471,8 +473,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
                         node.attributes.remove(s)
                     else:
                         is_in = True
-            if not is_in:
-                return False
+            return is_in
 
         node = State(attributes=self._state.copy())
         dfs(node)

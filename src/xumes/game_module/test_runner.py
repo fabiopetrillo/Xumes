@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import final, List, TypeVar
 
+from xumes.game_module.implementations.rest_impl.json_game_state_observer import JsonGameStateObserver
 from xumes.game_module.state_observable import StateObservable, State, GameStateObservable
 
 OBJ = TypeVar("OBJ")
@@ -36,7 +37,9 @@ class _TestRunner(StateObservable, ABC):
            delete_screen(): Deletes the screen if the game engine supports it.
        """
 
-    def __init__(self, game_loop_object, observers):
+    def __init__(self, game_loop_object, observers=None):
+        if observers is None:
+            observers = [JsonGameStateObserver.get_instance()]
         self._test_client = None
         self._game_state = "playing"
         super().__init__(observable_object=game_loop_object, observers=observers, name="test_runner")

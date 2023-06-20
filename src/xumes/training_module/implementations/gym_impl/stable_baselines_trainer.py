@@ -22,7 +22,8 @@ class StableBaselinesTrainer(MarkovTrainingService):
                  max_episode_length: int,
                  total_timesteps: int,
                  algorithm_type: str,
-                 algorithm):
+                 algorithm,
+                 ):
         super().__init__(entity_manager, communication_service)
         self.env = gym.make(
             id="xumes-v0",

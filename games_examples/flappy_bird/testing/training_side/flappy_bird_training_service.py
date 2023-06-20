@@ -7,15 +7,14 @@ from gymnasium.vector.utils import spaces
 
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
-from xumes.training_module import StableBaselinesTrainer, CommunicationServiceTrainingMq, JsonGameElementStateConverter, \
-    EntityManager
+from xumes.training_module import StableBaselinesTrainer, JsonGameElementStateConverter, CommunicationServiceTrainingMq
 from xumes.training_module.entity_manager import AutoEntityManager
 
 
 class FlappyBirdTrainingService(StableBaselinesTrainer):
 
     def __init__(self,
-                 entity_manager: EntityManager,
+                 entity_manager,
                  communication_service,
                  observation_space,
                  action_space,
@@ -57,13 +56,11 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
 
 if __name__ == "__main__":
     training_service = FlappyBirdTrainingService(
-        entity_manager=AutoEntityManager(
-            JsonGameElementStateConverter()
-        ),
+        entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
         communication_service=CommunicationServiceTrainingMq(),
         observation_space=spaces.Dict({
-                "speedup": spaces.Box(-float('inf'), 300, shape=(1, ), dtype=float),
-                "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=float),
+            "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
+            "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=float),
         }),
         action_space=spaces.Discrete(2),
         max_episode_length=2000,
