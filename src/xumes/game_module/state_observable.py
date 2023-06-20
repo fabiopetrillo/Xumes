@@ -160,6 +160,17 @@ class State:
             if self.func.__code__.co_code != other.func.__code__.co_code:
                 return False
 
+        if self.methods_to_observe is not None and other.methods_to_observe is not None:
+            if len(self.methods_to_observe) != len(other.methods_to_observe):
+                return False
+            for i in range(len(self.methods_to_observe)):
+                if self.methods_to_observe[i] != other.methods_to_observe[i]:
+                    return False
+        elif self.methods_to_observe is None and other.methods_to_observe is not None:
+            return False
+        elif self.methods_to_observe is not None and other.methods_to_observe is None:
+            return False
+
         if isinstance(self.attributes, State):
             self.attributes = [self.attributes]
         if isinstance(other.attributes, State):
@@ -188,7 +199,7 @@ class State:
             for attr in self.attributes:
                 if isinstance(attr, State):
                     h.append(hash(attr.name))
-        return hash((self.name, self.func, tuple(h)))
+        return hash((self.name, self.func, tuple(h), tuple(self.methods_to_observe)))
 
     def __copy__(self):
         return State(self.name, self.attributes, self.func, self.methods_to_observe)
@@ -457,24 +468,26 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         if not ends:
             return self._state
 
-        visited = set()
-
         def dfs(node):
-            if node is None or node in visited:
+            if node is None:
                 return False
-            visited.add(node)  # Mark this node as visited
 
             if node in ends:
                 return True
             is_in = False
             if node.attributes:
+                to_remove = []
                 for s in node.attributes:
                     if not dfs(s):
-                        node.attributes.remove(s)
+                        to_remove.append(s)
                     else:
                         is_in = True
+                for s in to_remove:
+                    node.attributes.remove(s)
             return is_in
 
-        node = State(attributes=self._state.copy())
-        dfs(node)
+        node = State(attributes=copy.deepcopy(self._state))
+
+        if not dfs(node):
+            raise ValueError("The state is not in the object")
         return node.attributes
