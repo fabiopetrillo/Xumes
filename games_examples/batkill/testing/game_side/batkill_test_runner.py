@@ -8,7 +8,8 @@ from xumes.game_module.implementations.pygame_impl.pygame_event_factory import P
 from xumes.game_module.implementations.rest_impl.json_game_state_observer import JsonGameStateObserver
 from xumes.game_module.implementations.rest_impl.json_test_runner import JsonTestRunner
 
-from games_examples.batkill.play import Game, worldx, bat_sprite_path, nb_bats
+from games_examples.batkill.play import Game, worldx, bat_sprite_path, nb_bats, background
+from games_examples.batkill.src.backend_player import MOVE_LEFT, MOVE_RIGHT, JUMP, ATTACK
 from games_examples.batkill.testing.game_side.batkill_observables import PlayerObservable, BatObservable
 
 
@@ -34,10 +35,25 @@ class BatKillerTestRunner(Game, JsonTestRunner):
         self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
                                           x_step=12, attack_cooldown=self.attack_cooldown,
                                           observers=observers, name="player")
+        self.dt = 0.09
 
     def game_over(self):
         if self.player.sp.lives < 1:
             self.update_state("lose")
+
+    def input(self):
+        player_actions = []
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                    player_actions.append(MOVE_LEFT)
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    player_actions.append(MOVE_RIGHT)
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    player_actions.append(JUMP)
+                if event.key == pygame.K_SPACE:
+                    player_actions.append(ATTACK)
+        return player_actions
 
     def run_test(self) -> None:
         while True:
@@ -87,6 +103,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         self.player.sp.lives -= 1
 
             self.player.sp.score += attained_score
+            self.game_over()
 
     def run_test_render(self) -> None:
         while True:
@@ -137,7 +154,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         self.player.sp.lives -= 1
 
             self.player.sp.score += attained_score
-
+            self.game_over()
             self.render()
 
     def reset(self) -> None:
@@ -146,7 +163,17 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             if bat is not None:
                 bat.detach_all()
 
-        self.initialize_values()
+        self.deterministic_bats = False
+        self.sorted_bats = {n: None for n in range(self.max_bats)}
+
+        self.loop = 0
+
+        self.backdrop = pygame.image.load(background).convert()
+        self.backdropbox = self.world.get_rect()
+        self.player_list.add(self.player)
+
+        self.running = True
+
         self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
                                           x_step=12, attack_cooldown=self.attack_cooldown,
                                           observers=self.observers, name="player")

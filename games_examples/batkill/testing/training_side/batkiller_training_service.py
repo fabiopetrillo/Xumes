@@ -110,6 +110,7 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         direction = ["nothing", "left", "right"]
         position = ["nothing", "up"]
         attack = ["nothing", "space"]
+
         self.actions = [direction[raws_actions[0]], position[raws_actions[1]], attack[raws_actions[2]]]
         return self.actions
 
@@ -179,8 +180,8 @@ if __name__ == "__main__":
         communication_service=CommunicationServiceTrainingMq(),
         observation_space=spaces.Dict(dct),
         action_space=spaces.MultiDiscrete([3, 2, 2]),
-        max_episode_length=1000,
-        total_timesteps=100000,
+        max_episode_length=2000,
+        total_timesteps=200000,
         algorithm_type="MultiInputPolicy",
         algorithm=stable_baselines3.PPO
     )
