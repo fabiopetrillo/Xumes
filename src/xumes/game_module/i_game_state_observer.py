@@ -17,6 +17,10 @@ class IGameStateObserver(Generic[ST]):
         Update or add an observable inside the observer.
         If the observation has not changed we don't update the
         collection.
+        TODO - Add a parameter to update only a specific attribute change.
+        As this: update_state(obs, "attribute_name")
+        Then we update state only for this attribute.
+
         :param obs: StateObservable object.
         """
         raise NotImplementedError

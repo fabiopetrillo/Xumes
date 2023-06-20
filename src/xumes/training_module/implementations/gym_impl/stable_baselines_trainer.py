@@ -22,7 +22,8 @@ class StableBaselinesTrainer(MarkovTrainingService):
                  max_episode_length: int,
                  total_timesteps: int,
                  algorithm_type: str,
-                 algorithm):
+                 algorithm,
+                 ):
         super().__init__(entity_manager, communication_service)
         self.env = gym.make(
             id="xumes-v0",
@@ -75,7 +76,7 @@ class StableBaselinesTrainer(MarkovTrainingService):
         return self.convert_obs()
 
     @abstractmethod
-    def convert_obs(self) -> OBST: # TODO Change pass to raise NotImplementedError 
+    def convert_obs(self) -> OBST:  # TODO Change pass to raise NotImplementedError
         pass
 
     @abstractmethod

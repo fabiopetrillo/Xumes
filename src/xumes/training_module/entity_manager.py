@@ -25,6 +25,7 @@ class EntityManager(IStateEntity):
            convert(state_wrapper): Converts a game element, updates or adds it to the state.
            build_entity(game_element_state): Builds a game entity based on the provided `game_element_state`.
     """
+
     def __init__(self,
                  game_element_state_converter: IGameElementStateConverter
                  ):
@@ -60,7 +61,9 @@ class EntityManager(IStateEntity):
 
     @final
     def _update(self, game_element_state: GameElementState):
-        self.get(game_element_state.name).update(game_element_state.state)
+        u = self.get(game_element_state.name).update(game_element_state.state)
+        if u is not None:
+            self._entities[game_element_state.name] = u
 
     @final
     def _add(self, game_element_state: GameElementState):
@@ -86,3 +89,258 @@ class EntityManager(IStateEntity):
         :param game_element_state:
         """
         raise NotImplementedError
+
+
+def choose_delegate(value):
+    if isinstance(value, bool):
+        return EntityBoolAdapter(value)
+    elif isinstance(value, int):
+        return EntityIntAdapter(value)
+    elif isinstance(value, float):
+        return EntityFloatAdapter(value)
+    elif isinstance(value, complex):
+        return EntityComplexAdapter(value)
+    elif isinstance(value, str):
+        return EntityStrAdapter(value)
+    elif isinstance(value, list):
+        return EntityListAdapter(value)
+    elif isinstance(value, tuple):
+        return EntityTupleAdapter(value)
+    elif isinstance(value, set):
+        return EntitySetAdapter(value)
+    elif isinstance(value, dict):
+        if "__type__" in value:
+            return EntityObject(value)
+        return EntityDictAdapter(value)
+
+
+class Entity(IStateEntity):
+
+    def __hash__(self):
+        raise NotImplementedError
+
+
+class EntityDictAdapter(dict, Entity):
+
+    def __init__(self, value):
+        dict.__init__({})
+        for k in value:
+            if k != "__type__":
+                if isinstance(value[k], Entity):
+                    self[k] = value[k]
+                else:
+                    self[k] = choose_delegate(value[k])
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityDictAdapter(state)
+
+    def update(self, state):
+        for k in state:
+            if k in self:
+                self[k] = self[k].update(state[k])
+            else:
+                self[k] = choose_delegate(state[k])
+        return self
+
+    def __hash__(self):
+        return hash(tuple(self.keys()))
+
+
+class EntityObject(EntityDictAdapter):
+
+    def __init__(self, value):
+        EntityDictAdapter.__init__(self, value)
+        if "__type__" in value:
+            self.__type__ = value["__type__"]
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityObject(state)
+
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        raise AttributeError(f"'{self.__type__}' object has no attribute '{name}'")
+
+    def update(self, state):
+        for k in state:
+            if k != "__type__":
+                if k in self and isinstance(self[k], Entity):
+                    self[k] = self[k].update(state[k])
+                else:
+                    self[k] = choose_delegate(state[k])
+        return self
+
+
+class EntityBoolAdapter(int, Entity):
+
+    def __init__(self, value):
+        bool.__init__(value)
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityBoolAdapter(state)
+
+    def update(self, state):
+        return EntityBoolAdapter(state)
+
+    def __hash__(self):
+        return hash(bool(self))
+
+
+class EntityIntAdapter(int, Entity):
+
+    def __init__(self, value):
+        int.__init__(value)
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityIntAdapter(state)
+
+    def update(self, state):
+        return EntityIntAdapter(state)
+
+    def __hash__(self):
+        return hash(int(self))
+
+
+class EntityFloatAdapter(float, Entity):
+
+    def __init__(self, value):
+        float.__init__(value)
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityFloatAdapter(state)
+
+    def update(self, state):
+        return EntityFloatAdapter(state)
+
+    def __hash__(self):
+        return hash(float(self))
+
+
+class EntityComplexAdapter(complex, Entity):
+
+    def __init__(self, value):
+        complex.__init__(value)
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityComplexAdapter(state)
+
+    def update(self, state):
+        return EntityComplexAdapter(state)
+
+    def __hash__(self):
+        return hash(complex(self))
+
+
+class EntityStrAdapter(str, Entity):
+
+    def __init__(self, value):
+        str.__init__(value)
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityStrAdapter(state)
+
+    def update(self, state):
+        return EntityStrAdapter(state)
+
+    def __hash__(self):
+        return hash(str(self))
+
+
+class EntityListAdapter(list, Entity):
+
+    def __init__(self, value):
+        list.__init__([])
+        for i in value:
+            if isinstance(i, Entity):
+                self.append(i)
+            else:
+                self.append(choose_delegate(i))
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityListAdapter(state)
+
+    def update(self, state):
+        for i in range(len(state)):
+            if i < len(self) and isinstance(self[i], Entity):
+                self[i] = self[i].update(state[i])
+            else:
+                self.append(choose_delegate(state[i]))
+        return self
+
+    def __hash__(self):
+        return hash(tuple(self))
+
+
+class EntityTupleAdapter(tuple, Entity):
+
+    def __init__(self, value):
+        tuple.__init__((i if isinstance(i, Entity) else choose_delegate(i) for i in value))
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntityTupleAdapter(state)
+
+    def update(self, state):
+        return EntityTupleAdapter(state)
+
+    def __hash__(self):
+        return hash(tuple(self))
+
+
+class EntitySetAdapter(set, Entity):
+
+    def __init__(self, value):
+        super().__init__()
+        for i in value:
+            self.add(i if isinstance(i, Entity) else choose_delegate(i))
+
+    @staticmethod
+    def build(state) -> IStateEntity:
+        return EntitySetAdapter(state)
+
+    def update(self, state):
+        for i in state:
+            self.add(i if isinstance(i, Entity) else choose_delegate(i))
+        return self
+
+    def __hash__(self):
+        return hash(tuple(self))
+
+
+class AutoEntityManager(EntityManager):
+    def build_entity(self, game_element_state: GameElementState) -> IStateEntity:
+        if game_element_state.type == "unknown":
+            if isinstance(game_element_state.state, int):
+                return EntityIntAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, bool):
+                return EntityBoolAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, dict):
+                return EntityDictAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, str):
+                return EntityStrAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, float):
+                return EntityFloatAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, list):
+                return EntityListAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, tuple):
+                return EntityTupleAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, set):
+                return EntitySetAdapter.build(game_element_state.state)
+            elif isinstance(game_element_state.state, complex):
+                return EntityComplexAdapter.build(game_element_state.state)
+            else:
+                raise ValueError(f"Unknown type {type(game_element_state.state)}")
+        return EntityObject.build(game_element_state.state)
+
+    def __getattr__(self, item):
+        if item in self._entities:
+            return self._entities[item]
+        raise AttributeError

@@ -8,10 +8,13 @@ class JsonGameElementStateConverter(IGameElementStateConverter):
 
     def convert(self, state_wrapper: Tuple) -> GameElementState:
         name, content = state_wrapper
-        element_type = content["__type__"]
-        state = {}
-        for k in content:
-            if k != "__type__":
-                state[k] = content[k]
+        if isinstance(content, dict):
+            if "__type__" in content:
+                element_type = content["__type__"]
+                state = {}
+                for k in content:
+                    state[k] = content[k]
 
-        return GameElementState(name=name, element_type=element_type, state_obj=state)
+                return GameElementState(name=name, element_type=element_type, state_obj=state)
+
+        return GameElementState(name=name, element_type="unknown", state_obj=content)

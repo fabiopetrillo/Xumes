@@ -1,6 +1,7 @@
 import threading
 from threading import Thread, Condition
 
+from xumes.game_module.implementations import JsonGameStateObserver
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
 from xumes.game_module.i_event_factory import EventFactory
 from xumes.game_module.i_game_state_observer import IGameStateObserver
@@ -28,10 +29,11 @@ class GameService:
         update_event(event): Method used to accept external modifications to the game, such as reset. `event` represents an external event that can modify the game state.
     """
     def __init__(self,
-                 observer: IGameStateObserver,
                  test_runner: _TestRunner,
                  event_factory: EventFactory,
-                 communication_service: ICommunicationServiceGame):
+                 communication_service: ICommunicationServiceGame,
+                 observer: IGameStateObserver = JsonGameStateObserver.get_instance()
+                 ):
 
         self.comm_thread = None
         self.game_update_condition = Condition()

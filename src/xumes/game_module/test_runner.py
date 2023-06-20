@@ -1,7 +1,22 @@
-from abc import ABC, abstractmethod
-from typing import final
+from __future__ import annotations
 
-from xumes.game_module.state_observable import StateObservable
+from abc import ABC, abstractmethod
+from typing import final, List, TypeVar
+
+from xumes.game_module.implementations.rest_impl.json_game_state_observer import JsonGameStateObserver
+from xumes.game_module.state_observable import StateObservable, State, GameStateObservable
+
+OBJ = TypeVar("OBJ")
+
+
+# decorator for notifying observers
+def update_state_decorator(func, name):
+    def wrapper(self, *arg, **kw):
+        res = func(self, *arg, **kw)
+        self.update_state(name)
+        return res
+
+    return wrapper
 
 
 class _TestRunner(StateObservable, ABC):
@@ -21,7 +36,10 @@ class _TestRunner(StateObservable, ABC):
            reset(): Performs a reset from the beginning of the game.
            delete_screen(): Deletes the screen if the game engine supports it.
        """
-    def __init__(self, game_loop_object, observers):
+
+    def __init__(self, game_loop_object, observers=None):
+        if observers is None:
+            observers = [JsonGameStateObserver.get_instance()]
         self._test_client = None
         self._game_state = "playing"
         super().__init__(observable_object=game_loop_object, observers=observers, name="test_runner")
@@ -44,6 +62,16 @@ class _TestRunner(StateObservable, ABC):
     @final
     def set_client(self, client):
         self._test_client = client
+
+    @final
+    def bind(self, observable_object: OBJ, name: str, state:  List[State] | State | str | List[str] | None = None) -> GameStateObservable:
+        """
+        Add an observable object to the test runner.
+        :param observable_object: the observable object to add.
+        :param name: the name of the observable object.
+        :param state: the state of the observable object.
+        """
+        return GameStateObservable(observable_object, name, self.observers, state)
 
     @abstractmethod
     def run_test(self) -> None:
@@ -83,6 +111,3 @@ class _TestRunner(StateObservable, ABC):
         screen.
         """
         raise NotImplementedError
-
-
-

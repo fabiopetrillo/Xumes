@@ -69,6 +69,9 @@ class Game:
         if self.terminated:
             self.reset()
 
+    def end_game(self):
+        self.terminated = True
+
 
 if __name__ == "__main__":
     game = Game()

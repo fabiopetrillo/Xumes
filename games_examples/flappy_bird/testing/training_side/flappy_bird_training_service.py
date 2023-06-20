@@ -6,16 +6,15 @@ import stable_baselines3
 from gymnasium.vector.utils import spaces
 
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST
-from games_examples.flappy_bird.testing.training_side.entities.flappy_bird_entity_manager import FlappyBirdEntityManager
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
-from xumes.training_module import StableBaselinesTrainer, CommunicationServiceTrainingMq, JsonGameElementStateConverter, \
-    EntityManager
+from xumes.training_module import StableBaselinesTrainer, JsonGameElementStateConverter, CommunicationServiceTrainingMq
+from xumes.training_module.entity_manager import AutoEntityManager
 
 
 class FlappyBirdTrainingService(StableBaselinesTrainer):
 
     def __init__(self,
-                 entity_manager: EntityManager,
+                 entity_manager,
                  communication_service,
                  observation_space,
                  action_space,
@@ -25,33 +24,29 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
                  algorithm):
         super().__init__(entity_manager, communication_service, observation_space, action_space, max_episode_length,
                          total_timesteps, algorithm_type, algorithm)
-
-        self.pipes = None
-        self.bird = None
+        self.points = 0
         self.lidar = None
 
     def convert_obs(self):
-        if not self.pipes:
-            self.pipes = self.get_entity("pipes")
-        if not self.bird:
-            self.bird = self.get_entity("bird")
-        if not self.lidar and self.pipes and self.bird:
-            self.lidar = Lidar(self.pipes, self.bird)
+        if not self.lidar and self.pipe_generator and self.player:
+            self.lidar = Lidar(self.pipe_generator, self.player)
 
         self.lidar.reset()
         self.lidar.vision()
         lidar = [line.distance for line in self.lidar.sight_lines]
-        return {"speedup": np.array([self.bird.speedup]), "lidar": np.array(lidar)}
+        return {"speedup": np.array([self.player.speedup]), "lidar": np.array(lidar)}
 
     def convert_reward(self) -> float:
-        if self.game_state == "reward":
+        r = self.player.points
+        if r > self.points:
+            self.points = r
             return 1
-        elif self.game_state == "lose":
+        if self.game.terminated:
             return -1
         return 0
 
     def convert_terminated(self) -> bool:
-        return self.game_state == "lose"
+        return self.game.terminated
 
     def convert_actions(self, raws_actions) -> List[str]:
         if raws_actions == 1:
@@ -61,13 +56,11 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
 
 if __name__ == "__main__":
     training_service = FlappyBirdTrainingService(
-        entity_manager=FlappyBirdEntityManager(
-            JsonGameElementStateConverter()
-        ),
+        entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
         communication_service=CommunicationServiceTrainingMq(),
         observation_space=spaces.Dict({
-                "speedup": spaces.Box(-float('inf'), 300, shape=(1, ), dtype=float),
-                "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=float),
+            "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
+            "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=float),
         }),
         action_space=spaces.Discrete(2),
         max_episode_length=2000,

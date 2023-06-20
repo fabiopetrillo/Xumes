@@ -11,12 +11,15 @@ class JsonGameStateObserver(Dict, IGameStateObserver):
         self[obs.name] = obs.state().state
 
         def base_class():
-            for base in obs.object.__class__.__bases__:
-                if base.__name__ != "ABC" and base.__name__ != obs.object.__class__.__name__:
+            if obs.__class__.__name__ != obs.object.__class__.__name__:
+                return obs.object.__class__.__name__
+            for base in obs.__class__.__bases__:
+                if base.__name__ != "ABC" and base.__name__ != obs.__class__.__name__:
                     return base.__name__
                 return "error"
 
-        self[obs.name]['__type__'] = base_class()
+        if isinstance(self[obs.name], dict):
+            self[obs.name]['__type__'] = base_class()
 
     def remove_state(self, obs):
         if id(obs.object) in self.keys():

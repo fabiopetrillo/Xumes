@@ -31,4 +31,6 @@ class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
 
     def get_states(self) -> List:
         # Use .items to convert dict to list of tuple (KEY, VALUE).
-        return json.loads(eval(self.socket.recv().decode("utf-8"))).items()
+        states = json.loads(eval(self.socket.recv().decode("utf-8"))).items()
+        print(states)
+        return states
