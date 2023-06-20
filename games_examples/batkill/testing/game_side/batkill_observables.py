@@ -11,7 +11,7 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
 
     def __init__(self, ground_y, rect, collider_rect, x_step, attack_cooldown, observers, name):
         StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
-        StandardPlayer.__init__(self, ground_y=ground_y, rect=rect, collider_rect=collider_rect, x_step=x_step, attack_cooldown=attack_cooldown)
+        StandardPlayer.__init__(self, x=300, y=653, ground_y=ground_y, rect=rect, collider_rect=collider_rect, x_step=x_step, attack_cooldown=attack_cooldown)
         self.facing_nearest_bat = False
         self.bool_attack_rect = False
         self.notify()

@@ -162,6 +162,9 @@ class Game():
         pygame.display.flip() #Update the full display Surface to the screen
         self.dt = self.clock.tick_busy_loop(self.fps)
 
+    def reset(self):
+        self.initialize_values()
+
 
 if __name__ == "__main__":
     game = Game(max_bats=nb_bats, bat_speed=6, attack_cooldown=10, jump=True)

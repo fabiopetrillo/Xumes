@@ -180,8 +180,8 @@ if __name__ == "__main__":
         communication_service=CommunicationServiceTrainingMq(),
         observation_space=spaces.Dict(dct),
         action_space=spaces.MultiDiscrete([3, 2, 2]),
-        max_episode_length=2000,
-        total_timesteps=200000,
+        max_episode_length=20000,
+        total_timesteps=2000000000,
         algorithm_type="MultiInputPolicy",
         algorithm=stable_baselines3.PPO
     )
