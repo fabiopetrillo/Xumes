@@ -278,9 +278,12 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
         if attributes:
             try:
                 attributes_dict = {
-                    attributes.name: attributes.func(get_object_from_attributes(getattr(obj, attributes.name),
-                                                                                attributes.attributes)) if attributes.func else get_object_from_attributes(
-                        getattr(obj, attributes.name), attributes.attributes),
+                    attributes.name:
+                        attributes.func(get_object_from_attributes(
+                            getattr(obj, attributes.name), attributes.attributes))
+                        if attributes.func else
+                        get_object_from_attributes(
+                            getattr(obj, attributes.name), attributes.attributes),
                     "__type__": obj.__class__.__name__}
                 return attributes_dict
             except AttributeError:
@@ -415,6 +418,8 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         Convert the attributes to a list of State and set the state.
         :param attributes: attributes to set
         """
+
+        # Convert attributes to a list of State
         if isinstance(attributes, str):
             attributes = State(attributes)
         if isinstance(attributes, List):
@@ -427,7 +432,10 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             self._state = attributes
 
         def fill_methods_to_observe(states: List[State] | State):
-
+            """
+            Create a dict of methods to observe in keys and the states to observe in values.
+            :param states: states to observe (recursive)
+            """
             if isinstance(states, State):
                 states = [states]
 
@@ -444,11 +452,16 @@ class GameStateObservable(StateObservable[OBJ, ST]):
 
         fill_methods_to_observe(self._state)
 
+        # Find the state to observe for each method
+        # Using a dfs to find the state to observe for each method
         for method in self._methods_to_observe:
             self._methods_to_observe[method] = self._find_state(self._methods_to_observe[method])
 
         def fill_attributes(states: List[State] | State):
-
+            """
+            Create a list of attributes to observe.
+            :param states: states to observe (recursive)
+            """
             if isinstance(states, State):
                 states = [states]
 
@@ -464,7 +477,12 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         fill_attributes(self._state)
 
     def _find_state(self, ends: List[State]) -> List[State] | None:
-
+        """
+        Find the state to observe for each method.
+        :param ends: states to observe
+        :return: The state tree to observe
+        :raise ValueError: if the state is not in the object
+        """
         if not ends:
             return self._state
 
