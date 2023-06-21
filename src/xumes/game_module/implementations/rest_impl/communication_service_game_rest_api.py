@@ -25,16 +25,13 @@ class CommunicationServiceGameRestApi(ICommunicationServiceGame):
     def action(self, game_service):
         @self.app.route("/", methods=['POST'])
         def post():
-            game_service.update_event(request.json['event'])
+            # game_service.update_event(message['event'])
+            game_service.tasks.put((game_service.update_event, request.json['event']))
 
             # For every input try the build a game event
             # And add it to inputs list.
             for input_str in request.json['inputs']:
-                try:
-                    key_input = game_service.event_factory.find_input(input_str)
-                except KeyNotFoundError:
-                    return f"key {input_str} not found!"
-                game_service.inputs.append(key_input)
+                game_service.tasks.put((game_service.add_input, input_str))
 
             # Notify that the game is ready to update.
             with game_service.game_update_condition:

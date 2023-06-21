@@ -7,8 +7,7 @@ from games_examples.flappy_bird.params import HEIGHT
 from games_examples.flappy_bird.play import Game, BACKGROUND_COLOR
 from games_examples.flappy_bird.src.pipe_generator import PipeGenerator
 from games_examples.flappy_bird.src.player import Player
-from xumes.game_module import TestRunner, GameService, PygameEventFactory, \
-    CommunicationServiceGameMq
+from xumes.game_module import TestRunner, GameService, PygameEventFactory, CommunicationServiceGameMq
 from xumes.game_module.state_observable import State
 
 
@@ -82,6 +81,7 @@ class FlappyBirdTestRunner(TestRunner):
             self.game.dt = self.game.clock.tick(60) / 1000
 
     def reset(self):
+        pygame.event.clear()
         self.game.reset()
 
     def random_reset(self) -> None:

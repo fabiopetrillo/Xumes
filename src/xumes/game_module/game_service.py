@@ -1,11 +1,13 @@
+import logging
 import threading
+from queue import Queue, Empty
 from threading import Thread, Condition
 
-from xumes.game_module.implementations import JsonGameStateObserver
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
 from xumes.game_module.i_event_factory import EventFactory
 from xumes.game_module.i_game_state_observer import IGameStateObserver
 from xumes.game_module.test_runner import TestRunner
+from xumes.game_module.errors import KeyNotFoundError
 
 
 class GameService:
@@ -28,6 +30,7 @@ class GameService:
         wait(): The first method executed in the game loop. It allows the game to wait for an event sent by the training service.
         update_event(event): Method used to accept external modifications to the game, such as reset. `event` represents an external event that can modify the game state.
     """
+
     def __init__(self,
                  test_runner: TestRunner,
                  event_factory: EventFactory,
@@ -37,7 +40,7 @@ class GameService:
         self.comm_thread = None
         self.game_update_condition = Condition()
         self.get_state_condition = Condition()
-
+        self.tasks = Queue()
         self.observer = None
 
         self.test_runner = test_runner
@@ -61,6 +64,7 @@ class GameService:
         :param run_func: game_loop function to exec.
         """
         assert threading.current_thread() is threading.main_thread()
+        logging.info("Starting game loop...")
         run_func()
 
     def run(self):
@@ -108,9 +112,26 @@ class GameService:
         with self.game_update_condition:
             self.game_update_condition.wait()
 
+        # Run events from communication thread
+        while not self.tasks.empty():
+            try:
+                task = self.tasks.get(block=False)
+                func = task[0]
+                args = task[1:]
+                func(*args)
+            except Empty:
+                break
+
         # Run new events
         for key_input in self.inputs:
             key_input.press()
+
+    def add_input(self, input_str):
+        try:
+            key_input = self.event_factory.find_input(input_str)
+            self.inputs.append(key_input)
+        except KeyNotFoundError:
+            logging.error(f"Key {input_str} not found in the event factory.")
 
     def update_event(self, event: str):
         """

@@ -3,7 +3,6 @@ import logging
 
 import zmq
 
-from xumes.game_module.errors.key_not_found_error import KeyNotFoundError
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
 
 
@@ -25,15 +24,12 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
         # Get message from training service
         message = eval(self.socket.recv().decode("utf-8"))
 
-        game_service.update_event(message['event'])
+        game_service.tasks.put((game_service.update_event, message['event']))
+
         # For every input try the build a game event
         # And add it to inputs list.
         for input_str in message['inputs']:
-            try:
-                key_input = game_service.event_factory.find_input(input_str)
-                game_service.inputs.append(key_input)
-            except KeyNotFoundError:
-                pass
+            game_service.tasks.put((game_service.add_input, input_str))
 
         # Notify that the game is ready to update.
         with game_service.game_update_condition:
