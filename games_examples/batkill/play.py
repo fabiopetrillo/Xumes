@@ -164,6 +164,8 @@ class Game():
 
     def reset(self):
 
+        #pygame.event.clear()
+
         self.deterministic_bats = False
         self.sorted_bats = {n: None for n in range(self.max_bats)}
 
@@ -171,11 +173,9 @@ class Game():
 
         self.backdrop = pygame.image.load(background).convert()
         self.backdropbox = self.world.get_rect()
-        self.player_list.remove(self.player)
         self.player = Player(adventurer_sprites, self.attack_cooldown)  # spawn player
         self.player_list = pygame.sprite.Group()
         self.player_list.add(self.player)
-
         self.enemies = pygame.sprite.Group()
         self.running = True
 

@@ -1,5 +1,6 @@
 import sys
 import random
+import pygame
 
 import pygame
 from xumes.game_module.game_service import GameService
@@ -40,6 +41,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
     def game_over(self):
         if self.player.sp.lives < 1:
             self.update_state("lose")
+            self.running = False
 
     def input(self):
         player_actions = []
@@ -179,12 +181,14 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             if bat is not None:
                 bat.detach_all()
 
+        self.player.reset()
         super().reset()
-
+        self.collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
+        self.rect = pygame.Rect(300, 653, 100, 74)
         self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
                                           x_step=12, attack_cooldown=self.attack_cooldown,
                                           observers=self.observers, name="player")
-        self.player.sp.x, self.player.sp.y = 100, 653
+        self.player_list.add(self.player)
 
         self.player.sp.notify()
 

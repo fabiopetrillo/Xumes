@@ -41,6 +41,8 @@ class Player(pygame.sprite.Sprite):
 
         self.image = next(self.idle_right)
 
+        self.attack_cooldown = attack_cooldown
+
         collider_rect = pygame.Rect(335, 673, 30, 54) #left, top, width, height
         rect = pygame.Rect(300, 653, 100, 74)
         self.sp = StandardPlayer(x=300, y=653, ground_y=653, rect=rect, collider_rect=collider_rect, x_step=12, attack_cooldown=attack_cooldown)
@@ -90,3 +92,11 @@ class Player(pygame.sprite.Sprite):
                 self.image = next(self.attack_right)
             else:
                 self.image = next(self.attack_left)
+
+    def reset(self):
+        self.image = next(self.idle_right)
+
+        collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
+        rect = pygame.Rect(300, 653, 100, 74)
+        self.sp = StandardPlayer(x=300, y=653, ground_y=653, rect=rect, collider_rect=collider_rect, x_step=12,
+                                 attack_cooldown=self.attack_cooldown)
