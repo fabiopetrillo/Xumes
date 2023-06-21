@@ -55,6 +55,20 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                     player_actions.append(ATTACK)
         return player_actions
 
+    def _check_facing_nearest_bat(self):
+        distance = worldx
+        for idx, bat in self.sorted_bats.items():
+            if bat is not None:
+                d = bat.rect.x - self.player.sp.rect.x
+                abs_d = abs(d)
+                if abs_d < abs(distance):
+                    distance = d
+        facing_nearest = (distance > 0 and self.player.sp.facing > 0) or (distance < 0 and self.player.sp.facing < 0)
+        if facing_nearest and len([x for x in self.sorted_bats.values() if x is not None]) > 0:
+            return True
+        else:
+            return False
+
     def run_test(self) -> None:
         while True:
             self.test_client.wait()
@@ -102,6 +116,8 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         bat.die()
                         self.player.sp.lives -= 1
 
+            self.player.sp.facing_nearest_bat = self._check_facing_nearest_bat()
+
             self.player.sp.score += attained_score
             self.game_over()
 
@@ -145,13 +161,14 @@ class BatKillerTestRunner(Game, JsonTestRunner):
                         self.enemies.remove(bat)
                         bat.kill()
                         bat.detach_all()
-                        bat.notify()
+                        #bat.notify()
                         self.sorted_bats[idx] = None
                     elif bat.collider_rect is not None and self.player.sp.collider_rect.colliderect(
                             bat.collider_rect):
                         bat.die()
                         self.player.sp.lives -= 1
 
+            self.player.sp.facing_nearest_bat = self._check_facing_nearest_bat()
             self.player.sp.score += attained_score
             self.game_over()
             self.render()
@@ -162,28 +179,14 @@ class BatKillerTestRunner(Game, JsonTestRunner):
             if bat is not None:
                 bat.detach_all()
 
-        #self.deterministic_bats = False
-        #self.sorted_bats = {n: None for n in range(self.max_bats)}
-
-        #self.loop = 0
-
-        #self.backdrop = pygame.image.load(background).convert()
-        #self.backdropbox = self.world.get_rect()
-        #self.player_list.add(self.player)
-
-        #self.running = True
-
         super().reset()
 
         self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
                                           x_step=12, attack_cooldown=self.attack_cooldown,
                                           observers=self.observers, name="player")
-        #self.player.sp.x, self.player.sp.y = 100, 653
+        self.player.sp.x, self.player.sp.y = 100, 653
 
         self.player.sp.notify()
-        #for idx, bat in self.sorted_bats.items():
-        #    if bat is not None:
-        #        bat.notify()
 
     def random_reset(self) -> None:
         self.reset()

@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
 
         collider_rect = pygame.Rect(335, 673, 30, 54) #left, top, width, height
         rect = pygame.Rect(300, 653, 100, 74)
-        self.sp = StandardPlayer(ground_y=653, rect=rect, collider_rect=collider_rect, x_step=12, attack_cooldown=attack_cooldown)
+        self.sp = StandardPlayer(x=300, y=653, ground_y=653, rect=rect, collider_rect=collider_rect, x_step=12, attack_cooldown=attack_cooldown)
 
 
     @property

@@ -125,12 +125,12 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         if "up" in self.actions:
             reward -= 0.2
 
-        if player.score > self.score:
+        if player.score != self.score:
             reward += 5
             self.score = player.score
-        if player.lives < self.lives:
-            self.lives = player.lives
+        if player.lives != self.lives:
             reward -= 5
+            self.lives = player.lives
 
         if player.facing_nearest_bat is True:
             reward += 0.2
@@ -139,18 +139,16 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         for i in range(nb_bats):
             try:
                 bat = self.get_entity("bat_"+str(i))
-                is_dead = bat.dead
+                existed_bat = True
             except KeyError:
-                is_dead = True
-            if not is_dead:
+                existed_bat = False
+            if existed_bat:
                 if bat.direction == -1:
                     if bat.position[0] < player.position[0]:
                         reward += 0.1
                 else:
                     if bat.position[0] > player.position[0]:
                         reward += 0.1
-            if player.attack_rect:
-                reward += 5
 
         return reward
 
@@ -181,7 +179,7 @@ if __name__ == "__main__":
         observation_space=spaces.Dict(dct),
         action_space=spaces.MultiDiscrete([3, 2, 2]),
         max_episode_length=20000,
-        total_timesteps=2000000000,
+        total_timesteps=300000,
         algorithm_type="MultiInputPolicy",
         algorithm=stable_baselines3.PPO
     )

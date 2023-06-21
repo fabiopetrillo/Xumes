@@ -23,8 +23,8 @@ class PlayerObservable(StandardPlayer, StateObservable, ABC):
     def state(self):
         return GameElementState({
             "position": {
-                "x": self.x,
-                "y": self.y
+                "x": self.rect.x,
+                "y": self.rect.y
             },
             "direction": self.facing,
             "jump": self.jumping,
