@@ -2,31 +2,31 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 
 from xumes.game_module import JsonTestRunner
-from xumes.game_module.test_runner import _TestRunner
+from xumes.game_module.test_runner import TestRunner
 
 
 # noinspection PyPep8Naming
 class Test_TestRunner(TestCase):
 
-    @patch.multiple(_TestRunner, __abstractmethods__=set())
+    @patch.multiple(TestRunner, __abstractmethods__=set())
     def setUp(self) -> None:
         self.game_service = Mock()
         self.observer1 = Mock()
         self.state = Mock()
         self.game_loop_object = Mock()
 
-        self.test_runner = _TestRunner(game_loop_object=self.game_loop_object, observers=[self.observer1])
+        self.test_runner = TestRunner(game_loop_object=self.game_loop_object, observers=[self.observer1])
 
-    @patch.multiple(_TestRunner, __abstractmethods__=set())
+    @patch.multiple(TestRunner, __abstractmethods__=set())
     def test_init(self):
         # Create with one observer
         try:
-            _TestRunner(game_loop_object=self.game_loop_object, observers=self.observer1)
+            TestRunner(game_loop_object=self.game_loop_object, observers=self.observer1)
         except Exception as e:
             self.fail(f"Can't add one observer on init, {e}.")
         # Create with a list of observers
         try:
-            _TestRunner(game_loop_object=self.game_loop_object, observers=[self.observer1])
+            TestRunner(game_loop_object=self.game_loop_object, observers=[self.observer1])
         except Exception as e:
             self.fail(f"Can't add a list of observers on init, {e}.")
 

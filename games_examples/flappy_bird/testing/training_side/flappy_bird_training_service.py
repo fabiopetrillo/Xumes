@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import List
 
@@ -55,6 +56,12 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-train":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+        elif sys.argv[1] == "-play":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
     training_service = FlappyBirdTrainingService(
         entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
         communication_service=CommunicationServiceTrainingMq(),
@@ -69,7 +76,7 @@ if __name__ == "__main__":
         algorithm=stable_baselines3.PPO
     )
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         if sys.argv[1] == "-train":
             training_service.train()
             training_service.save("./models/model")

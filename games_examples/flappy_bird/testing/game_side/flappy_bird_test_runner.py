@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import pygame
@@ -6,16 +7,16 @@ from games_examples.flappy_bird.params import HEIGHT
 from games_examples.flappy_bird.play import Game, BACKGROUND_COLOR
 from games_examples.flappy_bird.src.pipe_generator import PipeGenerator
 from games_examples.flappy_bird.src.player import Player
-from xumes.game_module import JsonTestRunner, GameService, JsonGameStateObserver, PygameEventFactory, \
+from xumes.game_module import TestRunner, GameService, PygameEventFactory, \
     CommunicationServiceGameMq
 from xumes.game_module.state_observable import State
 
 
-class FlappyBirdTestRunner(JsonTestRunner):
+class FlappyBirdTestRunner(TestRunner):
 
     def __init__(self):
+        super().__init__()
         self.game = Game()
-        JsonTestRunner.__init__(self, game_loop_object=self.game)
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["end_game", "reset"]))
         self.game.player = self.bind(Player(position=HEIGHT // 2, game=self.game),
                                      name="player", state=[
@@ -94,7 +95,12 @@ class FlappyBirdTestRunner(JsonTestRunner):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-test":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+        if sys.argv[1] == "-render":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
         game_service = GameService(test_runner=FlappyBirdTestRunner(),
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))

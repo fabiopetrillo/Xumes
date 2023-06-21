@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List
 
 import zmq
@@ -8,8 +9,9 @@ from xumes.training_module.i_communication_service_training import ICommunicatio
 
 
 class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
-    def __init__(self):
-        print("Training server creation...")
+    def __init__(self, debug=False):
+        self.debug = debug
+        logging.info("Training server creation...")
         context = zmq.Context()
         self.socket = context.socket(zmq.REP)
         self.socket.bind("tcp://*:5555")
@@ -32,4 +34,5 @@ class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
     def get_states(self) -> List:
         # Use .items to convert dict to list of tuple (KEY, VALUE).
         states = json.loads(eval(self.socket.recv().decode("utf-8"))).items()
+        logging.debug(f"Received states: {states}")
         return states

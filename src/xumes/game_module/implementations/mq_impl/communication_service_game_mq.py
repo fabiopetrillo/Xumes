@@ -1,4 +1,5 @@
 import json
+import logging
 
 import zmq
 
@@ -11,7 +12,7 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
     def __init__(self, ip):
         context = zmq.Context()
 
-        print("Connecting to training server...")
+        logging.info("Connecting to training server...")
         self.socket = context.socket(zmq.REQ)
         self.socket.connect(f"tcp://{ip}:5555")
 

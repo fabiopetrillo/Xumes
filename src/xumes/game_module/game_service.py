@@ -5,7 +5,7 @@ from xumes.game_module.implementations import JsonGameStateObserver
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
 from xumes.game_module.i_event_factory import EventFactory
 from xumes.game_module.i_game_state_observer import IGameStateObserver
-from xumes.game_module.test_runner import _TestRunner
+from xumes.game_module.test_runner import TestRunner
 
 
 class GameService:
@@ -15,7 +15,7 @@ class GameService:
 
     Attributes:
         observer (IGameStateObserver): An object implementing the `IGameStateObserver` interface, used to observe the game state.
-        test_runner (_TestRunner): An object responsible for executing the test and updating the game state.
+        test_runner (TestRunner): An object responsible for executing the test and updating the game state.
         event_factory (EventFactory): An object implementing the `IEventFactory` interface, used to create events within the game.
         communication_service (ICommunicationServiceGame): An object responsible for communication with other the training service.
 
@@ -29,21 +29,19 @@ class GameService:
         update_event(event): Method used to accept external modifications to the game, such as reset. `event` represents an external event that can modify the game state.
     """
     def __init__(self,
-                 test_runner: _TestRunner,
+                 test_runner: TestRunner,
                  event_factory: EventFactory,
                  communication_service: ICommunicationServiceGame,
-                 observer: IGameStateObserver = JsonGameStateObserver.get_instance()
                  ):
 
         self.comm_thread = None
         self.game_update_condition = Condition()
         self.get_state_condition = Condition()
 
-        self.observer = observer
+        self.observer = None
 
         self.test_runner = test_runner
         self.test_runner.set_client(self)
-        self.test_runner.update_state("playing")
 
         self.event_factory = event_factory
         self.inputs = []
@@ -124,4 +122,3 @@ class GameService:
             self.test_runner.reset()
         if event == "random_reset":
             self.test_runner.random_reset()
-        self.test_runner.update_state("playing")
