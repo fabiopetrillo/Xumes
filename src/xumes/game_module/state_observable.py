@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import copy
 import functools
+import logging
+import types
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from typing import TypeVar, Generic, final, List, Dict, Union, Tuple, Any
 
 from xumes.game_module.errors.state_conversion_error import StateConversionError
@@ -338,19 +341,6 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
         return attributes_dict
 
 
-def notify_decorator(func):
-    @functools.wraps(func)
-    def wrapper(self, name, *args, **kwargs):
-        res = func(self, name, *args, **kwargs)
-
-        if self._methods_to_observe is not None and name in self._methods_to_observe:
-            self._update = name
-            self.notify()
-        return res
-
-    return wrapper
-
-
 class GameStateObservable(StateObservable[OBJ, ST]):
     __slots__ = ('_state', '_object', '_observers', '_name', '_methods_to_observe', '_update', '_attributes')
 
@@ -361,7 +351,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
 
         self._methods_to_observe: Dict[str, List[State]] = {}  # Dict of methods to observe
         self._update = None  # Last method called
-        self._attributes = []  # Attributes to observe
+        self._attributes: Dict[str, List[str]] = {}  # Attributes to observe
         if observers is None:
             observers = []
         super().__init__(observable_object, observers, name)
@@ -388,16 +378,28 @@ class GameStateObservable(StateObservable[OBJ, ST]):
                 return True
         return False
 
-    @notify_decorator
     def __getattr__(self, attr):
         """
         Delegate the get attribute to the object and notify the observers.
         :param attr: attribute name
         :return: the attribute
         """
+
         if self._in_slots(attr):
             return object.__getattr__(self, attr)
-        return getattr(self._object, attr)
+        value = getattr(self._object, attr)
+
+        if callable(value) and attr in self._methods_to_observe:
+            def wrapped_method(*args, **kwargs):
+                result = value(*args[1:], **kwargs)
+                logging.debug("Notify observers of " + self._name + " for method " + attr)
+                self._update = attr
+                self.notify()
+                return result
+
+            return types.MethodType(wrapped_method, self)
+
+        return value
 
     def __setattr__(self, attr, value):
         """
@@ -410,6 +412,11 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             return
         setattr(self._object, attr, value)
         if attr in self._attributes:
+            logging.debug("Notify observers of " + self._name + " for attribute " + attr)
+            if self._attributes[attr]:
+                self._update = self._attributes[attr][0]
+            else:
+                self._update = None
             self.notify()
 
     @final
@@ -467,7 +474,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
 
             if states:
                 for state in states:
-                    self._attributes.append(state.name)
+                    self._attributes[state.name] = state.methods_to_observe
                     if state.attributes:
                         if isinstance(state.attributes, State):
                             state.attributes = [state.attributes]

@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 from games_examples.flappy_bird.params import PIPE_WIDTH, PIPE_SPACE, HEIGHT, PIPE_SPEED, SIZE, LEFT_POSITION

@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod, ABC
 from typing import TypeVar, final
 
@@ -68,6 +69,7 @@ class TrainingService:
 
     @final
     def push_actions(self, actions):
+        logging.debug(f"Pushing actions: {actions}")
         self._communication_service.push_actions(actions)
 
     @final
@@ -75,7 +77,9 @@ class TrainingService:
         """
         Call the game service and update the state.
         """
-        for state in self._communication_service.get_states():
+        states = self._communication_service.get_states()
+        logging.debug(f"Received states: {states}")
+        for state in states:
             self._entity_manager.convert(state)
 
     @final

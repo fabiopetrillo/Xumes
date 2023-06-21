@@ -45,11 +45,14 @@ class PipeGenerator:
             self.pipes.append(self.gen_pipe())
 
     def move(self, dt):
+        pipes_to_delete = []
         for pipe in self.pipes:
             pipe.move(dt)
             # if the pipe is out screen we delete him
             if pipe.position < -100:
-                self.pipes.remove(pipe)
+                pipes_to_delete.append(pipe)
+        for pipe in pipes_to_delete:
+            self.pipes.remove(pipe)
 
     def draw(self, canvas):
         for pipe in self.pipes:

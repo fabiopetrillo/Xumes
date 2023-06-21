@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask, request
 
 from xumes.game_module.errors.key_not_found_error import KeyNotFoundError
@@ -25,13 +27,16 @@ class CommunicationServiceGameRestApi(ICommunicationServiceGame):
     def action(self, game_service):
         @self.app.route("/", methods=['POST'])
         def post():
-            # game_service.update_event(message['event'])
             game_service.tasks.put((game_service.update_event, request.json['event']))
 
             # For every input try the build a game event
             # And add it to inputs list.
             for input_str in request.json['inputs']:
-                game_service.tasks.put((game_service.add_input, input_str))
+                try:
+                    key_input = game_service.event_factory.find_input(input_str)
+                    game_service.inputs.append(key_input)
+                except KeyNotFoundError:
+                    logging.error(f"Key {input_str} not found in the event factory.")
 
             # Notify that the game is ready to update.
             with game_service.game_update_condition:

@@ -81,7 +81,6 @@ class FlappyBirdTestRunner(TestRunner):
             self.game.dt = self.game.clock.tick(60) / 1000
 
     def reset(self):
-        pygame.event.clear()
         self.game.reset()
 
     def random_reset(self) -> None:

@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 from games_examples.flappy_bird.params import HEIGHT, WIDTH
