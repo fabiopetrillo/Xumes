@@ -218,7 +218,7 @@ class TestGetattr(unittest.TestCase):
 
         self.assertEqual(15, get_object_from_attributes(li, state_attribute))
 
-    def test_state_with_func_on_list4(self):
+    def test_state_with_func_on_list4_error(self):
         li = [1, 2, 3, 4, 5]
 
         def func_sum_raise(li):
@@ -263,7 +263,7 @@ class TestGetattr(unittest.TestCase):
 
         self.assertEqual(15, get_object_from_attributes(a, state_attribute))
 
-    def test_state_with_func_on_tuple3(self):
+    def test_state_with_func_on_tuple3_error(self):
         a = (1, 2, 3, 4, 5)
 
         state_attribute = State(func=lambda x: sum(x) + x[5])
@@ -304,7 +304,7 @@ class TestGetattr(unittest.TestCase):
 
         self.assertEqual(6, get_object_from_attributes(a, state_attribute))
 
-    def test_state_with_func_on_dict3(self):
+    def test_state_with_func_on_dict3_error(self):
         a = {"a": 1, "b": 2, "c": 3}
 
         def func_raise(x):

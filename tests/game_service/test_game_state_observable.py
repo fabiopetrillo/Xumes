@@ -206,7 +206,7 @@ class TestGameStateObservable(TestCase):
         self.assertEqual({"a": [{"b": [5, 6], "__type__": "B"}, {"b": [3, 4], "__type__": "B"}], "__type__": "A"},
                          s.state().state)
 
-    def test_shortest_state(self):
+    def test_shortest_state_trivial(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -226,7 +226,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("b")])
         self.assertEqual([State("b")], f)
 
-    def test_shortest_state2(self):
+    def test_shortest_state_same_branch(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -255,7 +255,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("d"), State("e")])
         self.assertEqual([State("b", [State("d"), State("e")])], f)
 
-    def test_shortest_state2_1(self):
+    def test_shortest_state_same_branch_all_branch(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -284,7 +284,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("b", ["d", "e"])])
         self.assertEqual([State("b", [State("d"), State("e")])], f)
 
-    def test_shortest_state3(self):
+    def test_shortest_state_all_tree(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -313,7 +313,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("b", ["d", "e"]), State("c")])
         self.assertEqual([State("b", ["d", "e"]), State("c")], f)
 
-    def test_shortest_state4(self):
+    def test_shortest_state_one_leef(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -342,7 +342,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("e")])
         self.assertEqual([State("b", ["e"])], f)
 
-    def test_shortest_state5(self):
+    def test_shortest_state_leef_not_deep(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -371,7 +371,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("c")])
         self.assertEqual([State("c")], f)
 
-    def test_shortest_state6(self):
+    def test_shortest_state_two_branch(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -400,7 +400,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("f")])
         self.assertEqual([State("b", State("e", State("f")))], f)
 
-    def test_shortest_state7(self):
+    def test_shortest_state_two_branch_split_on_second_layer(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -429,7 +429,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("e", State("f"))])
         self.assertEqual([State("b", State("e", State("f")))], f)
 
-    def test_shortest_state8(self):
+    def test_shortest_state_two_branch_limited_search(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -459,7 +459,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("d")])
         self.assertEqual([State("b", ["d"]), State("c", ["d"])], f)
 
-    def test_shortest_state9(self):
+    def test_shortest_state_results_in_two_nodes(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -489,7 +489,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("e", State("f"))])
         self.assertEqual([State("b", State("e", State("f"))), State("c", State("e", State("f")))], f)
 
-    def test_shortest_state10(self):
+    def test_shortest_state_results_in_two_node_different_shapes(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -519,7 +519,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("d")])
         self.assertEqual([State("b", "d"), State("c", State("e", State("d")))], f)
 
-    def test_shortest_state11(self):
+    def test_shortest_state_two_results_not_at_the_same_depth(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -549,7 +549,7 @@ class TestGameStateObservable(TestCase):
         f = s._find_state([State("e", State("d"))])
         self.assertEqual([State("c", State("e", State("d")))], f)
 
-    def test_shortest_state12(self):
+    def test_shortest_state_one_result_deep(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -640,7 +640,7 @@ class TestGameStateObservable(TestCase):
 
         self.assertEquals(s._state, s._find_state([]))
 
-    def test_game_state_observable(self):
+    def test_game_state_observable_methods_to_observe(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
@@ -680,7 +680,7 @@ class TestGameStateObservable(TestCase):
                        State("c", [State("e", State("d", methods_to_observe="test1"), methods_to_observe="test2")])]},
             s._methods_to_observe)
 
-    def test_game_state_observable2(self):
+    def test_game_state_observable_methods_to_observe(self):
         class A:
             def __init__(self, b, c):
                 self.b = b
