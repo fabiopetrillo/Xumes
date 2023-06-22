@@ -31,10 +31,8 @@ class GymAdapter(gym.Env):
     ) -> tuple[ObsType, dict[str, Any]]:
         if (options and "not_random" in options and options["not_random"]) or random.random() < 1 - self.random_reset_rate:
             self._training_service.reset()
-            print("reset")
         else:
             self._training_service.random_reset()
-            print("random reset")
         return self._training_service.get_obs(), {}
 
     def step(self, action: ActType) -> Tuple[ObsType, SupportsFloat, bool, bool, Dict[str, Any]]:
