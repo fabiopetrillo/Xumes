@@ -1,6 +1,7 @@
 
 from xumes.training_module.i_state_entity import IStateEntity
 from xumes.training_module.entity_manager import EntityManager
+from xumes.training_module.entity_manager import AutoEntityManager
 from xumes.training_module.implementations import *
 
 

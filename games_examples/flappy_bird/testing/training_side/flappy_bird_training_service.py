@@ -8,8 +8,8 @@ from gymnasium.vector.utils import spaces
 
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
-from xumes.training_module import StableBaselinesTrainer, JsonGameElementStateConverter, CommunicationServiceTrainingMq
-from xumes.training_module.entity_manager import AutoEntityManager
+
+from xumes.training_module import StableBaselinesTrainer, JsonGameElementStateConverter, CommunicationServiceTrainingMq, AutoEntityManager
 
 
 class FlappyBirdTrainingService(StableBaselinesTrainer):
