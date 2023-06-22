@@ -22,9 +22,10 @@ class FlappyBirdTrainingService(StableBaselinesTrainer):
                  max_episode_length: int,
                  total_timesteps: int,
                  algorithm_type: str,
-                 algorithm):
+                 algorithm,
+                 random_reset_rate: float = 0.1):
         super().__init__(entity_manager, communication_service, observation_space, action_space, max_episode_length,
-                         total_timesteps, algorithm_type, algorithm)
+                         total_timesteps, algorithm_type, algorithm, random_reset_rate)
         self.points = 0
         self.lidar = None
 
@@ -73,7 +74,8 @@ if __name__ == "__main__":
         max_episode_length=2000,
         total_timesteps=int(2e5),
         algorithm_type="MultiInputPolicy",
-        algorithm=stable_baselines3.PPO
+        algorithm=stable_baselines3.PPO,
+        random_reset_rate=0.1
     )
 
     if len(sys.argv) > 1:

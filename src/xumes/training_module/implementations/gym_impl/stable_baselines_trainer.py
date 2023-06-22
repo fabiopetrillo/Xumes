@@ -25,6 +25,7 @@ class StableBaselinesTrainer(MarkovTrainingService):
                  total_timesteps: int,
                  algorithm_type: str,
                  algorithm,
+                 random_reset_rate: float = 1.0
                  ):
         super().__init__(entity_manager, communication_service)
         self.env = Monitor(gym.make(
@@ -32,7 +33,8 @@ class StableBaselinesTrainer(MarkovTrainingService):
             max_episode_steps=max_episode_length,
             training_service=self,
             observation_space=observation_space,
-            action_space=action_space
+            action_space=action_space,
+            random_reset_rate=random_reset_rate
         ), filename=None, allow_early_resets=True)
         self.algorithm = algorithm
         self.algorithm_type = algorithm_type
@@ -51,7 +53,7 @@ class StableBaselinesTrainer(MarkovTrainingService):
             self.total_timesteps,
             callback=eval_callback,
             tb_log_name=test_name
-            )
+        )
 
     @final
     def save(self, path: str):
