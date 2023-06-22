@@ -78,8 +78,8 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "-train":
-            training_service.train()
+            training_service.train(save_path="./models", log_path="./logs", test_name="test")
             training_service.save("./models/model")
         elif sys.argv[1] == "-play":
-            training_service.load("./models/model")
+            training_service.load("./models/best_model.zip")
             training_service.play(100000)

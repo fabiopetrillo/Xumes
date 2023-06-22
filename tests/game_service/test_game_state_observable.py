@@ -206,6 +206,59 @@ class TestGameStateObservable(TestCase):
         self.assertEqual({"a": [{"b": [5, 6], "__type__": "B"}, {"b": [3, 4], "__type__": "B"}], "__type__": "A"},
                          s.state().state)
 
+    def test_obj_with_list_of_obj_func(self):
+        class A:
+            def __init__(self, b_list):
+                self.b_list = b_list
+
+            def update(self):
+                for b in self.b_list:
+                    b.update()
+
+        class B:
+            def __init__(self, b):
+                self.b = b
+
+            def update(self):
+                self.b += 1
+
+        s = GameStateObservable(A([B(1), B(2)]), "a", state=State("b_list", State("b", methods_to_observe=["update"]),
+                                                                  func=lambda x: [b["b"] for b in x]))
+        self.assertEqual({"b_list": [1, 2], "__type__": "A"}, s.state().state)
+        s2 = GameStateObservable(A([B(1), B(2)]), "a",
+                                 state=State("b_list", func=lambda x: [b.b for b in x], methods_to_observe=["update"]))
+        self.assertEqual({"b_list": [1, 2], "__type__": "A"}, s2.state().state)
+
+    def test_obj_with_list_of_obj_func_inside_func(self):
+        class A:
+            def __init__(self, b_list):
+                self.b_list = b_list
+
+        class B:
+            def __init__(self, c_list):
+                self.c_list = c_list
+
+        class C:
+            def __init__(self, c):
+                self.c = c
+
+        s = GameStateObservable(A([B([C(1), C(2)]), B([C(3)])]), "a",
+                                state=State("b_list", State("c_list", State("c", methods_to_observe=["update"]),
+                                                            ),
+                                            func=lambda x: [[c["c"] for c in b["c_list"]] for b in x]))
+        self.assertEqual({'__type__': 'A', 'b_list': [[1, 2], [3]]}, s.state().state)
+
+        s2 = GameStateObservable(A([B([C(1), C(2)]), B([C(3)])]), "a",
+                                state=State("b_list", State("c_list", methods_to_observe=["update"],
+                                                            func=lambda x: [c.c for c in x]),
+                                            func=lambda x: [b["c_list"] for b in x]))
+        self.assertEqual({'__type__': 'A', 'b_list': [[1, 2], [3]]}, s2.state().state)
+
+        s3 = GameStateObservable(A([B([C(1), C(2)]), B([C(3)])]), "a",
+                                 state=State("b_list",
+                                             func=lambda x: [[c.c for c in b.c_list] for b in x]))
+        self.assertEqual({'__type__': 'A', 'b_list': [[1, 2], [3]]}, s3.state().state)
+
     def test_shortest_state_trivial(self):
         class A:
             def __init__(self, b, c):
@@ -613,6 +666,7 @@ class TestGameStateObservable(TestCase):
             def __init__(self, b, c):
                 self.b = b
                 self.c = c
+
         a = A(1, 2)
         s = GameStateObservable(a, name="s",
                                 state=None)
@@ -623,6 +677,7 @@ class TestGameStateObservable(TestCase):
             def __init__(self, b, c):
                 self.b = b
                 self.c = c
+
         a = A(1, 2)
         s = GameStateObservable(a, name="s",
                                 state=["b", State("c", attributes=None)])
@@ -634,6 +689,7 @@ class TestGameStateObservable(TestCase):
             def __init__(self, b, c):
                 self.b = b
                 self.c = c
+
         a = A(1, 2)
         s = GameStateObservable(a, name="s",
                                 state=["b", State("c", attributes=None)])

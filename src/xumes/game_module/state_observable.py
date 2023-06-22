@@ -333,7 +333,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
         else:
             try:
                 attributes_dict = {
-                    attribute.name: get_object_from_attributes(getattr(obj, attribute.name), attribute.attributes) for
+                    attribute.name: attribute.func(get_object_from_attributes(getattr(obj, attribute.name), attribute.attributes)) if attribute.func else get_object_from_attributes(getattr(obj, attribute.name), attribute.attributes) for
                     attribute in attributes}
                 attributes_dict["__type__"] = obj.__class__.__name__
             except AttributeError as e:
@@ -395,6 +395,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
                 logging.debug("Notify observers of " + self._name + " for method " + attr)
                 self._update = attr
                 self.notify()
+                self._update = None
                 return result
 
             return types.MethodType(wrapped_method, self)
@@ -418,6 +419,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             else:
                 self._update = None
             self.notify()
+            self._update = None
 
     @final
     def set_state(self, attributes: List[State] | State | str | List[str]):
@@ -502,6 +504,8 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             is_in = False
             if node.attributes:
                 to_remove = []
+                if isinstance(node.attributes, State):
+                    node.attributes = [node.attributes]
                 for s in node.attributes:
                     if not dfs(s):
                         to_remove.append(s)

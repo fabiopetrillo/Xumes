@@ -27,16 +27,16 @@ class FlappyBirdTestRunner(TestRunner):
             return [x.left, x.top, x.right, x.bottom]
 
         self.game.pipe_generator = self.bind(PipeGenerator(game=self.game), name="pipe_generator", state=State("pipes",
-                                                                                                          [
-                                                                                                              State(
-                                                                                                                  "rect1",
-                                                                                                                  func=get_rect),
-                                                                                                              State(
-                                                                                                                  "rect2",
-                                                                                                                  func=get_rect),
-                                                                                                          ],
-                                                                                                          methods_to_observe="move"
-                                                                                                          ))
+                                                                                                               [
+                                                                                                                   State(
+                                                                                                                       "rect1",
+                                                                                                                       func=get_rect),
+                                                                                                                   State(
+                                                                                                                       "rect2",
+                                                                                                                       func=get_rect),
+                                                                                                               ],
+                                                                                                               methods_to_observe="move"
+                                                                                                               ))
 
     def run_test(self) -> None:
         while self.game.running:

@@ -37,7 +37,7 @@ class TrainingService:
         self._communication_service = communication_service
 
     @abstractmethod
-    def train(self):
+    def train(self, save_path: str = None, eval_freq: int = 10000):
         """
         Implementation of the training algorithm.
         """

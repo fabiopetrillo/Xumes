@@ -2,6 +2,8 @@ from abc import abstractmethod
 from typing import final, TypeVar, List
 
 import gymnasium as gym
+from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.monitor import Monitor
 
 import xumes
 
@@ -25,21 +27,31 @@ class StableBaselinesTrainer(MarkovTrainingService):
                  algorithm,
                  ):
         super().__init__(entity_manager, communication_service)
-        self.env = gym.make(
+        self.env = Monitor(gym.make(
             id="xumes-v0",
             max_episode_steps=max_episode_length,
             training_service=self,
             observation_space=observation_space,
             action_space=action_space
-        )
+        ), filename=None, allow_early_resets=True)
         self.algorithm = algorithm
         self.algorithm_type = algorithm_type
         self.total_timesteps = total_timesteps
         self.model = None
 
     @final
-    def train(self):
-        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1).learn(self.total_timesteps)
+    def train(self, save_path: str = None, eval_freq: int = 10000, log_path: str = None, test_name: str = None):
+        eval_callback = None
+        if save_path:
+            eval_callback = EvalCallback(self.env, best_model_save_path=save_path,
+                                         log_path=save_path, eval_freq=eval_freq,
+                                         deterministic=True, render=False)
+
+        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1, tensorboard_log=log_path).learn(
+            self.total_timesteps,
+            callback=eval_callback,
+            tb_log_name=test_name
+            )
 
     @final
     def save(self, path: str):
