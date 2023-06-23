@@ -1,7 +1,9 @@
+import sys
 from abc import abstractmethod
 from typing import final, TypeVar, List
 
 import gymnasium as gym
+import stable_baselines3
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 
@@ -19,27 +21,41 @@ class StableBaselinesTrainer(MarkovTrainingService):
     def __init__(self,
                  entity_manager: EntityManager,
                  communication_service: ICommunicationServiceTraining,
-                 observation_space,
-                 action_space,
-                 max_episode_length: int,
-                 total_timesteps: int,
-                 algorithm_type: str,
-                 algorithm,
+                 observation_space=None,
+                 action_space=None,
+                 max_episode_length: int = 1000,
+                 total_timesteps: int = 1000000,
+                 algorithm_type: str = "MultiInputPolicy",
+                 algorithm=stable_baselines3.PPO,
                  random_reset_rate: float = 1.0
                  ):
         super().__init__(entity_manager, communication_service)
-        self.env = Monitor(gym.make(
-            id="xumes-v0",
-            max_episode_steps=max_episode_length,
-            training_service=self,
-            observation_space=observation_space,
-            action_space=action_space,
-            random_reset_rate=random_reset_rate
-        ), filename=None, allow_early_resets=True)
+        if observation_space is not None and action_space is not None:
+            self.env = Monitor(gym.make(
+                id="xumes-v0",
+                max_episode_steps=max_episode_length,
+                training_service=self,
+                observation_space=observation_space,
+                action_space=action_space,
+                random_reset_rate=random_reset_rate
+            ), filename=None, allow_early_resets=True)
         self.algorithm = algorithm
         self.algorithm_type = algorithm_type
         self.total_timesteps = total_timesteps
         self.model = None
+
+    @final
+    def make(self):
+        if self.observation_space is None or self.action_space is None:
+            raise Exception("Observation space and action space must be set before calling make")
+        self.env = Monitor(gym.make(
+            id="xumes-v0",
+            max_episode_steps=self.max_episode_length,
+            training_service=self,
+            observation_space=self.observation_space,
+            action_space=self.action_space,
+            random_reset_rate=self.random_reset_rate
+        ), filename=None, allow_early_resets=True)
 
     @final
     def train(self, save_path: str = None, eval_freq: int = 10000, log_path: str = None, test_name: str = None):
@@ -65,12 +81,21 @@ class StableBaselinesTrainer(MarkovTrainingService):
 
     @final
     def play(self, timesteps: int):
-        obs, info = self.env.reset()
-        for _ in range(timesteps):
+        obs, _ = self.env.reset()
+
+        def step():
+            nonlocal obs
             action, _states = self.model.predict(obs, deterministic=True)
             obs, reward, terminated, done, info = self.env.step(action)
             if done or terminated:
                 self.env.reset(options={"not_random": True})
+
+        if not timesteps:
+            while True:
+                step()
+        else:
+            for _ in range(timesteps):
+                step()
 
     @final
     def reward(self):

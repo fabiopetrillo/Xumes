@@ -47,3 +47,6 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
                 game_service.get_state_condition.wait()
             self.observe(game_service)
             self.action(game_service)
+
+    def stop(self) -> None:
+        self.socket.close()

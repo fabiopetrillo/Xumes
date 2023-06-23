@@ -36,6 +36,20 @@ class TrainingService:
         self._entity_manager = entity_manager
         self._communication_service = communication_service
 
+    def train_and_save(self, save_path: str = None, inter_save_path: str = None, eval_freq: int = 10000):
+        """
+        Implementation of the training algorithm.
+        """
+        self.train(inter_save_path, eval_freq)
+        self.save(save_path)
+
+    def load_and_play(self, timesteps: int, load_path: str = None):
+        """
+        Implementation of the training algorithm.
+        """
+        self.load(load_path)
+        self.play(timesteps)
+
     @abstractmethod
     def train(self, save_path: str = None, eval_freq: int = 10000):
         """
@@ -73,6 +87,10 @@ class TrainingService:
         self._communication_service.push_actions(actions)
 
     @final
+    def close_communication(self):
+        self._communication_service.close()
+
+    @final
     def retrieve_state(self) -> None:
         """
         Call the game service and update the state.
@@ -96,6 +114,9 @@ class TrainingService:
 
     def __getattr__(self, item):
         return self.get_entity(item)
+
+    def __del__(self):
+        self.close_communication()
 
 
 class MarkovTrainingService(TrainingService, ABC):  # TODO Move class to implementations folder

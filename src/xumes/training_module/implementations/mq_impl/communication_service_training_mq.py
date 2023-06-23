@@ -9,12 +9,11 @@ from xumes.training_module.i_communication_service_training import ICommunicatio
 
 
 class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
-    def __init__(self, debug=False):
-        self.debug = debug
+    def __init__(self, port=5555):
         logging.info("Training server creation...")
         context = zmq.Context()
         self.socket = context.socket(zmq.REP)
-        self.socket.bind("tcp://*:5555")
+        self.socket.bind("tcp://*:{}".format(port))
 
     def push_event(self, event: str) -> None:
         try:
@@ -35,3 +34,6 @@ class CommunicationServiceTrainingMq(ICommunicationServiceTraining):
         # Use .items to convert dict to list of tuple (KEY, VALUE).
         states = json.loads(eval(self.socket.recv().decode("utf-8"))).items()
         return states
+
+    def close(self) -> None:
+        self.socket.close()
