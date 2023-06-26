@@ -14,10 +14,9 @@ class CommunicationServiceTrainerManagerRestApi(ICommunicationServiceTrainerMana
     def connect_trainer(self, trainer_manager) -> None:
         @self.app.route("/connect", methods=['POST'])
         def connect():
-            feature, scenario, port, mode = request.json['feature'], request.json['scenario'], request.json['port'], \
-                request.json['mode']
-            trainer_manager.connect_trainer(feature, scenario, port, mode)
-            return "Trainer connected!"
+            feature, scenario, mode = request.json['feature'], request.json['scenario'], request.json['mode']
+            trainer_manager.connect_trainer(feature, scenario, mode)
+            return {"port": trainer_manager.get_port(feature, scenario)}
 
     def disconnect_trainer(self, trainer_manager) -> None:
         @self.app.route("/disconnect", methods=['POST'])

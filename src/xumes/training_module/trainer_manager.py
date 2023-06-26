@@ -48,6 +48,72 @@ class thread_with_trace(threading.Thread):
         self.killed = True
 
 
+class TrainerManager:
+
+    def __init__(self):
+        for file in os.listdir("./trainers"):
+            if file.endswith(".py"):
+                module_name = file[:-3]
+                module_path = os.path.join("./trainers", file)
+                module = compile(open(module_path).read(), module_path, 'exec')
+                exec(module, globals(), locals())
+                module_dep = importlib.import_module(f"trainers.{module_name}")
+
+        self._trainer_threads = {}
+        self._trainer_objects = {}
+        self._ports = {}
+
+        self._communication_service = CommunicationServiceTrainerManagerRestApi()
+
+    def run(self):
+        self._communication_service.run(self)
+
+    def connect_trainer(self, feature: str, scenario: str, mode: str) -> None:
+        """
+        Connects a trainer to the training module.
+
+        :param feature:
+        :param scenario:
+        :param mode:
+        :return:
+        """
+        port = self._get_free_port(feature, scenario)
+        trainer = self.create_trainer(feature, scenario, port)
+
+        self._trainer_objects[feature + scenario] = trainer
+
+        if mode == TRAIN_MODE:
+            thread = thread_with_trace(target=trainer.train,
+                                       args=("./models/" + feature + "/" + scenario + "/",))
+            self._trainer_threads[feature + scenario] = thread
+            thread.start()
+        elif mode == TEST_MODE:
+            thread = thread_with_trace(target=trainer.load_and_play,
+                                       args=(None, "./models/" + feature + "/" + scenario + "/best_model.zip",))
+            self._trainer_threads[feature + scenario] = thread
+            thread.start()
+
+    def disconnect_trainer(self, feature: str, scenario: str) -> None:
+        if feature + scenario in self._trainer_threads and feature + scenario in self._trainer_objects:
+            self._trainer_objects[feature + scenario].close_communication()
+            self._trainer_threads[feature + scenario].kill()
+            self._trainer_threads[feature + scenario].join()
+            del self._trainer_threads[feature + scenario]
+            del self._trainer_objects[feature + scenario]
+            self._ports.pop(feature + scenario)
+
+    @abstractmethod
+    def create_trainer(self, feature: str, scenario: str, port: int) -> TrainingService:
+        raise NotImplementedError
+
+    def _get_free_port(self, feature: str, scenario: str):
+        port = 5001
+        while port in self._ports:
+            port += 1
+        self._ports[feature + scenario] = port
+        return port
+
+
 def create_registry():
     registry = {}
 
@@ -81,77 +147,14 @@ def make_config():
     return create_registry()
 
 
-class TrainerManager:
+class StableBaselinesTrainerManager(TrainerManager):
     observation = make_observation()
     action = make_action()
     reward = make_reward()
     terminated = make_terminated()
     config = make_config()
 
-    def __init__(self):
-        for file in os.listdir("./trainers"):
-            if file.endswith(".py"):
-                module_name = file[:-3]
-                module_path = os.path.join("./trainers", file)
-                module = compile(open(module_path).read(), module_path, 'exec')
-                exec(module, globals(), locals())
-                module_dep = importlib.import_module(f"trainers.{module_name}")
-
-        self._trainer_threads = {}
-        self._trainer_objects = {}
-
-        self._communication_service = CommunicationServiceTrainerManagerRestApi()
-
-    def run(self):
-        self._communication_service.run(self)
-
-    def connect_trainer(self, feature: str, scenario: str, port: int, mode: str) -> None:
-        """
-        Connects a trainer to the training module.
-
-        :param feature:
-        :param scenario:
-        :param port:
-        :param mode:
-        :return:
-        """
-        trainer = self.create_trainer(feature, scenario, port, mode)
-
-        self._trainer_objects[feature + scenario] = trainer
-
-        if mode == TRAIN_MODE:
-            thread = thread_with_trace(target=trainer.train,
-                                       args=("./models/" + feature + "/" + scenario + "/",))
-            self._trainer_threads[feature + scenario] = thread
-            thread.start()
-        elif mode == TEST_MODE:
-            thread = thread_with_trace(target=trainer.load_and_play,
-                                       args=(None, "./models/" + feature + "/" + scenario + "/best_model.zip",))
-            self._trainer_threads[feature + scenario] = thread
-            thread.start()
-
-    def disconnect_trainer(self, feature: str, scenario: str) -> None:
-        if feature + scenario in self._trainer_threads and feature + scenario in self._trainer_objects:
-            self._trainer_objects[feature + scenario].close_communication()
-            self._trainer_threads[feature + scenario].kill()
-            self._trainer_threads[feature + scenario].join()
-            del self._trainer_threads[feature + scenario]
-            del self._trainer_objects[feature + scenario]
-
-    @abstractmethod
-    def create_trainer(self, feature: str, scenario: str, port: int, mode: str) -> TrainingService:
-        raise NotImplementedError
-
-
-observation = TrainerManager.observation
-action = TrainerManager.action
-reward = TrainerManager.reward
-terminated = TrainerManager.terminated
-config = TrainerManager.config
-
-
-class StableBaselinesTrainerManager(TrainerManager):
-    def create_trainer(self, feature: str, scenario: str, port: int, mode: str) -> TrainingService:
+    def create_trainer(self, feature: str, scenario: str, port: int) -> TrainingService:
         class Trainer(StableBaselinesTrainer):
             def convert_obs(self) -> OBST:
                 return observation.all[feature](self)
@@ -183,3 +186,10 @@ class StableBaselinesTrainerManager(TrainerManager):
             raise Exception(f"Error while creating trainer: {e}")
 
         return trainer
+
+
+observation = StableBaselinesTrainerManager.observation
+action = StableBaselinesTrainerManager.action
+reward = StableBaselinesTrainerManager.reward
+terminated = StableBaselinesTrainerManager.terminated
+config = StableBaselinesTrainerManager.config
