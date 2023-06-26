@@ -125,11 +125,14 @@ class BatKillerTrainingService(StableBaselinesTrainer):
         if "up" in self.actions:
             reward -= 0.2
 
+        if "space" in self.actions and player.score == self.score:
+            reward -= 1
+
         if player.score != self.score:
             reward += 5
             self.score = player.score
         if player.lives != self.lives:
-            reward -= 5
+            reward -= 6
             self.lives = player.lives
 
         if player.facing_nearest_bat is True:
@@ -179,7 +182,7 @@ if __name__ == "__main__":
         observation_space=spaces.Dict(dct),
         action_space=spaces.MultiDiscrete([3, 2, 2]),
         max_episode_length=20000,
-        total_timesteps=300000,
+        total_timesteps=200000,
         algorithm_type="MultiInputPolicy",
         algorithm=stable_baselines3.PPO
     )

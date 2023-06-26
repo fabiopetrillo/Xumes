@@ -184,7 +184,7 @@ class BatKillerTestRunner(Game, JsonTestRunner):
         self.player.reset()
         super().reset()
         self.collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
-        self.rect = pygame.Rect(0, 653, 100, 74)
+        self.rect = pygame.Rect(300, 653, 100, 74)
         self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
                                           x_step=12, attack_cooldown=self.attack_cooldown,
                                           observers=self.observers, name="player")
@@ -193,21 +193,22 @@ class BatKillerTestRunner(Game, JsonTestRunner):
         self.player.sp.notify()
 
     def random_reset(self) -> None:
-        self.player.sp.detach_all()
-        for idx, bat in self.sorted_bats.items():
-            if bat is not None:
-                bat.detach_all()
+        self.reset()
+        #self.player.sp.detach_all()
+        #for idx, bat in self.sorted_bats.items():
+        #    if bat is not None:
+        #        bat.detach_all()
 
-        self.player.reset()
-        super().reset()
-        self.collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
-        self.rect = pygame.Rect(int(random.randint(0, worldx - 1)), 653, 100, 74)
-        self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
-                                          x_step=12, attack_cooldown=self.attack_cooldown,
-                                          observers=self.observers, name="player")
-        self.player_list.add(self.player)
+        #self.player.reset()
+        #super().reset()
+        #self.collider_rect = pygame.Rect(335, 673, 30, 54)  # left, top, width, height
+        #self.rect = pygame.Rect(int(random.randint(0, worldx - 1)), 653, 100, 74)
+        #self.player.sp = PlayerObservable(ground_y=653, rect=self.rect, collider_rect=self.collider_rect,
+        #                                  x_step=12, attack_cooldown=self.attack_cooldown,
+        #                                  observers=self.observers, name="player")
+        #self.player_list.add(self.player)
 
-        self.player.sp.notify()
+        #self.player.sp.notify()
 
     def delete_screen(self) -> None:
         pass
