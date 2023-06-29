@@ -1,10 +1,10 @@
 import pygame
 
-from src.components.game_status import GameStatus
-from src.config import Config
-from src.game_phases import main_menu_phase, gameplay_phase, exit_game_phase
-from src.global_state import GlobalState
-from src.services.music_service import MusicService
+from games_examples.dont_touch.src.components.game_status import GameStatus
+from games_examples.dont_touch.src.config import Config
+from games_examples.dont_touch.src.game_phases import main_menu_phase, gameplay_phase, exit_game_phase
+from games_examples.dont_touch.src.global_state import GlobalState
+from games_examples.dont_touch.src.services.music_service import MusicService
 
 pygame.init()
 

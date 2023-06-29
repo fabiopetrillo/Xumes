@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-from paths import AUDIO_DIR
+from games_examples.dont_touch.paths import AUDIO_DIR
 
 
 class MusicService:

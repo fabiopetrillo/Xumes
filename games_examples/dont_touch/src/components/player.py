@@ -1,8 +1,8 @@
 import pygame
 from pygame.locals import *
 
-from src.config import Config
-from src.services.visualization_service import VisualizationService
+from games_examples.dont_touch.src.config import Config
+from games_examples.dont_touch.src.services.visualization_service import VisualizationService
 
 vec = pygame.math.Vector2
 

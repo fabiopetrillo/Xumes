@@ -1,7 +1,7 @@
-from src.config import Config
-from src.services.score_service import ScoreService
-from src.services.visualization_service import VisualizationService
-from src.utils.tools import sine
+from games_examples.dont_touch.src.config import Config
+from games_examples.dont_touch.src.services.score_service import ScoreService
+from games_examples.dont_touch.src.services.visualization_service import VisualizationService
+from games_examples.dont_touch.src.utils.tools import sine
 
 
 class Scoreboard:

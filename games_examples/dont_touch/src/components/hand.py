@@ -2,12 +2,12 @@ import random
 
 import pygame
 
-from src.components.hand_side import HandSide
-from src.components.scoreboard import Scoreboard
-from src.config import Config
-from src.services.music_service import MusicService
-from src.services.visualization_service import VisualizationService
-from src.utils.tools import sine
+from games_examples.dont_touch.src.components.hand_side import HandSide
+from games_examples.dont_touch.src.components.scoreboard import Scoreboard
+from games_examples.dont_touch.src.config import Config
+from games_examples.dont_touch.src.services.music_service import MusicService
+from games_examples.dont_touch.src.services.visualization_service import VisualizationService
+from games_examples.dont_touch.src.utils.tools import sine
 
 
 class Hand(pygame.sprite.Sprite):

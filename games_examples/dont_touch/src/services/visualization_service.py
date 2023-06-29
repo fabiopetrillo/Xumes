@@ -1,8 +1,8 @@
 import pygame
 
-from paths import ASSETS_DIR, MENU_DIR
-from src.config import Config
-from src.utils.tools import sine
+from games_examples.dont_touch.paths import ASSETS_DIR, MENU_DIR
+from games_examples.dont_touch.src.config import Config
+from games_examples.dont_touch.src.utils.tools import sine
 
 
 class VisualizationService:

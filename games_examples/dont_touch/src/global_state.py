@@ -1,7 +1,7 @@
 import pygame
 
-from src.components.game_status import GameStatus
-from src.config import Config
+from games_examples.dont_touch.src.components.game_status import GameStatus
+from games_examples.dont_touch.src.config import Config
 
 
 class GlobalState:
