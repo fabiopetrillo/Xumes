@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import copy
-import functools
 import logging
 import types
-from abc import ABC, abstractmethod
-from contextlib import contextmanager
-from typing import TypeVar, Generic, final, List, Dict, Union, Tuple, Any
+from abc import ABC
+from typing import TypeVar, Generic, final, List, Dict
 
 from xumes.game_module.errors.state_conversion_error import StateConversionError
 from xumes.game_module.game_element_state import GameElementState
@@ -204,11 +202,16 @@ class State:
                     h.append(hash(attr.name))
         return hash((self.name, self.func, tuple(h), tuple(self.methods_to_observe)))
 
+    def __str__(self):
+        return self.name + " ".join([str(attr) for attr in self.attributes]) if self.attributes is not None else ""
+
     def __copy__(self):
         return State(self.name, self.attributes, self.func, self.methods_to_observe)
 
-    def __deepcopy__(self, memodict={}):
-        return State(self.name, copy.deepcopy(self.attributes, memodict), self.func, self.methods_to_observe)
+    def __deepcopy__(self, memo_dict=None):
+        if memo_dict is None:
+            memo_dict = {}
+        return State(self.name, copy.deepcopy(self.attributes, memo_dict), self.func, self.methods_to_observe)
 
 
 def get_object_from_attributes(obj, attributes: List[State] | State | List[str] | str = None):
@@ -225,7 +228,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                                   is not found in the object.
     """
 
-    # If the object a primitive type, return it
+    # If that object a primitive type, return it
     if isinstance(obj, (int, str, bool, float, complex, bytes, bytearray, memoryview, set, frozenset)):
         return obj
 
@@ -333,7 +336,9 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
         else:
             try:
                 attributes_dict = {
-                    attribute.name: attribute.func(get_object_from_attributes(getattr(obj, attribute.name), attribute.attributes)) if attribute.func else get_object_from_attributes(getattr(obj, attribute.name), attribute.attributes) for
+                    attribute.name: attribute.func(get_object_from_attributes(getattr(obj, attribute.name),
+                                                                              attribute.attributes)) if attribute.func else get_object_from_attributes(
+                        getattr(obj, attribute.name), attribute.attributes) for
                     attribute in attributes}
                 attributes_dict["__type__"] = obj.__class__.__name__
             except AttributeError as e:
@@ -365,7 +370,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         Here it is a dictionary with the attributes of the object.
         """
         return GameElementState(get_object_from_attributes(self._object, self._state if not self._update else
-        self._methods_to_observe[self._update]))
+                                                           self._methods_to_observe[self._update]))
 
     def _in_slots(self, attr) -> bool:
         """
@@ -451,11 +456,11 @@ class GameStateObservable(StateObservable[OBJ, ST]):
             if states:
                 for state in states:
                     if state.methods_to_observe:
-                        for method in state.methods_to_observe:
-                            if method not in self._methods_to_observe:
-                                self._methods_to_observe[method] = [state]
+                        for method_to_observe in state.methods_to_observe:
+                            if method_to_observe not in self._methods_to_observe:
+                                self._methods_to_observe[method_to_observe] = [state]
                             else:
-                                self._methods_to_observe[method].append(state)
+                                self._methods_to_observe[method_to_observe].append(state)
                     if state.attributes:
                         fill_methods_to_observe(state.attributes)
 
@@ -515,8 +520,8 @@ class GameStateObservable(StateObservable[OBJ, ST]):
                     node.attributes.remove(s)
             return is_in
 
-        node = State(attributes=copy.deepcopy(self._state))
+        start_node = State(attributes=copy.deepcopy(self._state))
 
-        if not dfs(node):
+        if not dfs(start_node):
             raise ValueError("The state is not in the object")
-        return node.attributes
+        return start_node.attributes

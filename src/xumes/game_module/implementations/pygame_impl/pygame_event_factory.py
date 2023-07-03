@@ -1,5 +1,3 @@
-import pygame
-
 from xumes.game_module.i_game_event import IGameEvent
 from xumes.game_module.i_event_factory import EventFactory
 from xumes.game_module.implementations.pygame_impl.pygame_events import Up, Down, Left, Right, Space, KeyA, KeyB, KeyC, \
@@ -11,6 +9,7 @@ from xumes.game_module.implementations.pygame_impl.pygame_events import Up, Down
 class PygameEventFactory(EventFactory):
 
     def clear(self):
+        import pygame
         pygame.event.clear()
 
     def up(self) -> IGameEvent:

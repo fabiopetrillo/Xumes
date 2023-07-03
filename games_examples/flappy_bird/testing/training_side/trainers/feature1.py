@@ -1,10 +1,8 @@
 import numpy as np
 import stable_baselines3
 from gymnasium.vector.utils import spaces
-from numpy import float64
-
-from games_examples.flappy_bird.params import LIDAR_MAX_DIST
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
+from games_examples.flappy_bird.params import LIDAR_MAX_DIST
 from xumes.training_module.trainer_manager import observation, reward, terminated, action, config
 
 
@@ -12,18 +10,17 @@ from xumes.training_module.trainer_manager import observation, reward, terminate
 def train_impl(game_context):
     game_context.lidar = None
     game_context.points = 0
-    return {
-        "observation_space": spaces.Dict({
-            "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float64),
-            "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=float64),
-        }),
-        "action_space": spaces.Discrete(2),
-        "max_episode_length": 2000,
-        "total_timesteps": int(2e5),
-        "algorithm_type": "MultiInputPolicy",
-        "algorithm": stable_baselines3.PPO,
-        "random_reset_rate": 0.0
-    }
+
+    game_context.observation_space = spaces.Dict({
+            "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
+            "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=int),
+        })
+    game_context.action_space = spaces.Discrete(2)
+    game_context.max_episode_length = 2000
+    game_context.total_timesteps = int(1e3)
+    game_context.algorithm_type = "MultiInputPolicy"
+    game_context.algorithm = stable_baselines3.PPO
+    game_context.random_reset_rate = 0.0
 
 
 @observation
@@ -49,7 +46,11 @@ def train_impl(game_context):
 
 @terminated
 def train_impl(game_context):
-    return game_context.game.terminated
+    term = game_context.game.terminated or game_context.player.points >= 2
+    if term:
+        game_context.lidar.reset()
+        game_context.points = 0
+    return term
 
 
 @action

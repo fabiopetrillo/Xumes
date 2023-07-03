@@ -1,130 +1,121 @@
-import importlib
-import inspect
+import importlib.util
+import importlib.util
+import logging
 import os
-import sys
 import threading
 from abc import abstractmethod
+from multiprocessing import Process
+from queue import Queue, Empty
 from typing import List
 
+from xumes.core.registry import create_registry
 from xumes.training_module import StableBaselinesTrainer, AutoEntityManager, JsonGameElementStateConverter, \
     CommunicationServiceTrainingMq
+from xumes.training_module.i_communication_service_trainer_manager import ICommunicationServiceTrainerManager
+from xumes.training_module.i_trainer import ITrainer
 from xumes.training_module.implementations.gym_impl.stable_baselines_trainer import OBST
-from xumes.training_module.implementations.rest_impl.communication_service_trainer_manager_rest_api import \
-    CommunicationServiceTrainerManagerRestApi
-from xumes.training_module.training_service import TrainingService
+from xumes.training_module.implementations.gym_impl.vec_state_baselines_trainer import VecStableBaselinesTrainer
 
 TRAIN_MODE = "train"
 TEST_MODE = "test"
-
-
-class thread_with_trace(threading.Thread):
-    def __init__(self, *args, **keywords):
-        threading.Thread.__init__(self, *args, **keywords)
-        self.killed = False
-
-    def start(self):
-        self.__run_backup = self.run
-        self.run = self.__run
-        threading.Thread.start(self)
-
-    def __run(self):
-        sys.settrace(self.globaltrace)
-        self.__run_backup()
-        self.run = self.__run_backup
-
-    def globaltrace(self, frame, event, arg):
-        if event == 'call':
-            return self.localtrace
-        else:
-            return None
-
-    def localtrace(self, frame, event, arg):
-        if self.killed:
-            if event == 'line':
-                raise SystemExit()
-        return self.localtrace
-
-    def kill(self):
-        self.killed = True
+FEATURE_MODE = "feature"
+SCENARIO_MODE = "scenario"
 
 
 class TrainerManager:
 
-    def __init__(self):
+    def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
+                 port: int = 5000):
         for file in os.listdir("./trainers"):
             if file.endswith(".py"):
                 module_name = file[:-3]
                 module_path = os.path.join("./trainers", file)
                 module = compile(open(module_path).read(), module_path, 'exec')
                 exec(module, globals(), locals())
-                module_dep = importlib.import_module(f"trainers.{module_name}")
+                module_path = os.path.abspath(module_path)
+                module_name = os.path.basename(module_path)[:-3]
 
-        self._trainer_threads = {}
-        self._trainer_objects = {}
-        self._ports = {}
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                module_dep = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module_dep)
 
-        self._communication_service = CommunicationServiceTrainerManagerRestApi()
+        self._trainer_processes = {}
+        self._mode = mode
+        self._communication_service = communication_service
+        self._tasks = Queue()
+        self._task_condition = threading.Condition()
+        self._port = port
 
     def run(self):
-        self._communication_service.run(self)
+        threading.Thread(target=self._communication_service.run,
+                         args=(self, self._tasks, self._task_condition, self._port)).start()
 
-    def connect_trainer(self, feature: str, scenario: str, mode: str) -> None:
+        start_training = False
+        while True:
+            with self._task_condition:
+                self._task_condition.wait()
+            while not self._tasks.empty():
+                try:
+                    task = self._tasks.get(block=False)
+                    func = task[0]
+                    if func == "start_training":
+                        start_training = True
+                        break
+                    else:
+                        args = task[1:]
+                        func(*args)
+                except Empty:
+                    break
+            if start_training:
+                break
+
+    def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
         """
         Connects a trainer to the training module.
 
+        :param port:
         :param feature:
         :param scenario:
-        :param mode:
         :return:
         """
-        port = self._get_free_port(feature, scenario)
-        trainer = self.create_trainer(feature, scenario, port)
+        name = self._trainer_name(feature, scenario)
 
-        self._trainer_objects[feature + scenario] = trainer
-
-        if mode == TRAIN_MODE:
-            thread = thread_with_trace(target=trainer.train,
-                                       args=("./models/" + feature + "/" + scenario + "/",))
-            self._trainer_threads[feature + scenario] = thread
-            thread.start()
-        elif mode == TEST_MODE:
-            thread = thread_with_trace(target=trainer.load_and_play,
-                                       args=(None, "./models/" + feature + "/" + scenario + "/best_model.zip",))
-            self._trainer_threads[feature + scenario] = thread
-            thread.start()
+        if self._mode == TRAIN_MODE:
+            process = Process(target=self.create_and_train, args=(feature, scenario, port,))
+            self._trainer_processes[name] = process
+            process.start()
+        elif self._mode == TEST_MODE:
+            process = Process(target=self.create_and_play, args=(feature, scenario, port,))
+            self._trainer_processes[name] = process
+            process.start()
 
     def disconnect_trainer(self, feature: str, scenario: str) -> None:
-        if feature + scenario in self._trainer_threads and feature + scenario in self._trainer_objects:
-            self._trainer_objects[feature + scenario].close_communication()
-            self._trainer_threads[feature + scenario].kill()
-            self._trainer_threads[feature + scenario].join()
-            del self._trainer_threads[feature + scenario]
-            del self._trainer_objects[feature + scenario]
-            self._ports.pop(feature + scenario)
+        name = self._trainer_name(feature, scenario)
+        if name in self._trainer_processes:
+            self._trainer_processes[name].terminate()
+            self._trainer_processes[name].join()
+            del self._trainer_processes[name]
+
+    def create_and_train(self, feature: str, scenario: str, port: int):
+        trainer = self.create_trainer(feature, scenario, port)
+        trainer.train(self._model_path(feature, scenario))
+
+    def create_and_play(self, feature: str, scenario: str, port: int):
+        trainer = self.create_trainer(feature, scenario, port)
+        trainer.load(self._model_path(feature, scenario) + "/best_model")
+        trainer.play(timesteps=None)
 
     @abstractmethod
-    def create_trainer(self, feature: str, scenario: str, port: int) -> TrainingService:
+    def create_trainer(self, feature: str, scenario: str, port: int) -> ITrainer:
         raise NotImplementedError
 
-    def _get_free_port(self, feature: str, scenario: str):
-        port = 5001
-        while port in self._ports:
-            port += 1
-        self._ports[feature + scenario] = port
-        return port
+    @abstractmethod
+    def _trainer_name(self, feature, scenario) -> str:
+        raise NotImplementedError
 
-
-def create_registry():
-    registry = {}
-
-    def registrar(func):
-        file_path = inspect.getsourcefile(func)
-        file_name = os.path.basename(file_path[:-3])
-        registry[file_name] = func
-        return func
-
-    registrar.all = registry
-    return registrar
+    @abstractmethod
+    def _model_path(self, feature, scenario) -> str:
+        raise NotImplementedError
 
 
 def make_observation():
@@ -154,8 +145,8 @@ class StableBaselinesTrainerManager(TrainerManager):
     terminated = make_terminated()
     config = make_config()
 
-    def create_trainer(self, feature: str, scenario: str, port: int) -> TrainingService:
-        class Trainer(StableBaselinesTrainer):
+    def create_trainer(self, feature: str, scenario: str, port: int) -> ITrainer:
+        class ConcreteTrainer(StableBaselinesTrainer):
             def convert_obs(self) -> OBST:
                 return observation.all[feature](self)
 
@@ -169,23 +160,21 @@ class StableBaselinesTrainerManager(TrainerManager):
                 return action.all[feature](self, raws_actions)
 
         try:
-            trainer = Trainer(entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
-                              communication_service=CommunicationServiceTrainingMq(port=port))
+            trainer = ConcreteTrainer(entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
+                                      communication_service=CommunicationServiceTrainingMq(port=port))
 
-            configuration = config.all[feature](trainer)
-            trainer.observation_space = configuration["observation_space"]
-            trainer.action_space = configuration["action_space"]
-            trainer.max_episode_length = configuration["max_episode_length"]
-            trainer.total_timesteps = configuration["total_timesteps"]
-            trainer.algorithm_type = configuration["algorithm_type"]
-            trainer.algorithm = configuration["algorithm"]
-            trainer.random_reset_rate = configuration["random_reset_rate"]
-
+            config.all[feature](trainer)
             trainer.make()
         except Exception as e:
             raise Exception(f"Error while creating trainer: {e}")
 
         return trainer
+
+    def _trainer_name(self, feature, scenario) -> str:
+        return feature + "_" + scenario
+
+    def _model_path(self, feature, scenario) -> str:
+        return "./models/" + feature + "/" + scenario
 
 
 observation = StableBaselinesTrainerManager.observation
@@ -193,3 +182,36 @@ action = StableBaselinesTrainerManager.action
 reward = StableBaselinesTrainerManager.reward
 terminated = StableBaselinesTrainerManager.terminated
 config = StableBaselinesTrainerManager.config
+
+
+class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
+
+    def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int):
+        super().__init__(communication_service, port=port)
+        self.vec_trainer = VecStableBaselinesTrainer()
+        self._trained_feature = None
+
+    def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
+        if self._trained_feature is None:
+            self._trained_feature = feature
+        self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port))
+
+    def train(self):
+        self.vec_trainer.make()
+        logging.info("Training model")
+        self.vec_trainer.train()
+        logging.info("Saving model")
+        self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
+
+    def play(self, timesteps: int = None):
+        self.vec_trainer.make()
+        logging.info("Loading model")
+        self.vec_trainer.load(self._model_path(self._trained_feature, "") + "/best_model")
+        logging.info("Playing model")
+        self.vec_trainer.play(timesteps)
+
+    def _trainer_name(self, feature, scenario) -> str:
+        return feature
+
+    def _model_path(self, feature, scenario) -> str:
+        return "./models/" + feature

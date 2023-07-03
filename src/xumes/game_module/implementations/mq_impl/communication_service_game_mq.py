@@ -9,7 +9,7 @@ from xumes.game_module.i_communication_service_game import ICommunicationService
 
 class CommunicationServiceGameMq(ICommunicationServiceGame):
 
-    def __init__(self, ip, port=5555):
+    def __init__(self, ip, port=5001):
         context = zmq.Context()
 
         logging.info("Connecting to training server...")
@@ -17,7 +17,11 @@ class CommunicationServiceGameMq(ICommunicationServiceGame):
         self.socket.connect(f"tcp://{ip}:{port}")
 
     def observe(self, game_service) -> None:
-        # Send the game state to training service
+        if game_service.is_finished:
+            self.socket.send("finished".encode("utf-8"))
+            return
+
+        # Else we send the game state to training service
         state = game_service.observer.get_state()
         self.socket.send(json.dumps(state).encode("utf-8"))
 

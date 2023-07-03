@@ -11,21 +11,40 @@ class CommunicationServiceTrainerManagerRestApi(ICommunicationServiceTrainerMana
     def __init__(self):
         self.app = Flask(__name__)
 
-    def connect_trainer(self, trainer_manager) -> None:
+    def connect_trainer(self, trainer_manager, tasks, task_condition) -> None:
         @self.app.route("/connect", methods=['POST'])
         def connect():
-            feature, scenario, mode = request.json['feature'], request.json['scenario'], request.json['mode']
-            trainer_manager.connect_trainer(feature, scenario, mode)
-            return {"port": trainer_manager.get_port(feature, scenario)}
+            feature, scenario, port = request.json['feature'], request.json['scenario'], request.json['port']
+            tasks.put((trainer_manager.connect_trainer, feature, scenario, port))
+            with task_condition:
+                task_condition.notify_all()
+            return "Trainer connected!"
 
-    def disconnect_trainer(self, trainer_manager) -> None:
+    def disconnect_trainer(self, trainer_manager, tasks, task_condition) -> None:
         @self.app.route("/disconnect", methods=['POST'])
         def disconnect():
             feature, scenario = request.json['feature'], request.json['scenario']
-            trainer_manager.disconnect_trainer(feature, scenario)
+            tasks.put((trainer_manager.disconnect_trainer, feature, scenario))
+            with task_condition:
+                task_condition.notify_all()
             return "Trainer disconnected!"
 
-    def run(self, trainer_manager) -> None:
-        self.connect_trainer(trainer_manager)
-        self.disconnect_trainer(trainer_manager)
-        self.app.run()
+    def start_training(self, trainer_manager, tasks, task_condition) -> None:
+        @self.app.route("/start", methods=['POST'])
+        def start_training():
+            tasks.put(("start_training",))
+            with task_condition:
+                task_condition.notify_all()
+            return "Training started!"
+
+    def ping(self):
+        @self.app.route("/ping", methods=['GET'])
+        def ping():
+            return "pong"
+
+    def run(self, trainer_manager, tasks, task_condition, port) -> None:
+        self.connect_trainer(trainer_manager, tasks, task_condition)
+        self.disconnect_trainer(trainer_manager, tasks, task_condition)
+        self.start_training(trainer_manager, tasks, task_condition)
+        self.ping()
+        self.app.run(port=port)
