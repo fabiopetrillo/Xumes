@@ -49,3 +49,20 @@ class HandObservable(Hand, StateObservable, ABC):
             "side": self.side,
             "speed": self.new_spd
         })
+
+
+class ScoreBoardObservable(Scoreboard, StateObservable, ABC):
+
+    def __init__(self, observers, name):
+        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
+        self.notify()
+
+    def update_max_score(self):
+        super().update_max_score()
+        self.notify()
+
+    def state(self):
+        return GameElementState({
+            "current_score": self.get_current_score(),
+            "max_score": self.get_max_score()
+        })
