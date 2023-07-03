@@ -23,7 +23,7 @@ class Hand(pygame.sprite.Sprite):
         self._load_hand()
 
     def reset(self):
-        self.new_spd = random.uniform(0.5, 8)
+        self.new_spd = random.uniform(2.5, 3)
         self.can_score = True
 
         if self.side == HandSide.RIGHT:
