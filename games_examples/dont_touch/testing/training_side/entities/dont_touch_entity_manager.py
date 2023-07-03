@@ -4,7 +4,7 @@ from games_examples.dont_touch.testing.training_side.entities.hand_entity import
 from games_examples.dont_touch.testing.training_side.entities.player_entity import PlayerEntity
 
 
-class BatKillerEntityManager(EntityManager):
+class DontTouchEntityManager(EntityManager):
 
     def build_entity(self, game_element_state):
         if game_element_state.type == "Player":

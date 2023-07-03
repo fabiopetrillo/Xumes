@@ -8,7 +8,8 @@ from games_examples.dont_touch.src.global_state import GlobalState
 from games_examples.dont_touch.play import Game
 from games_examples.dont_touch.src.services.visualization_service import VisualizationService
 from games_examples.dont_touch.src.utils.tools import is_close_app_event, update_background_using_scroll
-from games_examples.dont_touch.testing.game_side.dont_touch_observables import HandObservable, PlayerObservable
+from games_examples.dont_touch.testing.game_side.dont_touch_observables import HandObservable, PlayerObservable, \
+    ScoreBoardObservable
 from games_examples.dont_touch.src.components.hand_side import HandSide
 from src.xumes.game_module.state_observable import State
 from src.xumes.game_module.test_runner import TestRunner
@@ -25,6 +26,7 @@ class DontTouchTestRunner(Game, TestRunner, JsonTestRunner):
         self.P1 = PlayerObservable(observers=observers, name="player")
         self.H1 = HandObservable(HandSide.RIGHT, observers=observers, name="right_hand")
         self.H2 = HandObservable(HandSide.LEFT, observers=observers, name="left_hand")
+        self.scoreboard = ScoreBoardObservable(observers=observers, name="scoreboard")
 
     def run_test(self) -> None:
 

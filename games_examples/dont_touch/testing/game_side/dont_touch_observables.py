@@ -12,7 +12,7 @@ from games_examples.dont_touch.src.components.scoreboard import Scoreboard
 class PlayerObservable(Player, StateObservable, ABC):
 
     def __init__(self, observers, name):
-        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
+        StateObservable.__init__(self, observers=observers, name=name)
         Player.__init__()
         self.notify()
 
@@ -32,7 +32,7 @@ class PlayerObservable(Player, StateObservable, ABC):
 class HandObservable(Hand, StateObservable, ABC):
 
     def __init__(self, hand_side: HandSide, observers, name):
-        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
+        StateObservable.__init__(self, observers=observers, name=name)
         Hand.__init__(self, hand_side)
         self.notify()
 
@@ -54,11 +54,12 @@ class HandObservable(Hand, StateObservable, ABC):
 class ScoreBoardObservable(Scoreboard, StateObservable, ABC):
 
     def __init__(self, observers, name):
-        StateObservable.__init__(self, observable_object=self, observers=observers, name=name)
+        StateObservable.__init__(self, observers=observers, name=name)
+        Scoreboard.__init__(self)
         self.notify()
 
-    def update_max_score(self):
-        super().update_max_score()
+    def increase_current_score(self):
+        super().increase_current_score()
         self.notify()
 
     def state(self):
