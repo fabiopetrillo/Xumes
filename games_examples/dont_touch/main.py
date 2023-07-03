@@ -2,7 +2,7 @@ import pygame
 
 from games_examples.dont_touch.src.components.game_status import GameStatus
 from games_examples.dont_touch.src.config import Config
-from games_examples.dont_touch.src.play import main_menu_phase, gameplay_phase, exit_game_phase
+from games_examples.dont_touch.play import main_menu_phase, gameplay_phase, exit_game_phase
 from games_examples.dont_touch.src.global_state import GlobalState
 from games_examples.dont_touch.src.services.music_service import MusicService
 
