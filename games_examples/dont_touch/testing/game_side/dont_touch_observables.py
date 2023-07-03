@@ -45,5 +45,7 @@ class HandObservable(Hand, StateObservable, ABC):
             "position": {
                 "x": self.new_x,
                 "y": self.new_y
-            }
+            },
+            "side": self.side,
+            "speed": self.new_spd
         })
