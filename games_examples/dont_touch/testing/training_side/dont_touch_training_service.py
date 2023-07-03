@@ -22,15 +22,25 @@ class   DontTouchTrainingService(StableBaselinesTrainer):
                          total_timesteps, algorithm_type, algorithm)
 
         self.score = 0
+        self.actions = ["nothing", "nothing"]
 
+    def convert_reward(self) -> float:
+        player = self.get_entity("player")
+        scoreboard = self.get_entity("scoreboard")
+        r = self.player.points
+        if r > self.points:
+            self.points = r
+            return 1
+        if self.game.terminated:
+            return -1
+        return 0
 
     def convert_terminated(self) -> bool:
-        return self.game_state == "lose"
+        return self.game.terminated
 
     def convert_actions(self, raws_actions) -> List[str]:
         direction = ["nothing", "left", "right"]
-        position = ["nothing", "up"]
-
-
-        self.actions = [direction[raws_actions[0]], position[raws_actions[1]], attack[raws_actions[2]]]
+        position = ["nothing", "up", "down"]
+        self.actions = [direction[raws_actions[0]], position[raws_actions[1]]]
         return self.actions
+

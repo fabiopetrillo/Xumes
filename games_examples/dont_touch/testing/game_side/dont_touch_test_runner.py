@@ -46,6 +46,8 @@ class DontTouchTestRunner(Game, TestRunner, JsonTestRunner):
             GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
             VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
 
+            self.game.dt = 0.09
+
     def run_test_render(self) -> None:
 
         while True:

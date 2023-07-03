@@ -70,6 +70,7 @@ class Game:
 
             self.render()
 
+
     def render(self):
         self.P1.draw(GlobalState.SCREEN)
         self.H1.draw(GlobalState.SCREEN)
