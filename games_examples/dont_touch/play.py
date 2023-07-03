@@ -28,6 +28,8 @@ class Game:
         GlobalState.load_main_screen()
         VisualizationService.load_main_game_displays()
 
+        self.terminated = False
+
         self.scoreboard = Scoreboard()
 
         # Sprite Setup
@@ -57,6 +59,7 @@ class Game:
 
             for event in events:
                 if is_close_app_event(event):
+                    self.terminated = True
                     self.reset()
                     pygame.quit()
                     sys.exit()
@@ -91,6 +94,7 @@ class Game:
         self.H1.reset()
         self.H2.reset()
         self.scoreboard.reset_current_score()
+        self.terminated = False
         time.sleep(0.5)
 
 

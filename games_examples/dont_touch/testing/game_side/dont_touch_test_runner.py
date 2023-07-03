@@ -1,32 +1,47 @@
 import sys
+import logging
 
 import pygame
 
-from xumes.game_module.implementations.rest_impl.json_test_runner import JsonTestRunner
-
+from games_examples.dont_touch.src.components.hand import Hand
+from games_examples.dont_touch.src.components.player import Player
+from games_examples.dont_touch.src.components.scoreboard import Scoreboard
 from games_examples.dont_touch.src.global_state import GlobalState
 from games_examples.dont_touch.play import Game
 from games_examples.dont_touch.src.services.visualization_service import VisualizationService
 from games_examples.dont_touch.src.utils.tools import is_close_app_event, update_background_using_scroll
-from games_examples.dont_touch.testing.game_side.dont_touch_observables import HandObservable, PlayerObservable, \
-    ScoreBoardObservable
 from games_examples.dont_touch.src.components.hand_side import HandSide
-from src.xumes.game_module.state_observable import State
-from src.xumes.game_module.test_runner import TestRunner
+
+from xumes.game_module import TestRunner, GameService, PygameEventFactory, CommunicationServiceGameMq, State
 
 
-class DontTouchTestRunner(Game, TestRunner, JsonTestRunner):
+class DontTouchTestRunner(TestRunner):
 
-    def __init__(self, observers):
+    def __init__(self):
         super().__init__()
-        JsonTestRunner.__init__(self, game_loop_object=self, observers=observers)
-
         self.game = Game()
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["reset"]))
-        self.P1 = PlayerObservable(observers=observers, name="player")
-        self.H1 = HandObservable(HandSide.RIGHT, observers=observers, name="right_hand")
-        self.H2 = HandObservable(HandSide.LEFT, observers=observers, name="left_hand")
-        self.scoreboard = ScoreBoardObservable(observers=observers, name="scoreboard")
+
+        def get_pos(pos):
+            return [pos.x, pos.y]
+
+        self.P1 = self.bind(Player(), name="player", state=[
+            State("player_position", [State("x", func=get_pos), State("y", func=get_pos)], methods_to_observe="update"),
+        ])
+        self.H1 = self.bind(Hand(HandSide.RIGHT), name="right_hand", state=[
+            State("new_x", methods_to_observe="move"),
+            State("new_y", methods_to_observe="move"),
+            State("new_spd", methods_to_observe="move")
+        ])
+        self.H2 = self.bind(Hand(HandSide.LEFT), name="left_hand", state=[
+            State("new_x", methods_to_observe="move"),
+            State("new_y", methods_to_observe="move"),
+            State("new_spd", methods_to_observe="move")
+        ])
+        self.scoreboard = self.bind(Scoreboard(), name="scoreboard", state=[
+            State("_current_score", methods_to_observe="increase_current_score"),
+            State("_max_score", methods_to_observe="update_max_score")
+        ])
 
     def run_test(self) -> None:
 
@@ -81,3 +96,22 @@ class DontTouchTestRunner(Game, TestRunner, JsonTestRunner):
     def delete_screen(self) -> None:
         pass
 
+if __name__ == "__main__":
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-test":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+        if sys.argv[1] == "-render":
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+        game_service = GameService(test_runner=DontTouchTestRunner(),
+                                   event_factory=PygameEventFactory(),
+                                   communication_service=CommunicationServiceGameMq(ip="localhost"))
+        if sys.argv[1] == "-test":
+            game_service.run()
+        if sys.argv[1] == "-render":
+            game_service.run_render()
+
+    else:
+        game = Game()
+        game.run()
