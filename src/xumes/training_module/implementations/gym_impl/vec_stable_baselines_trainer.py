@@ -54,7 +54,6 @@ class VecStableBaselinesTrainer(ITrainer):
         self.model = algorithm(algorithm_type, self._vec_env, verbose=1)
         self.model = self.model.load(path)
 
-
     def play(self, timesteps: Optional[int] = None):
 
         class InferenceWrapper(VecEnvWrapper):
@@ -74,7 +73,7 @@ class VecStableBaselinesTrainer(ITrainer):
         _envs = InferenceWrapper(self._vec_env)
         obs = _envs.reset()
 
-        active_envs = [True] * len(obs)
+        active_envs = [True] * len(self._envs)
 
         def step():
             nonlocal obs
@@ -96,13 +95,6 @@ class VecStableBaselinesTrainer(ITrainer):
                         active_envs[i] = False
                         _envs.envs[i].close()
 
-        # def step():
-        #     nonlocal obs
-        #     actions, _ = self.model.predict(obs)
-        #     try:
-        #         obs, rewards, dones, info = _envs.step(actions)
-        #     except StopIteration as e:
-        #         obs = _envs.reset()
         if not timesteps:
             while True:
                 step()

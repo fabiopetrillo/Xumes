@@ -39,16 +39,16 @@ def test_impl(test_context):
     test_context.game.dt = 0.09
 
 
-@when("The first pipe is at the top and the next pipe is at the bottom")
+@when("The first pipe is at the bottom and the next pipe is at the top")
 def test_impl(test_context):
     test_context.game.reset()
     test_context.game.pipe_generator.pipes = [Pipe(player=test_context.game.player,
                                                    generator=test_context.game.pipe_generator,
-                                                   height=HEIGHT - 50 - PIPE_SPACE,
+                                                   height=(HEIGHT - PIPE_SPACE) / 2,
                                                    position=LEFT_POSITION + SIZE / 2 + SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2),
                                               Pipe(player=test_context.game.player,
                                                    generator=test_context.game.pipe_generator,
-                                                   height=(HEIGHT - PIPE_SPACE) / 2,
+                                                   height=50,
                                                    position=LEFT_POSITION + SIZE / 2 + 2 * SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2)]
     test_context.game.pipe_generator.notify()
 

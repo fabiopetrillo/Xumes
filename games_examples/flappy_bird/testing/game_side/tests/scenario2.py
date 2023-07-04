@@ -6,7 +6,7 @@ from games_examples.flappy_bird.src.pipe import Pipe
 from games_examples.flappy_bird.src.pipe_generator import PipeGenerator
 from games_examples.flappy_bird.src.player import Player
 from xumes.game_module import State
-from xumes.game_module.test_manager import given, when, loop, then, render, clock_reset
+from xumes.game_module.test_manager import given, when, loop, then, render, log
 
 
 @given("A game with a player and a pipe generator")
@@ -69,6 +69,7 @@ def test_impl(test_context):
 
 @then("The player should have passed two pipes")
 def test_impl(test_context):
+    test_context.assert_true(test_context.game.player.points == 2)
     test_context.assert_equal(test_context.game.player.points, 2)
 
 
@@ -83,3 +84,13 @@ def test_impl(test_context):
     test_context.game.dt = test_context.game.clock.tick(60) / 1000
 
 
+@log
+def test_impl(test_context):
+    x, y = test_context.game.player.center
+    return {
+        "player": {
+            "points": test_context.game.player.points,
+            "x": x,
+            "y": y,
+        },
+    }

@@ -3,7 +3,6 @@ import threading
 from queue import Queue, Empty
 from threading import Thread, Condition
 
-from timeout_decorator import timeout
 
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
@@ -139,7 +138,6 @@ class GameService:
         # Run new events
         for key_input in self.inputs:
             key_input.press()
-
         return reset  # If reset is true, we don't need to run the game loop because we want to notify the new state.
 
     def add_input(self, input_str):

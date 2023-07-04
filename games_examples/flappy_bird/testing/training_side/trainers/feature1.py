@@ -12,12 +12,12 @@ def train_impl(game_context):
     game_context.points = 0
 
     game_context.observation_space = spaces.Dict({
-            "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
-            "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=int),
-        })
+        "speedup": spaces.Box(-float('inf'), 300, shape=(1,), dtype=float),
+        "lidar": spaces.Box(0, LIDAR_MAX_DIST, shape=(7,), dtype=int),
+    })
     game_context.action_space = spaces.Discrete(2)
     game_context.max_episode_length = 2000
-    game_context.total_timesteps = int(1e3)
+    game_context.total_timesteps = int(2e5)
     game_context.algorithm_type = "MultiInputPolicy"
     game_context.algorithm = stable_baselines3.PPO
     game_context.random_reset_rate = 0.0

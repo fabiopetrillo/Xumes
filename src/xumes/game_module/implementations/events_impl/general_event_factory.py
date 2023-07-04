@@ -1,16 +1,16 @@
+# noinspection DuplicatedCode
 from xumes.game_module.i_game_event import IGameEvent
 from xumes.game_module.i_event_factory import EventFactory
-from xumes.game_module.implementations.pygame_impl.pygame_events import Up, Down, Left, Right, Space, KeyA, KeyB, KeyC, \
+from xumes.game_module.implementations.events_impl.general_events import Up, Down, Left, Right, Space, KeyA, KeyB, KeyC, \
     KeyD, KeyE, KeyF, KeyG, KeyH, KeyI, KeyJ, KeyK, KeyL, KeyM, KeyN, KeyO, KeyP, KeyQ, KeyR, KeyS, KeyT, KeyU, KeyV, \
     KeyW, KeyX, KeyY, KeyZ, Key0, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9, Key1Pad, Key2Pad, Key3Pad, \
     Key4Pad, Key5Pad, Key6Pad, Key7Pad, Key8Pad, Key9Pad, Key0Pad
 
 
-class PygameEventFactory(EventFactory):
+class GeneralEventFactory(EventFactory):
 
     def clear(self):
-        import pygame
-        pygame.event.clear()
+        pass
 
     def up(self) -> IGameEvent:
         return Up()
