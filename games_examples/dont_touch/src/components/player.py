@@ -19,10 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.player_position = vec(0, 0)
 
     def update(self, event):
-        #print(self.pos.x, "              ", self.pos.y)
         self.acc = vec(0, 0)
-
-        #pressed_keys = pygame.key.get_pressed()
 
         if event.key == pygame.K_LEFT or event.key == pygame.K_a:
             self.acc.x = -Config.ACC

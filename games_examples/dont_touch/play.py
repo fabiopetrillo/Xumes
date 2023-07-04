@@ -18,6 +18,7 @@ from games_examples.dont_touch.src.components.game_status import GameStatus
 
 
 class Game:
+    terminated = False
 
     def __init__(self):
 
@@ -28,7 +29,7 @@ class Game:
         GlobalState.load_main_screen()
         VisualizationService.load_main_game_displays()
 
-        self.terminated = False
+        self.running = True
 
         self.scoreboard = Scoreboard()
 
@@ -53,41 +54,50 @@ class Game:
 
     def run(self):
 
-        while True:
+        while self.running:
 
             events = pygame.event.get()
 
             for event in events:
                 if is_close_app_event(event):
-                    self.terminated = True
-                    self.reset()
-                    pygame.quit()
-                    sys.exit()
+                    self.running = False
 
-            self.P1.update()
+                if event.type == pygame.KEYDOWN:
+                    self.P1.update(event)
+
             self.H1.move(self.scoreboard, self.P1.player_position)
             self.H2.move(self.scoreboard, self.P1.player_position)
 
-            GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
-            VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
+            if pygame.sprite.spritecollide(self.P1, self.hands, False, pygame.sprite.collide_mask):
+                self.scoreboard.update_max_score()
+                MusicService.play_slap_sound()
+                self.end_game()
+                time.sleep(0.5)
+
+            self.check_end()
 
             self.render()
 
 
     def render(self):
+
+        GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
+        VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
+
         self.P1.draw(GlobalState.SCREEN)
         self.H1.draw(GlobalState.SCREEN)
         self.H2.draw(GlobalState.SCREEN)
         self.scoreboard.draw(GlobalState.SCREEN)
 
-        if pygame.sprite.spritecollide(self.P1, self.hands, False, pygame.sprite.collide_mask):
-            self.scoreboard.update_max_score()
-            MusicService.play_slap_sound()
-            time.sleep(0.5)
-            self.reset()
-
         pygame.display.update()
         self.FramePerSec.tick(Config.FPS)
+
+    def check_end(self):
+        if self.terminated:
+            self.reset()
+
+    def end_game(self):
+        self.terminated = True
 
     def reset(self):
         self.P1.reset()

@@ -1,5 +1,6 @@
 import sys
 import logging
+import time
 
 import pygame
 
@@ -8,6 +9,7 @@ from games_examples.dont_touch.src.components.player import Player
 from games_examples.dont_touch.src.components.scoreboard import Scoreboard
 from games_examples.dont_touch.src.global_state import GlobalState
 from games_examples.dont_touch.play import Game
+from games_examples.dont_touch.src.services.music_service import MusicService
 from games_examples.dont_touch.src.services.visualization_service import VisualizationService
 from games_examples.dont_touch.src.utils.tools import is_close_app_event, update_background_using_scroll
 from games_examples.dont_touch.src.components.hand_side import HandSide
@@ -20,7 +22,7 @@ class DontTouchTestRunner(TestRunner):
     def __init__(self):
         super().__init__()
         self.game = Game()
-        self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["reset"]))
+        self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["end_game", "reset"]))
 
         def get_pos(pos):
             return [pos[0], pos[1]]
@@ -45,37 +47,40 @@ class DontTouchTestRunner(TestRunner):
 
     def run_test(self) -> None:
 
-        while True:
+        while self.game.running:
 
             self.test_client.wait()
             events = pygame.event.get()
 
             for event in events:
                 if is_close_app_event(event):
-                    self.reset()
-                    pygame.quit()
-                    sys.exit()
+                    self.game.running = False
+                if event.type == pygame.KEYDOWN:
+                    self.game.P1.update(event)
 
-            self.game.P1.update()
             self.game.H1.move(self.game.scoreboard, self.game.P1.player_position)
             self.game.H2.move(self.game.scoreboard, self.game.P1.player_position)
 
-            GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
-            VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
+            if pygame.sprite.spritecollide(self.game.P1, self.game.hands, False, pygame.sprite.collide_mask):
+                self.game.scoreboard.update_max_score()
+                self.game.end_game()
+                time.sleep(0.5)
+
+            self.game.check_end()
 
             self.game.dt = 0.09
 
     def run_test_render(self) -> None:
 
-        while True:
+        while self.game.running:
             self.test_client.wait()
 
             events = pygame.event.get()
 
             for event in events:
-                if is_close_app_event(event):
-                    self.game.reset()
+                if event.type == pygame.QUIT:
                     pygame.quit()
+                    self.game.terminated = True
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     self.game.P1.update(event)
@@ -83,8 +88,10 @@ class DontTouchTestRunner(TestRunner):
             self.game.H1.move(self.game.scoreboard, self.game.P1.player_position)
             self.game.H2.move(self.game.scoreboard, self.game.P1.player_position)
 
-            GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
-            VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
+            if pygame.sprite.spritecollide(self.game.P1, self.game.hands, False, pygame.sprite.collide_mask):
+                self.game.scoreboard.update_max_score()
+                self.game.end_game()
+                time.sleep(0.5)
 
             self.game.render()
 
