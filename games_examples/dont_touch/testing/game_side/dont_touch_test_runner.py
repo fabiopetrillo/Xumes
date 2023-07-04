@@ -45,6 +45,14 @@ class DontTouchTestRunner(TestRunner):
             State("_max_score", methods_to_observe="update_max_score")
         ])
 
+        self.game.hands = pygame.sprite.Group()
+        self.game.hands.add(self.game.H1)
+        self.game.hands.add(self.game.H2)
+        self.game.all_sprites = pygame.sprite.Group()
+        self.game.all_sprites.add(self.game.P1)
+        self.game.all_sprites.add(self.game.H1)
+        self.game.all_sprites.add(self.game.H2)
+
     def run_test(self) -> None:
 
         while self.game.running:
@@ -62,6 +70,7 @@ class DontTouchTestRunner(TestRunner):
             self.game.H2.move(self.game.scoreboard, self.game.P1.player_position)
 
             if pygame.sprite.spritecollide(self.game.P1, self.game.hands, False, pygame.sprite.collide_mask):
+                print("Collision")
                 self.game.scoreboard.update_max_score()
                 self.game.end_game()
                 time.sleep(0.5)
