@@ -139,7 +139,7 @@ class TestManager:
                 if not self._asserting:
                     self._assertion_bucket.add_assertion(condition)
                 else:
-                    r, actual = self._assertion_bucket.assertion(AssertionEqual(True))
+                    r, actual = self._assertion_bucket.do_assert(AssertionEqual(True))
                     if not r:
                         logging.error("Assertion failed: Expected: " + "True" + ", Actual: " + str(actual))
                     else:
@@ -152,7 +152,7 @@ class TestManager:
                 if not self._asserting:
                     self._assertion_bucket.add_assertion(actual)
                 else:
-                    r, actual = self._assertion_bucket.assertion(AssertionEqual(expected))
+                    r, actual = self._assertion_bucket.do_assert(AssertionEqual(expected))
                     if not r:
                         logging.error("Assertion failed: Expected: " + str(expected) + ", Actual: " + str(actual))
                     else:
@@ -199,9 +199,12 @@ class TestManager:
                 try:
                     # We get the logs of the current step
                     if steps not in self._logs:
-                        self._logs[steps] = {}
-                    if self._number_of_tests not in self._logs[steps]:
-                        self._logs[steps][self._number_of_tests] = []
+                        self._logs[steps] = []
+
+                    if self._number_of_tests == len(self._logs[steps]):
+                        self._logs[steps].append([])
+                    elif self._number_of_tests > len(self._logs[steps]):
+                        raise Exception("The number of tests is greater than the number of logs")
 
                     self._logs[steps][self._number_of_tests].append(log.all[steps](self))
                 except KeyError:

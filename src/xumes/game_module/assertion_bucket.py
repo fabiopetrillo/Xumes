@@ -24,7 +24,7 @@ class AssertionBucket(List[List]):
     def reset_iterator(self):
         self._iterator = 0
 
-    def assertion(self, assertion_strategy: IAssertionStrategy):
+    def do_assert(self, assertion_strategy: IAssertionStrategy):
         # Get the actual value and assert it
         actual = self[self._iterator]
         r = assertion_strategy.test(actual)
