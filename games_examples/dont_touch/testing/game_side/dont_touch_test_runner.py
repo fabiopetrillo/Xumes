@@ -23,22 +23,22 @@ class DontTouchTestRunner(TestRunner):
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["reset"]))
 
         def get_pos(pos):
-            return [pos.x, pos.y]
+            return [pos[0], pos[1]]
 
-        self.P1 = self.bind(Player(), name="player", state=[
-            State("player_position", [State("x", func=get_pos), State("y", func=get_pos)], methods_to_observe="update"),
+        self.game.P1 = self.bind(Player(), name="player", state=[
+            State("player_position", func=get_pos, methods_to_observe="update"),
         ])
-        self.H1 = self.bind(Hand(HandSide.RIGHT), name="right_hand", state=[
+        self.game.H1 = self.bind(Hand(HandSide.RIGHT), name="right_hand", state=[
             State("new_x", methods_to_observe="move"),
             State("new_y", methods_to_observe="move"),
             State("new_spd", methods_to_observe="move")
         ])
-        self.H2 = self.bind(Hand(HandSide.LEFT), name="left_hand", state=[
+        self.game.H2 = self.bind(Hand(HandSide.LEFT), name="left_hand", state=[
             State("new_x", methods_to_observe="move"),
             State("new_y", methods_to_observe="move"),
             State("new_spd", methods_to_observe="move")
         ])
-        self.scoreboard = self.bind(Scoreboard(), name="scoreboard", state=[
+        self.game.scoreboard = self.bind(Scoreboard(), name="scoreboard", state=[
             State("_current_score", methods_to_observe="increase_current_score"),
             State("_max_score", methods_to_observe="update_max_score")
         ])
@@ -56,9 +56,9 @@ class DontTouchTestRunner(TestRunner):
                     pygame.quit()
                     sys.exit()
 
-            self.P1.update()
-            self.H1.move(self.scoreboard, self.P1.player_position)
-            self.H2.move(self.scoreboard, self.P1.player_position)
+            self.game.P1.update()
+            self.game.H1.move(self.game.scoreboard, self.game.P1.player_position)
+            self.game.H2.move(self.game.scoreboard, self.game.P1.player_position)
 
             GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
             VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
@@ -74,18 +74,18 @@ class DontTouchTestRunner(TestRunner):
 
             for event in events:
                 if is_close_app_event(event):
-                    self.reset()
+                    self.game.reset()
                     pygame.quit()
                     sys.exit()
 
-            self.P1.update()
-            self.H1.move(self.scoreboard, self.P1.player_position)
-            self.H2.move(self.scoreboard, self.P1.player_position)
+            self.game.P1.update()
+            self.game.H1.move(self.game.scoreboard, self.game.P1.player_position)
+            self.game.H2.move(self.game.scoreboard, self.game.P1.player_position)
 
             GlobalState.SCROLL = update_background_using_scroll(GlobalState.SCROLL)
             VisualizationService.draw_background_with_scroll(GlobalState.SCREEN, GlobalState.SCROLL)
 
-            self.render()
+            self.game.render()
 
     def reset(self) -> None:
         self.game.reset()

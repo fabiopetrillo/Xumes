@@ -32,36 +32,36 @@ class DontTouchTrainingService(StableBaselinesTrainer):
     def convert_obs(self):
 
         return {
-            'player_x' : np.array([self.player.position[0]]),
-            'player_y' : np.array([self.player.position[0]]),
-            'left_hand_x': np.array([self.left_hand.position[0]]),
-            'left_hand_y': np.array([self.left_hand.position[1]]),
-            'left_hand_speed': np.array([self.left_hand.speed]),
-            'right_hand_x': np.array([self.right_hand.position[0]]),
-            'right_hand_y': np.array([self.right_hand.position[1]]),
-            'right_hand_speed': np.array([self.right_hand.speed]),
-            'scoreboard_current_score': np.array([self.scoreboard.current_score]),
-            'scoreboard_max_score': np.array([self.scoreboard.max_score])
+            'player_x': np.array([self.player.player_position[0]]),
+            'player_y': np.array([self.player.player_position[1]]),
+            'left_hand_x': np.array([self.left_hand.new_x]),
+            'left_hand_y': np.array([self.left_hand.new_y]),
+            'left_hand_speed': np.array([self.left_hand.new_spd]),
+            'right_hand_x': np.array([self.right_hand.new_x]),
+            'right_hand_y': np.array([self.right_hand.new_y]),
+            'right_hand_speed': np.array([self.right_hand.new_spd]),
+            'scoreboard_current_score': np.array([self.scoreboard._current_score]),
+            'scoreboard_max_score': np.array([self.scoreboard._max_score])
         }
 
     def convert_reward(self) -> float:
         reward = 0
 
-        if self.player.position[1] < Config.HEIGHT - 20:
+        if self.player.player_position[1] < Config.HEIGHT - 20:
             reward += 0.2
-        if self.scoreboard.current_score > self.score:
+        if self.scoreboard._current_score > self.score:
             reward += 5
-            self.score = self.scoreboard.currend_score
-        if self.scoreboard.current_score >= self.scoreboard.max_score:
+            self.score = self.scoreboard._current_score
+        if self.scoreboard._current_score >= self.scoreboard._max_score:
             reward += 10
         if self.game.terminated:
             reward -= 5
 
-        if self.left_hand.position[1] > self.right_hand.position[1]:
-            if self.left_hand.position[0] < self.player.poisition[0]:
+        if self.left_hand.new_y > self.right_hand.new_y:
+            if self.left_hand.new_x < self.player.player_position[0]:
                 reward += 0.1
         else:
-            if self.right_hand.position[0] > self.player.poisition[0]:
+            if self.right_hand.new_x > self.player.player_position[0]:
                 reward += 0.1
 
         return reward

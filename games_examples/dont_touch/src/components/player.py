@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.player_position = vec(0, 0)
 
     def update(self):
+        #print(self.pos.x, "              ", self.pos.y)
         self.acc = vec(0, 0)
 
         pressed_keys = pygame.key.get_pressed()
