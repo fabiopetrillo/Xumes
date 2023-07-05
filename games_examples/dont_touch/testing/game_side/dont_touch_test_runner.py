@@ -75,7 +75,7 @@ class DontTouchTestRunner(TestRunner):
                 self.game.end_game()
                 time.sleep(0.5)
 
-            self.game.check_end()
+            #self.game.check_end()
 
             self.game.dt = 0.09
 

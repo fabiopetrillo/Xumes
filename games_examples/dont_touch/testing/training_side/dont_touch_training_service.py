@@ -59,10 +59,18 @@ class DontTouchTrainingService(StableBaselinesTrainer):
 
         if self.left_hand.new_y > self.right_hand.new_y:
             if self.left_hand.new_x < self.player.player_position[0]:
-                reward += 0.1
+                if self.right_hand.new_spd > self.left_hand.new_spd:
+                    if self.player.player_position[1] > self.left_hand.new_y:
+                        reward += 0.2
+                else:
+                    reward += 0.1
         else:
             if self.right_hand.new_x > self.player.player_position[0]:
-                reward += 0.1
+                if self.left_hand.new_spd > self.right_hand.new_spd:
+                    if self.player.player_position[1] > self.right_hand.new_y:
+                        reward += 0.2
+                else:
+                    reward += 0.1
 
         return reward
 
