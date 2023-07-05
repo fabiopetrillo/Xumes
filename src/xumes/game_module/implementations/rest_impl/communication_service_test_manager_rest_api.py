@@ -13,7 +13,7 @@ class CommunicationServiceTestManagerRestApi(ICommunicationServiceTestManager):
         self.ip = ip
         self.port = port
 
-    def connect_trainer(self, test_manager, feature, scenario) -> None:
+    def connect_trainer(self, test_manager, scenario) -> None:
         while True:
             try:
                 # noinspection HttpUrlsUsage
@@ -23,28 +23,32 @@ class CommunicationServiceTestManagerRestApi(ICommunicationServiceTestManager):
                 logging.info(f"Waiting for connection with {self.ip}:{self.port}...")
                 sleep(1)
 
-        port = test_manager.get_port(feature, scenario)
+        port = test_manager.get_port(scenario)
 
         # noinspection HttpUrlsUsage
         requests.post(f'http://{self.ip}:{self.port}/connect',
                       json={
-                          'feature': feature,
-                          'scenario': scenario,
+                          'feature': scenario.feature.name,
+                          'scenario': scenario.name,
                           'port': port
                       })
-        test_manager.add_game_service_data(steps=scenario, ip=self.ip, port=port)
+        test_manager.add_game_service_data(scenario=scenario, ip=self.ip, port=port)
 
-    def disconnect_trainer(self, test_manager, feature, scenario) -> None:
+    def disconnect_trainer(self, test_manager, scenario) -> None:
         # noinspection HttpUrlsUsage
         requests.post(f'http://{self.ip}:{self.port}/disconnect',
                       json={
-                          'feature': feature,
-                          'scenario': scenario
+                          'feature': scenario.feature.name,
+                          'scenario': scenario.name
                       })
 
     def start_training(self, test_manager) -> None:
         # noinspection HttpUrlsUsage
         requests.post(f'http://{self.ip}:{self.port}/start')
+
+    def reset(self, test_manager) -> None:
+        # noinspection HttpUrlsUsage
+        requests.post(f'http://{self.ip}:{self.port}/reset')
 
     def run(self, test_manager) -> None:
         pass

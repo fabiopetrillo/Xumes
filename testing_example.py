@@ -39,8 +39,8 @@ def reset(game_context):
     """
     Reset the game for the next test
     """
-    game_context.game.player.reset()
-    game_context.game.enemies.reset()
+    game_context.game.player.reset_trainer()
+    game_context.game.enemies.reset_trainer()
 
 
 # Training

@@ -20,5 +20,8 @@ class ICommunicationServiceTrainerManager:
     def start_training(self, trainer_manager, tasks, task_condition) -> None:
         raise NotImplementedError
 
+    def reset(self, trainer_manager, tasks, task_condition) -> None:
+        raise NotImplementedError
+
     def run(self, trainer_manager, tasks, task_condition, port) -> None:
         raise NotImplementedError

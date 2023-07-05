@@ -54,7 +54,7 @@ class VecStableBaselinesTrainer(ITrainer):
         self.model = algorithm(algorithm_type, self._vec_env, verbose=1)
         self.model = self.model.load(path)
 
-    def play(self, timesteps: Optional[int] = None):
+    def play(self, timesteps: int = None):
 
         class InferenceWrapper(VecEnvWrapper):
             def __init__(self, env):
@@ -101,3 +101,4 @@ class VecStableBaselinesTrainer(ITrainer):
         else:
             for _ in range(timesteps):
                 step()
+

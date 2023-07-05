@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))
         if sys.argv[1] == "-tests":
-            game_service.run()
+            game_service.run_communication_service()
         if sys.argv[1] == "-render":
             game_service.run_render()
 

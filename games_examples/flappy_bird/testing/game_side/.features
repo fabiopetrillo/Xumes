@@ -1,0 +1,6 @@
+Feature: feature1
+    Scenario: scenario1
+    Scenario: scenario2
+
+Feature: feature2
+    Scenario: scenario3
