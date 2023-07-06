@@ -1,7 +1,8 @@
 import multiprocessing
 from typing import List
 
-from xumes.game_module.assertion import IAssertionStrategy, AssertionEqual
+from xumes.game_module.assertion import IAssertionStrategy, AssertionEqual, AssertionGreaterThan, \
+    AssertionGreaterThanOrEqual, AssertionLessThan, AssertionLessThanOrEqual, AssertionBetween
 from xumes.game_module.assertion_result import AssertionResult
 
 
@@ -46,17 +47,38 @@ class AssertionBucket:
     def assertion_mode(self):
         self._mode = AssertionBucket.ASSERT_MODE
 
-    def do_true(self, data):
+    def _collect_or_assert(self, data, expected, assertion_strategy: IAssertionStrategy, opposite=False):
         if self._mode == AssertionBucket.COLLECT_MODE:
             self._collect(other=data)
         elif self._mode == AssertionBucket.ASSERT_MODE:
-            self._assert(expected=True, assertion_strategy=AssertionEqual(True))
+            self._assert(expected=expected, assertion_strategy=assertion_strategy, opposite=opposite)
 
-    def do_equal(self, data, expected):
-        if self._mode == AssertionBucket.COLLECT_MODE:
-            self._collect(other=data)
-        elif self._mode == AssertionBucket.ASSERT_MODE:
-            self._assert(expected=expected, assertion_strategy=AssertionEqual(expected))
+    def assert_true(self, data):
+        self._collect_or_assert(data, expected=True, assertion_strategy=AssertionEqual(True))
+
+    def assert_false(self, data):
+        self._collect_or_assert(data, expected=False, assertion_strategy=AssertionEqual(True), opposite=True)
+
+    def assert_equal(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected))
+
+    def assert_not_equal(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected), opposite=True)
+
+    def assert_greater_than(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThan(expected))
+
+    def assert_greater_than_or_equal(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThanOrEqual(expected))
+
+    def assert_less_than(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected))
+
+    def assert_less_than_or_equal(self, data, expected):
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThanOrEqual(expected))
+
+    def assert_between(self, data, expected_min, expected_max):
+        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max))
 
     def _collect(self, other):
         if self._iterator < len(self._data):
@@ -65,10 +87,12 @@ class AssertionBucket:
             self._data.append([other])
         self._iterator += 1
 
-    def _assert(self, expected, assertion_strategy: IAssertionStrategy):
+    def _assert(self, expected, assertion_strategy: IAssertionStrategy, opposite=False):
         # Get the actual value and assert it
         actual = self._data[self._iterator]
         r = assertion_strategy.test(actual)
+        if opposite:  # If we want to assert the opposite
+            r = not r
         if not r:
             self._passed = False
         self._results.append(AssertionResult(

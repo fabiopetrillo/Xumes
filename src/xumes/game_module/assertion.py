@@ -18,7 +18,6 @@ def check_all_equal_values(sample):
 
 
 def hypothesis_test(sample, pop_mean, alpha):
-
     # Case if all values are equals
     if check_equal_values(sample, pop_mean):  # if all values are equals to pop_mean
         return None, None, None, None, False
@@ -30,9 +29,9 @@ def hypothesis_test(sample, pop_mean, alpha):
     # Compute Student's t-test
     t_statistic, p_value_t = ttest_1samp(sample, pop_mean)
 
-    # Compute Proportions z-test
-    count = sum([1 for value in sample if value == pop_mean])
-    nobs = len(sample)
+    # Compute Proportions z-test we need to add 0.00000000001 to avoid division by zero
+    count = sum([1 for value in sample if value == pop_mean]) + 0.00000000001
+    nobs = len(sample) + 0.00000000001
     _, p_value_prop = proportions_ztest(count, nobs, pop_mean)
 
     # Compute combined p-value
@@ -51,6 +50,7 @@ class IAssertionStrategy:
     """
     Implements the Strategy design pattern to define the interface for assertions
     """
+
     def test(self, data) -> bool:
         raise NotImplementedError
 
@@ -61,7 +61,8 @@ class Assertion(IAssertionStrategy):
     Implements the test method of the IAssertionStrategy interface
     and compute the hypothesis test for the given data
     """
-    def __init__(self, alpha=0.01):
+
+    def __init__(self, alpha=0.001):
         self._alpha = alpha
         self._type = None
 
@@ -80,6 +81,7 @@ class AssertionEqual(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is equal to the given value
     """
+
     def __init__(self, value):
         super().__init__()
         self._value = value
@@ -90,9 +92,9 @@ class AssertionEqual(Assertion):
 
         value = self._value
         if self._type == bool:
-            data = np.array([1 if x else 0 for x in data])
+            data = np.array([1 if x == self._value else -1 for x in data])
         elif self._type != float and self._type != int:
-            data = np.array([1 if x == self._value else 0 for x in data])
+            data = np.array([1 if x == self._value else -1 for x in data])
             value = 1
 
         t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data, value,
@@ -111,6 +113,7 @@ class AssertionBetween(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is between the given values
     """
+
     def __init__(self, min_value, max_value):
         super().__init__()
         assert min_value < max_value
@@ -123,7 +126,7 @@ class AssertionBetween(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if self._min_value <= x <= self._max_value else 0 for x in data])
+            data = np.array([1 if self._min_value <= x <= self._max_value else -1 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
@@ -155,6 +158,7 @@ class AssertionLessThan(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is less than the given value
     """
+
     def __init__(self, value):
         super().__init__()
         self._value = value
@@ -164,7 +168,7 @@ class AssertionLessThan(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if x < self._value else 0 for x in data])
+            data = np.array([1 if x < self._value else -1 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
@@ -192,6 +196,7 @@ class AssertionLessThanOrEqual(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is less than or equal to the given value
     """
+
     def __init__(self, value):
         super().__init__()
         self._value = value
@@ -201,7 +206,7 @@ class AssertionLessThanOrEqual(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if x <= self._value else 0 for x in data])
+            data = np.array([1 if x <= self._value else -1 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
@@ -229,6 +234,7 @@ class AssertionGreaterThan(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is greater than the given value
     """
+
     def __init__(self, value):
         super().__init__()
         self._value = value
@@ -238,7 +244,7 @@ class AssertionGreaterThan(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if x > self._value else 0 for x in data])
+            data = np.array([1 if x > self._value else -1 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
@@ -266,6 +272,7 @@ class AssertionGreaterThanOrEqual(Assertion):
     """
     Overloads the test method of the Assertion class to test if the mean of the data is greater than or equal to the given value
     """
+
     def __init__(self, value):
         super().__init__()
         self._value = value
@@ -275,7 +282,7 @@ class AssertionGreaterThanOrEqual(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if x >= self._value else 0 for x in data])
+            data = np.array([1 if x >= self._value else -1 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,

@@ -23,7 +23,7 @@ class CommunicationServiceTestManagerRestApi(ICommunicationServiceTestManager):
                 logging.info(f"Waiting for connection with {self.ip}:{self.port}...")
                 sleep(1)
 
-        port = test_manager.get_port(scenario)
+        port = test_manager.get_free_port(scenario)
 
         # noinspection HttpUrlsUsage
         requests.post(f'http://{self.ip}:{self.port}/connect',

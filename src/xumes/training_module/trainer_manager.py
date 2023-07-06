@@ -1,12 +1,13 @@
 import importlib.util
 import importlib.util
 import logging
+import multiprocessing
 import os
 import threading
 from abc import abstractmethod
 from multiprocessing import Process
 from queue import Queue, Empty
-from typing import List
+from typing import List, Dict
 
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
 from xumes.core.registry import create_registry
@@ -29,12 +30,23 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000):
-        # Load all trainers
-        for file in os.listdir("./trainers"):
+                 port: int = 5000, path: str = ""):
+        self._path = path
+        self._load_trainers()
+        self._trainer_processes: Dict[str, multiprocessing.Process] = {}
+        self._mode = mode
+        self._communication_service = communication_service
+        self._tasks = Queue()
+        self._task_condition = threading.Condition()
+        self._port = port
+
+    # noinspection DuplicatedCode
+    def _load_trainers(self):
+        print(os.getcwd())
+        for file in os.listdir(self._path + "trainers"):
             if file.endswith(".py"):
                 module_name = file[:-3]
-                module_path = os.path.join("./trainers", file)
+                module_path = os.path.join(self._path + "trainers", file)
                 module = compile(open(module_path).read(), module_path, 'exec')
                 exec(module, globals(), locals())
                 module_path = os.path.abspath(module_path)
@@ -44,20 +56,13 @@ class TrainerManager:
                 module_dep = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module_dep)
 
-        self._trainer_processes = {}
-        self._mode = mode
-        self._communication_service = communication_service
-        self._tasks = Queue()
-        self._task_condition = threading.Condition()
-        self._port = port
-
     def run(self):
         if self._mode == TRAIN_MODE:
             self.train()
         elif self._mode == TEST_MODE:
             self.play()
 
-    def _task_loop(self):
+    def _tasks_loop(self):
 
         # We will run the communication service until we receive a "start_training" task
         while True:
@@ -76,7 +81,7 @@ class TrainerManager:
         # Create a thread to run the communication service
         threading.Thread(target=self._communication_service.run,
                          args=(self, self._tasks, self._task_condition, self._port)).start()
-        self._task_loop()
+        self._tasks_loop()
 
     def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
         # Create a new process to train or use an agent
@@ -229,8 +234,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     Use to train all agents on the same model
     """
 
-    def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int, mode=TEST_MODE):
-        super().__init__(communication_service, mode=mode, port=port)
+    def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int, path: str, mode=TEST_MODE):
+        super().__init__(communication_service, mode=mode, port=port, path=path)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
@@ -255,11 +260,11 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self._training_services_datas = set()
 
     def train(self):
-        process = Process(target=self.train_agent)
+        process = Process(target=self._train_agent)
         process.start()
         self._process = process
 
-    def train_agent(self):
+    def _train_agent(self):
         for (feature, scenario, port) in self._training_services_datas:
             self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port))
 
@@ -270,11 +275,11 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
 
     def play(self):
-        process = Process(target=self.play_agent)
+        process = Process(target=self._play_agent)
         process.start()
         self._process = process
 
-    def play_agent(self):
+    def _play_agent(self):
         for (feature, scenario, port) in self._training_services_datas:
             self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port))
 

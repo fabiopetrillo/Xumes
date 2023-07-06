@@ -71,6 +71,7 @@ def test_impl(test_context):
 def test_impl(test_context):
     test_context.assert_true(test_context.game.player.points == 2)
     test_context.assert_equal(test_context.game.player.points, 2)
+    test_context.assert_not_equal(test_context.game.player.points, 3)
 
 
 @render

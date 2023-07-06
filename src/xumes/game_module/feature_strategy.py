@@ -82,28 +82,31 @@ class FeatureStrategy(ABC):
                         self._number_max_of_tests is None or self._number_of_tests < self._number_max_of_tests)
 
             def assert_true(self, condition: bool) -> None:
-                self._assertion_bucket.do_true(data=condition)
+                self._assertion_bucket.assert_true(data=condition)
 
             def assert_false(self, condition: bool) -> None:
-                pass
+                self._assertion_bucket.assert_false(data=condition)
 
             def assert_equal(self, actual, expected) -> None:
-                self._assertion_bucket.do_equal(actual, expected)
+                self._assertion_bucket.assert_equal(data=actual, expected=expected)
 
             def assert_not_equal(self, actual, expected) -> None:
-                pass
+                self._assertion_bucket.assert_not_equal(data=actual, expected=expected)
 
             def assert_greater(self, actual, expected) -> None:
-                pass
+                self._assertion_bucket.assert_greater_than(data=actual, expected=expected)
 
             def assert_greater_equal(self, actual, expected) -> None:
-                pass
+                self._assertion_bucket.assert_greater_than_or_equal(data=actual, expected=expected)
 
             def assert_less(self, actual, expected) -> None:
-                pass
+                self._assertion_bucket.assert_less_than(data=actual, expected=expected)
 
             def assert_less_equal(self, actual, expected) -> None:
-                pass
+                self._assertion_bucket.assert_less_than_or_equal(data=actual, expected=expected)
+
+            def assert_between(self, actual, expected_min, expected_max) -> None:
+                self._assertion_bucket.assert_between(data=actual, expected_min=expected_min, expected_max=expected_max)
 
             def _make_loop(self) -> bool:
                 # Loop content method return False if the test is finished
@@ -128,19 +131,20 @@ class FeatureStrategy(ABC):
                 if not reset:
                     loop.all[steps](self)
 
-                try:
-                    # We get the logs of the current step
-                    if steps not in self._logs:
-                        self._logs[steps] = []
+                if self._mode == TEST_MODE:
+                    try:
+                        # We get the logs of the current step
+                        if steps not in self._logs:
+                            self._logs[steps] = []
 
-                    if self._number_of_tests == len(self._logs[steps]):
-                        self._logs[steps].append([])
-                    elif self._number_of_tests > len(self._logs[steps]):
-                        raise Exception("The number of tests is greater than the number of logs")
+                        if self._number_of_tests == len(self._logs[steps]):
+                            self._logs[steps].append([])
+                        elif self._number_of_tests > len(self._logs[steps]):
+                            raise Exception("The number of tests is greater than the number of logs")
 
-                    self._logs[steps][self._number_of_tests].append(log.all[steps](self))
-                except KeyError:
-                    pass
+                        self._logs[steps][self._number_of_tests].append(log.all[steps](self))
+                    except KeyError:
+                        pass
                 return True
 
             def run_test(self) -> None:

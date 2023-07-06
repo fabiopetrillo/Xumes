@@ -85,9 +85,9 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the tests folder.")
 def trainer(train, debug, test, path, mode, port, info):
-    if path:
-        os.chdir(path)
-    else:
+    # if path:
+    #     os.chdir(path)
+    if not path:
         print("You must choose a path to save the model.")
         return
 
@@ -111,7 +111,7 @@ def trainer(train, debug, test, path, mode, port, info):
 
     if model_mode == FEATURE_MODE:
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
-                                                            mode=mode)
+                                                            mode=mode, path=path)
     elif model_mode == SCENARIO_MODE:
         training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode)
 

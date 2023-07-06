@@ -70,7 +70,12 @@ def test_impl(test_context):
 @then("The player should have passed two pipes")
 def test_impl(test_context):
     test_context.assert_true(test_context.game.player.points == 2)
-    test_context.assert_equal(test_context.game.player.points, 2)
+    test_context.assert_false(test_context.game.player.points == 1)
+    test_context.assert_greater(test_context.game.player.points, 1)
+    test_context.assert_greater_equal(test_context.game.player.points, 1)
+    test_context.assert_less_equal(test_context.game.player.points, 3)
+    test_context.assert_less(test_context.game.player.points, 3)
+    test_context.assert_between(test_context.game.player.points, 1, 3)
 
 
 @render

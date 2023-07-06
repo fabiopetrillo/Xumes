@@ -1,11 +1,8 @@
 import importlib.util
-import logging
 import multiprocessing
 import os
-import time
 from abc import abstractmethod
-from queue import Empty
-from typing import List
+from typing import List, Dict
 
 from xumes.core.colors import bcolors
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
@@ -13,6 +10,15 @@ from xumes.game_module import GameService, PygameEventFactory, CommunicationServ
 from xumes.game_module.assertion_bucket import AssertionReport
 from xumes.game_module.feature_strategy import FeatureStrategy, Scenario
 from xumes.game_module.i_communication_service_test_manager import ICommunicationServiceTestManager
+
+
+class ScenarioData:
+
+    def __init__(self, game_service: GameService = None, process: multiprocessing.Process = None, ip: str = None, port: int = None):
+        self.game_service = game_service
+        self.process = process
+        self.ip = ip
+        self.port = port
 
 
 class TestManager:
@@ -51,7 +57,18 @@ class TestManager:
 
     def __init__(self, communication_service: ICommunicationServiceTestManager, feature_strategy: FeatureStrategy,
                  mode: str = TEST_MODE, timesteps=None, iterations=None):
-        # Load all tests
+
+        self._load_tests()
+        self._communication_service = communication_service
+        self._scenario_datas: Dict[Scenario, ScenarioData] = {}
+        self._mode = mode
+        self._timesteps = timesteps
+        self._iterations = iterations
+        self._feature_strategy: FeatureStrategy = feature_strategy
+        self._assertion_queue = multiprocessing.Queue()
+
+    @staticmethod
+    def _load_tests():
         for file in os.listdir("./tests"):
             if file.endswith(".py"):
                 module_name = file[:-3]
@@ -65,33 +82,24 @@ class TestManager:
                 module_dep = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module_dep)
 
-        self._communication_service = communication_service
-        self._game_service_processes = {}
-        self._game_services_data = {}
-        self._game_services = {}
-        self._mode = mode
-        self._ports = {}
-        self._timesteps = timesteps
-        self._iterations = iterations
-        self._feature_strategy: FeatureStrategy = feature_strategy
-        self._assertion_queue = multiprocessing.Queue()
-
-    def get_port(self, scenario) -> int:
+    def get_free_port(self, scenario) -> int:
         # Get the port for a given feature and scenario
-        if scenario not in self._ports:
-            self._ports[scenario] = 5001 + len(self._ports)
-        return self._ports[scenario]
+        if scenario not in self._scenario_datas:
+            return 5001 + len(self._scenario_datas)
+        else:
+            return self._scenario_datas[scenario].port
 
     def add_game_service_data(self, scenario: Scenario, ip: str, port: int):
         # Add a game service data to the list of game services data
-        self._game_services_data[scenario] = (ip, port)
+        self._scenario_datas[scenario] = ScenarioData(ip=ip, port=port)
 
-    def create_game_service(self, scenario: Scenario, ip: str, port: int) -> GameService:
-
-        return self._build_game_service(
+    def create_game_service(self, scenario: Scenario, scenario_data: ScenarioData) -> GameService:
+        game_service = self._build_game_service(
             self._feature_strategy.build_test_runner(mode=self._mode, timesteps=self._timesteps,
                                                      iterations=self._iterations, scenario=scenario,
-                                                     test_queue=self._assertion_queue), ip, port, )
+                                                     test_queue=self._assertion_queue), scenario_data.ip, scenario_data.port, )
+        scenario_data.game_service = game_service
+        return game_service
 
     @abstractmethod
     def _build_game_service(self, test_runner, ip, port) -> GameService:
@@ -118,7 +126,7 @@ class TestManager:
                                                       args=(scenario, active_processes,))
                 process.start()
                 active_processes.value += 1
-                self._game_service_processes[scenario] = process
+                self._scenario_datas[scenario].process = process
 
             # Send to the training manager that the training is started
             self._communication_service.start_training(self)
@@ -128,13 +136,14 @@ class TestManager:
                 pass
 
             # Close all processes and delete all game services
-            for scenario, process in self._game_service_processes.items():
-                process.kill()
+            for scenario, scenario_data in self._scenario_datas.items():
+                scenario_data.process.kill()
                 self._communication_service.disconnect_trainer(self, scenario)
-            self.delete_game_services()
+            self._delete_game_services()
             self._communication_service.reset(self)
 
-        self._assert()
+        if self._mode == TEST_MODE:
+            self._assert()
 
     def _assert(self):
 
@@ -161,13 +170,11 @@ class TestManager:
             print(f"{bcolors.OKGREEN}{header}")
             print(f"{bcolors.OKGREEN}{details}")
 
-
-    def delete_game_services(self) -> None:
-        self._game_services_data.clear()
-        self._game_service_processes.clear()
+    def _delete_game_services(self) -> None:
+        self._scenario_datas.clear()
 
     def run_test(self, scenario: Scenario, active_processes) -> None:
-        game_service = self.create_game_service(scenario, *self._game_services_data[scenario])
+        game_service = self.create_game_service(scenario, self._scenario_datas[scenario])
         game_service.run()
 
         with active_processes.get_lock():
@@ -176,7 +183,7 @@ class TestManager:
         game_service.stop()
 
     def run_test_render(self, scenario: Scenario, active_processes) -> None:
-        game_service = self.create_game_service(scenario, *self._game_services_data[scenario])
+        game_service = self.create_game_service(scenario, self._scenario_datas[scenario])
         game_service.run_render()
 
         with active_processes.get_lock():
@@ -192,31 +199,3 @@ class PygameTestManager(TestManager):
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip=ip, port=port))
         return game_service
-
-# Maybe in the future
-# def assert_in(self, a, b) -> None:
-#     pass
-#
-# def assert_not_in(self, a, b) -> None:
-#     pass
-#
-# def assert_is(self, a, b) -> None:
-#     pass
-#
-# def assert_is_not(self, a, b) -> None:
-#     pass
-#
-# def assert_is_none(self, a) -> None:
-#     pass
-#
-# def assert_is_not_none(self, a) -> None:
-#     pass
-#
-# def assert_is_instance(self, a, b) -> None:
-#     pass
-#
-# def assert_is_not_instance(self, a, b) -> None:
-#     pass
-#
-# def assert_raises(self, a, b) -> None:
-#     pass

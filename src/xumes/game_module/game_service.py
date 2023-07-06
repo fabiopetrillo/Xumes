@@ -3,7 +3,6 @@ import threading
 from queue import Queue, Empty
 from threading import Thread, Condition
 
-
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.game_module.i_communication_service_game import ICommunicationServiceGame
 from xumes.game_module.i_event_factory import EventFactory
@@ -62,31 +61,21 @@ class GameService:
         self.comm_thread = Thread(target=self.communication_service.run, args=[self])
         self.comm_thread.start()
 
-    @staticmethod
-    def run_test_runner(run_func):
-        """
-        Start the game loop if this is the main thread.
-        :param run_func: game_loop function to exec.
-        """
-        assert threading.current_thread() is threading.main_thread()
-        logging.info("Starting game loop...")
-        run_func()
-
     def run(self):
         """
         - The communication service thread, used to send state and get actions.\n
         - The game on the main thread, used to make run the game loop.
         """
         self.run_communication_service()
-        self.run_test_runner(self.test_runner.run_test)
         self.test_runner.delete_screen()
+        self.test_runner.run_test()
 
     def run_render(self):
         """
         Same has run but for the game thread, we run with rendering.
         """
         self.run_communication_service()
-        self.run_test_runner(self.test_runner.run_test_render)
+        self.test_runner.run_test_render()
 
     def stop(self):
         """
