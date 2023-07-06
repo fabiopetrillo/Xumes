@@ -3,16 +3,13 @@ import os
 
 import click
 
-from xumes.game_module.feature_strategy import NaiveFeatureStrategy
+from xumes.core.modes import TRAIN_MODE, TEST_MODE, RENDER_MODE, FEATURE_MODE, SCENARIO_MODE
+from xumes.game_module.implementations import CommunicationServiceTestManagerRestApi
 from xumes.game_module.implementations.features_impl.basic_feature_strategy import BasicFeatureStrategy
-from xumes.game_module.implementations.rest_impl.communication_service_test_manager_rest_api import \
-    CommunicationServiceTestManagerRestApi
-from xumes.core.modes import TEST_MODE, TRAIN_MODE, RENDER_MODE, FEATURE_MODE, SCENARIO_MODE
 from xumes.game_module.test_manager import PygameTestManager
+from xumes.training_module import VecStableBaselinesTrainerManager, StableBaselinesTrainerManager
 from xumes.training_module.implementations.rest_impl.communication_service_trainer_manager_rest_api import \
     CommunicationServiceTrainerManagerRestApi
-from xumes.training_module.trainer_manager import VecStableBaselinesTrainerManager, \
-    StableBaselinesTrainerManager
 
 
 @click.group()
@@ -26,20 +23,20 @@ def get_debug_level(debug, info):
     if info:
         return logging.INFO
 
-    return logging.WARNING
+    return logging.CRITICAL
 
 
 @cli.command()
 @click.option("--render", is_flag=True, help="Render the game.")
-@click.option("--test", is_flag=True, help="Test the game.")
-@click.option("--train", is_flag=True, help="Train the game.")
+@click.option("--test", is_flag=True, help="Test mode.")
+@click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--timesteps", "-t", default=None, help="Number of timesteps to test the game.")
 @click.option("--iterations", "-i", default=None, help="Number of iterations to test the game.")
-@click.option("--debug", is_flag=True, help="Debug the game.")
-@click.option("--info", is_flag=True, help="Info of the game.")
+@click.option("--debug", is_flag=True, help="Debug debug level.")
+@click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--ip", default="localhost", help="IP of the training server.")
 @click.option("--port", default=5000, help="Port of the training server.")
-@click.option("--path", default=None, type=click.Path(), help="Path of the trainers.")
+@click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
 def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info):
     if path:
         os.chdir(path)
@@ -77,16 +74,16 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 
 
 @cli.command()
-@click.option("--test", is_flag=True, help="Test the game.")
-@click.option("--train", is_flag=True, help="Train the agent.")
+@click.option("--test", is_flag=True, help="Test mode")
+@click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--mode", default=FEATURE_MODE, help="Mode of the training. (scenario, feature=default)")
-@click.option("--debug", is_flag=True, help="Debug the trainer.")
-@click.option("--info", is_flag=True, help="Info of the trainer.")
+@click.option("--debug", is_flag=True, help="Debug debug level.")
+@click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--port", default=5000, help="Port of the training server.")
-@click.option("--path", default=None, type=click.Path(), help="Path of the tests folder.")
+@click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers folder.")
 def trainer(train, debug, test, path, mode, port, info):
-    # if path:
-    #     os.chdir(path)
+    if path:
+        os.chdir(path)
     if not path:
         print("You must choose a path to save the model.")
         return
@@ -111,7 +108,7 @@ def trainer(train, debug, test, path, mode, port, info):
 
     if model_mode == FEATURE_MODE:
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
-                                                            mode=mode, path=path)
+                                                            mode=mode)
     elif model_mode == SCENARIO_MODE:
         training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode)
 
@@ -120,7 +117,3 @@ def trainer(train, debug, test, path, mode, port, info):
     else:
         print("You must choose a valid mode.")
         return
-
-
-if __name__ == '__main__':
-    cli()

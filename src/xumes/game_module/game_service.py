@@ -1,5 +1,4 @@
 import logging
-import threading
 from queue import Queue, Empty
 from threading import Thread, Condition
 

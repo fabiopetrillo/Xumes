@@ -1,12 +1,9 @@
-from xumes.game_module.feature_strategy import Scenario
-
-
 class ICommunicationServiceTestManager:
 
-    def connect_trainer(self, test_manager, scenario: Scenario) -> None:
+    def connect_trainer(self, test_manager, scenario) -> None:
         raise NotImplementedError
 
-    def disconnect_trainer(self, test_manager, scenario: Scenario) -> None:
+    def disconnect_trainer(self, test_manager, scenario) -> None:
         raise NotImplementedError
 
     def start_training(self, test_manager) -> None:

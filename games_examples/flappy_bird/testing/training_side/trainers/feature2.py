@@ -3,7 +3,6 @@ import os
 import numpy as np
 import stable_baselines3
 from gymnasium.vector.utils import spaces
-print(os.getcwd())
 
 from games_examples.flappy_bird.testing.training_side.helpers.lidar import Lidar
 from games_examples.flappy_bird.params import LIDAR_MAX_DIST

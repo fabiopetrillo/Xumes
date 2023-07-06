@@ -7,8 +7,8 @@ from typing import List
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.core.modes import TEST_MODE
 from xumes.core.registry import create_registry_content, create_registry
-from xumes.game_module import TestRunner
 from xumes.game_module.assertion_bucket import AssertionBucket
+from xumes.game_module.test_runner import TestRunner
 
 
 class Scenario:
@@ -202,11 +202,3 @@ then = FeatureStrategy.then
 render = FeatureStrategy.render
 delete_screen = FeatureStrategy.delete_screen
 log = FeatureStrategy.log
-
-
-class NaiveFeatureStrategy(FeatureStrategy):
-
-    def retrieve_feature(self):
-        feature1 = Feature(name='feature1')
-        feature1.scenarios = [Scenario(name=s, steps=s, feature=feature1) for s in given.all]
-        self.features = [feature1]

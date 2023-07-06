@@ -6,10 +6,11 @@ from typing import List, Dict
 
 from xumes.core.colors import bcolors
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
-from xumes.game_module import GameService, PygameEventFactory, CommunicationServiceGameMq
+from xumes.game_module.game_service import GameService
 from xumes.game_module.assertion_bucket import AssertionReport
 from xumes.game_module.feature_strategy import FeatureStrategy, Scenario
 from xumes.game_module.i_communication_service_test_manager import ICommunicationServiceTestManager
+from xumes.game_module.implementations import PygameEventFactory, CommunicationServiceGameMq
 
 
 class ScenarioData:
@@ -71,10 +72,7 @@ class TestManager:
     def _load_tests():
         for file in os.listdir("./tests"):
             if file.endswith(".py"):
-                module_name = file[:-3]
                 module_path = os.path.join("./tests", file)
-                module = compile(open(module_path).read(), module_path, 'exec')
-                exec(module, globals(), locals())
                 module_path = os.path.abspath(module_path)
                 module_name = os.path.basename(module_path)[:-3]
 

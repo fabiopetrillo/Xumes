@@ -11,11 +11,11 @@ from typing import List, Dict
 
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
 from xumes.core.registry import create_registry
-from xumes.training_module import StableBaselinesTrainer, AutoEntityManager, JsonGameElementStateConverter, \
-    CommunicationServiceTrainingMq
+from xumes.training_module.entity_manager import AutoEntityManager
 from xumes.training_module.i_communication_service_trainer_manager import ICommunicationServiceTrainerManager
 from xumes.training_module.i_trainer import ITrainer
-from xumes.training_module.implementations.gym_impl.stable_baselines_trainer import OBST
+from xumes.training_module.implementations import JsonGameElementStateConverter, CommunicationServiceTrainingMq
+from xumes.training_module.implementations.gym_impl.stable_baselines_trainer import OBST, StableBaselinesTrainer
 from xumes.training_module.implementations.gym_impl.vec_stable_baselines_trainer import VecStableBaselinesTrainer
 
 
@@ -30,8 +30,7 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000, path: str = ""):
-        self._path = path
+                 port: int = 5000):
         self._load_trainers()
         self._trainer_processes: Dict[str, multiprocessing.Process] = {}
         self._mode = mode
@@ -41,14 +40,11 @@ class TrainerManager:
         self._port = port
 
     # noinspection DuplicatedCode
-    def _load_trainers(self):
-        print(os.getcwd())
-        for file in os.listdir(self._path + "trainers"):
+    @staticmethod
+    def _load_trainers():
+        for file in os.listdir("./trainers"):
             if file.endswith(".py"):
-                module_name = file[:-3]
-                module_path = os.path.join(self._path + "trainers", file)
-                module = compile(open(module_path).read(), module_path, 'exec')
-                exec(module, globals(), locals())
+                module_path = os.path.join("./trainers", file)
                 module_path = os.path.abspath(module_path)
                 module_name = os.path.basename(module_path)[:-3]
 
@@ -234,8 +230,9 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     Use to train all agents on the same model
     """
 
-    def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int, path: str, mode=TEST_MODE):
-        super().__init__(communication_service, mode=mode, port=port, path=path)
+    def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int,
+                 mode=TEST_MODE):
+        super().__init__(communication_service, mode=mode, port=port)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
