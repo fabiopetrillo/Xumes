@@ -4,3 +4,4 @@ Feature: feature1
 
 Feature: feature2
     Scenario: scenario3
+    Scenario: scenario4

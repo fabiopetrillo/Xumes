@@ -88,14 +88,14 @@ class TestGetattr(unittest.TestCase):
         a = A(1)
         self.assertEqual({"a": 1, "__type__": "A"}, get_object_from_attributes(a, state_attribute))
 
-    def test_state_attribute_not_exist_attr(self):
+    def test_state_attr_not_exist(self):
         class A:
             def __init__(self, av):
                 self.a = av
 
         state_attribute = State("b")
         a = A(1)
-        self.assertRaises(StateConversionError, get_object_from_attributes, a, state_attribute)
+        self.assertEqual({"__type__": "A", "b": None}, get_object_from_attributes(a, state_attribute))
 
     def test_state_attribute_not_exist_in_list_attr(self):
         class A:
@@ -104,7 +104,7 @@ class TestGetattr(unittest.TestCase):
 
         state_attribute = [State("a"), State("b")]
         a = A(1)
-        self.assertRaises(StateConversionError, get_object_from_attributes, a, state_attribute)
+        self.assertEqual({"a": 1, "b": None, "__type__": "A"}, get_object_from_attributes(a, state_attribute))
 
     def test_state_attribute_attr_in_attr(self):
         class A:

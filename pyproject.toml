@@ -1,6 +1,6 @@
 [project]
 name="xumes"
-version="0.0.21"
+version="0.0.30"
 authors = [
   { name="Vincent Mastain", email="vincentmastain@gmail.com" },
 ]
@@ -36,4 +36,4 @@ build-backend = "flit_core.buildapi"
 "Bug Tracker" = "https://github.com/mastainvin/Xumes/issues"
 
 [project.scripts]
-xumes = "xumes:cli"
+xumes = "xumes.core.xumes_cli:cli"

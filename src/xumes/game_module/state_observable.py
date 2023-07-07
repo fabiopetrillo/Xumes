@@ -283,29 +283,37 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
         # If object with get attributes from all element of the object and apply the function on the result
         if attributes:
             try:
-                attributes_dict = {
-                    attributes.name:
-                        attributes.func(get_object_from_attributes(
-                            getattr(obj, attributes.name), attributes.attributes))
-                        if attributes.func else
-                        get_object_from_attributes(
-                            getattr(obj, attributes.name), attributes.attributes),
-                    "__type__": obj.__class__.__name__}
-                return attributes_dict
+                attr = getattr(obj, attributes.name)
             except AttributeError:
-                raise StateConversionError("Attribute " + attributes.name + " not found in object " + str(obj))
+                attr = None
+
+            attributes_dict = {
+                attributes.name:
+                    attributes.func(get_object_from_attributes(attr, attributes.attributes))
+                    if attributes.func else
+                    get_object_from_attributes(attr, attributes.attributes),
+                "__type__": obj.__class__.__name__}
+            return attributes_dict
         else:
             return obj
 
     # If there is a list of attributes
     if isinstance(attributes, List):
 
+        # noinspection DuplicatedCode
         def create_dict(o, attrs):
+            attrs_dict = {}
+            for a in attrs:
+                try:
+                    attrs_dict[a.name] = getattr(o, a.name)
+                except AttributeError:
+                    attrs_dict[a.name] = None
+
             d = {
-                attribute.name: attribute.func(
-                    get_object_from_attributes(getattr(o, attribute.name), attribute.attributes))
-                if attribute.func else get_object_from_attributes(getattr(o, attribute.name), attribute.attributes)
-                for attribute in attrs
+                a.name: a.func(
+                    get_object_from_attributes(attrs_dict[a.name], a.attributes))
+                if a.func else get_object_from_attributes(attrs_dict[a.name], a.attributes)
+                for a in attrs
             }
             d["__type__"] = o.__class__.__name__
             return d
@@ -334,15 +342,19 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
             }
         # If object with get attributes from all element of the object and apply the function on the result
         else:
-            try:
-                attributes_dict = {
-                    attribute.name: attribute.func(get_object_from_attributes(getattr(obj, attribute.name),
-                                                                              attribute.attributes)) if attribute.func else get_object_from_attributes(
-                        getattr(obj, attribute.name), attribute.attributes) for
-                    attribute in attributes}
-                attributes_dict["__type__"] = obj.__class__.__name__
-            except AttributeError as e:
-                raise StateConversionError(str(e) + " in object " + str(obj))
+            attributes_dict = {}
+            for attribute in attributes:
+                try:
+                    attributes_dict[attribute.name] = getattr(obj, attribute.name)
+                except AttributeError:
+                    attributes_dict[attribute.name] = None
+
+            attributes_dict = {
+                attribute.name: attribute.func(get_object_from_attributes(attributes_dict[attribute.name],
+                                                                          attribute.attributes)) if attribute.func else get_object_from_attributes(
+                    attributes_dict[attribute.name], attribute.attributes) for attribute in attributes}
+            attributes_dict["__type__"] = obj.__class__.__name__
+
         return attributes_dict
 
 
@@ -370,7 +382,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         Here it is a dictionary with the attributes of the object.
         """
         return GameElementState(get_object_from_attributes(self._object, self._state if not self._update else
-                                                           self._methods_to_observe[self._update]))
+        self._methods_to_observe[self._update]))
 
     def _in_slots(self, attr) -> bool:
         """
