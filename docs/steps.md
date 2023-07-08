@@ -1,5 +1,7 @@
 
-# Steps files
+Steps files
+===========
+
 
 The steps files are responsible for implementing the tests that will be executed by the framework. They are written in Gherkin, a language that allows you to write tests in a human-readable format. The framework will execute these tests by interacting with the game through the game side component.
 
@@ -18,7 +20,7 @@ The following diagram illustrates the execution flow of the steps files:
 ![steps files schema](steps_files_schema.png)
 
 
-# 1. `@given`
+## 1. `@given`
 
 This method will instantiate the game and set up the game state before the test starts.
 You will need to define each variable that we want to observe during the training process.
@@ -37,7 +39,7 @@ def test_impl(test_context):
 Ok but what is the state parameter?
 
 
-## State
+### State
 
 The purpose of the state is to represent the state of a game object. The state follows the Composite pattern, meaning it can contain other states. The state representation should ultimately reach primitive types such as integers, floats, strings, booleans, or collections of primitives.
 
@@ -55,7 +57,7 @@ State("a", [State("c"), State("b")])
 
 > **_IMPORTANT:_** If you don't provide a representation of an object, the framework will return the object itself. That's mean you must either give a representation with `State` or give a `func` to `State` to represent the object as in the example at the bottom.
 
-### Observing Methods
+#### Observing Methods
 
 When creating a `State`, you can specify a list of methods to observe. An observed method is a method inside the game object that can trigger state updates.
 
@@ -73,7 +75,7 @@ self.obj = self.bind(self.obj, "obj", State("a", State("b", methods_to_observe=[
 
 Here, when `self.obj.method` or `self.obj.method2` are called, the state "b" will be updated.
 
-### Representation Function
+#### Representation Function
 
 A `State` object can also have a representation function. This function is called whenever the state is updated, allowing you to modify the state's representation.
 To be more precise, the function is called on the result of the representation of the state's children.
@@ -92,7 +94,7 @@ self.obj = self.bind(self.obj, "obj", State("a", func=lambda x: x + 1))
 
 In this example, when the "a" state is updated, the value will be incremented by 1 in its representation.
 
-### Observing Different Types of Attributes
+#### Observing Different Types of Attributes
 
 The `bind` method supports observing different types of attributes:
 
@@ -133,9 +135,9 @@ You will be able to access the `a` attribute of each `A` object within the list 
 self.my_list[0].a
 ```
 
-### More Complex Example
+#### More Complex Example
 
-#### A real use case
+##### A real use case
 
 Let's say you have an object `A` that contains a list of objects `B`. You want to observe the `b` attribute of each `B` object while giving a representation of the `B` object just with its `b` value. And they are updated when the method `update` of the `A` class is called.
 
@@ -182,7 +184,7 @@ In both cases you will be able to use the `b_list` attribute of the `A` object o
 self.a.b_list[0] # returns 1
 ```
 
-#### To completely understand
+##### To completely understand
 
 ```python
 class A:
@@ -226,5 +228,133 @@ Those representations are equivalent and will return the same result on the trai
 self.a.b_list = [[1, 2], [3]]
 ```
 
+
+## 2. `@when`
+
+The `@when` decorator is used to define the conditions under which a test is executed.
+As you can see on the schema, it will be executed every time a game is terminated.
+
+```python
+@when("The player is in the room with the monster")
+def test_impl(test_context):
+    test_context.monster.room = test_context.player.room
+```
+
+
+## 3. `@loop`
+
+The `@loop` decorator is used to define the game loop of our test. It's useful to update the game.
+
+```python
+@loop
+def test_impl(test_context):
+    test_context.game.update()
+```
+
+## 4. `@then`
+
+The `@then` decorator is used to define the conditions under which a test is successful.
+As you can see on the schema, it will be executed every time a game is terminated.
+You have a list of `assertion` functions that you can use to define your conditions.
+
+```python
+@then("The player killed the monster")
+def test_impl(test_context):
+    test_context.assert_true(test_context.monster.is_dead)
+```
+
+### Assertion functions
+
+#### `assert_true`
+
+```python
+test_context.assert_true(test_context.monster.is_dead)
+```
+
+#### `assert_false`
+
+```python
+test_context.assert_false(test_context.monster.is_dead)
+```
+
+#### `assert_equal`
+
+```python
+test_context.assert_equal(test_context.player.alive, True)
+```
+
+#### `assert_not_equal`
+```python
+test_context.assert_not_equal(test_context.monster.alive, True)
+```
+
+#### `assert_greater`
+
+```python
+test_context.assert_greater(test_context.player.health, 0)
+```
+
+#### `assert_greater_equal`
+
+```python
+test_context.assert_greater_equal(test_context.player.health, 0)
+```
+
+#### `assert_less`
+
+```python
+test_context.assert_less(test_context.player.health, 100)
+```
+
+#### `assert_less_equal`
+
+```python
+test_context.assert_less_equal(test_context.player.health, 100)
+```
+
+#### `assert_between`
+
+```python
+test_context.assert_between(test_context.player.health, 0, 100)
+```
+
+#### `assert_not_between`
+```python
+test_context.assert_not_between(test_context.player.health, 0, 100)
+```
+
+
+## 5. `@render`
+
+The `@render` decorator is used to define the rendering of the game. It's useful to see the game in action.
+
+```python
+@render
+def test_impl(test_context):
+    test_context.game.render()
+```
+
+## 6. `@delete_screen`
+
+The `@delete_screen` decorator is used to delete the screen of the game. It's made to avoid space and compute waste but it's not mandatory.
+
+```python
+@delete_screen
+def test_impl(test_context):
+    test_context.game.delete_screen()
+```
+
+## 7. `@log`
+
+The `@log` decorator is used to log the game.
+
+```python
+@log
+def test_impl(test_context):
+    return {
+        "player_health": test_context.player.health,
+        "monster_health": test_context.monster.health
+    }
+```
 
 

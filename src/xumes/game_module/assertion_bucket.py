@@ -80,6 +80,9 @@ class AssertionBucket:
     def assert_between(self, data, expected_min, expected_max):
         self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max))
 
+    def assert_not_between(self, data, expected_min, expected_max):
+        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max), opposite=True)
+
     def _collect(self, other):
         if self._iterator < len(self._data):
             self._data[self._iterator].append(other)

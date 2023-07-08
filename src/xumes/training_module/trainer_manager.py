@@ -267,9 +267,9 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
 
         self.vec_trainer.make()
         logging.info("Training model")
-        self.vec_trainer.train()
+        self.vec_trainer.train(self._model_path(self._trained_feature, ""))
         logging.info("Saving model")
-        self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
+        # self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/model")
 
     def play(self):
         process = Process(target=self._play_agent)

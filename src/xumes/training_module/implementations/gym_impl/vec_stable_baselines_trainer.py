@@ -1,6 +1,8 @@
 import logging
+import os
 from typing import Optional
 
+from stable_baselines3.common.callbacks import EvalCallback
 # noinspection PyUnresolvedReferences
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecEnvWrapper
 
@@ -34,9 +36,18 @@ class VecStableBaselinesTrainer(ITrainer):
         algorithm_type = self._first_training_service.algorithm_type
         total_timesteps = self._first_training_service.total_timesteps
 
+        eval_callback = None
+        if save_path:
+            eval_callback = EvalCallback(self._vec_env, best_model_save_path=save_path,
+                                         log_path=save_path, eval_freq=eval_freq,
+                                         deterministic=True, render=False)
+
         self.model = algorithm(algorithm_type, self._vec_env, verbose=1)
 
-        self.model = self.model.learn(total_timesteps=total_timesteps)
+        self.model = self.model.learn(
+            total_timesteps,
+            callback=eval_callback,
+        )
 
         for training_service in self._markov_training_services:
             training_service.finished()
@@ -101,4 +112,3 @@ class VecStableBaselinesTrainer(ITrainer):
         else:
             for _ in range(timesteps):
                 step()
-

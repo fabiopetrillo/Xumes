@@ -6,7 +6,6 @@ import types
 from abc import ABC
 from typing import TypeVar, Generic, final, List, Dict
 
-from xumes.game_module.errors.state_conversion_error import StateConversionError
 from xumes.game_module.game_element_state import GameElementState
 from xumes.game_module.i_game_state_observer import IGameStateObserver
 
@@ -256,17 +255,20 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
             if func:
                 try:
                     return func([get_object_from_attributes(o, attributes) for o in obj])
-                except Exception:
-                    raise StateConversionError("Error in function : " + str(func))
-
+                except Exception as e:
+                    logging.error(
+                        "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
+                    return None
             return [get_object_from_attributes(o, attributes) for o in obj]
         # If tuple with get attributes from all element of the tuple and apply the function on the result
         elif isinstance(obj, tuple):
             if func:
                 try:
                     return func(tuple([get_object_from_attributes(o, attributes) for o in obj]))
-                except Exception:
-                    raise StateConversionError("Error in function : " + str(func))
+                except Exception as e:
+                    logging.error(
+                        "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
+                    return None
             return tuple([get_object_from_attributes(o, attributes) for o in obj])
         # If range just return the range
         elif isinstance(obj, range):
@@ -276,8 +278,10 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
             if func:
                 try:
                     return func({k: get_object_from_attributes(v, attributes) for k, v in obj.items()})
-                except Exception:
-                    raise StateConversionError("Error in function : " + str(func))
+                except Exception as e:
+                    logging.error(
+                        "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
+                    return None
             return {k: get_object_from_attributes(v, attributes) for k, v in obj.items()}
 
         # If object with get attributes from all element of the object and apply the function on the result
@@ -287,11 +291,17 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
             except AttributeError:
                 attr = None
 
+            if func:
+                try:
+                    attr_result = func(get_object_from_attributes(attr, attributes.attributes))
+                except Exception as e:
+                    logging.error(
+                        "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
+                    attr_result = None
+            else:
+                attr_result = get_object_from_attributes(attr, attributes.attributes)
             attributes_dict = {
-                attributes.name:
-                    attributes.func(get_object_from_attributes(attr, attributes.attributes))
-                    if attributes.func else
-                    get_object_from_attributes(attr, attributes.attributes),
+                attributes.name: attr_result,
                 "__type__": obj.__class__.__name__}
             return attributes_dict
         else:
@@ -309,11 +319,20 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 except AttributeError:
                     attrs_dict[a.name] = None
 
+            attrs_func_dict = {}
+            for a in attrs:
+                if a.func:
+                    try:
+                        attrs_func_dict[a.name] = a.func(get_object_from_attributes(attrs_dict[a.name], a.attributes))
+                    except Exception as err:
+                        logging.error(
+                            "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(err))
+
+                        attrs_func_dict[a.name] = None
+                else:
+                    attrs_func_dict[a.name] = get_object_from_attributes(attrs_dict[a.name], a.attributes)
             d = {
-                a.name: a.func(
-                    get_object_from_attributes(attrs_dict[a.name], a.attributes))
-                if a.func else get_object_from_attributes(attrs_dict[a.name], a.attributes)
-                for a in attrs
+                a.name: attrs_func_dict[a.name] for a in attrs
             }
             d["__type__"] = o.__class__.__name__
             return d
@@ -349,16 +368,30 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 except AttributeError:
                     attributes_dict[attribute.name] = None
 
+            attributes_func_result = {}
+            for attribute in attributes:
+                if attribute.func:
+                    try:
+                        attributes_func_result[attribute.name] = attribute.func(
+                            get_object_from_attributes(attributes_dict[attribute.name],
+                                                       attribute.attributes))
+                    except Exception as e:
+                        logging.error(
+                            "Error in representation function + " + str(attribute.func) + " for " + str(
+                                obj) + " : " + str(e))
+
+                        attributes_func_result[attribute.name] = None
+                else:
+                    attributes_func_result[attribute.name] = get_object_from_attributes(
+                        attributes_dict[attribute.name], attribute.attributes)
             attributes_dict = {
-                attribute.name: attribute.func(get_object_from_attributes(attributes_dict[attribute.name],
-                                                                          attribute.attributes)) if attribute.func else get_object_from_attributes(
-                    attributes_dict[attribute.name], attribute.attributes) for attribute in attributes}
+                attribute.name: attributes_func_result[attribute.name] for attribute in attributes}
             attributes_dict["__type__"] = obj.__class__.__name__
 
         return attributes_dict
 
 
-class GameStateObservable(StateObservable[OBJ, ST]):
+class ComposedGameStateObservable(StateObservable[OBJ, ST]):
     __slots__ = ('_state', '_object', '_observers', '_name', '_methods_to_observe', '_update', '_attributes')
 
     def __init__(self, observable_object: OBJ, name: str,
@@ -371,6 +404,8 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         self._attributes: Dict[str, List[str]] = {}  # Attributes to observe
         if observers is None:
             observers = []
+        if not observable_object:
+            observable_object = self
         super().__init__(observable_object, observers, name)
         self._state = []
         self.set_state(state)
@@ -382,7 +417,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         Here it is a dictionary with the attributes of the object.
         """
         return GameElementState(get_object_from_attributes(self._object, self._state if not self._update else
-        self._methods_to_observe[self._update]))
+                                                           self._methods_to_observe[self._update]))
 
     def _in_slots(self, attr) -> bool:
         """
@@ -395,6 +430,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
                 return True
         return False
 
+    # noinspection DuplicatedCode
     def __getattr__(self, attr):
         """
         Delegate the get attribute to the object and notify the observers.
@@ -404,6 +440,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
 
         if self._in_slots(attr):
             return object.__getattr__(self, attr)
+
         value = getattr(self._object, attr)
 
         if callable(value) and attr in self._methods_to_observe:
@@ -419,6 +456,7 @@ class GameStateObservable(StateObservable[OBJ, ST]):
 
         return value
 
+    # noinspection DuplicatedCode
     def __setattr__(self, attr, value):
         """
         Delegate the set attribute to the object and notify the observers.
@@ -537,3 +575,66 @@ class GameStateObservable(StateObservable[OBJ, ST]):
         if not dfs(start_node):
             raise ValueError("The state is not in the object")
         return start_node.attributes
+
+
+class InheritedGameStateObservable(ComposedGameStateObservable):
+
+    def __init__(self, name: str,
+                 observers: IGameStateObserver | List[IGameStateObserver] = None,
+                 state: List[State] | State | str | List[str] = None, ):
+        """
+        Create a GameStateObservable with a name and an object to observe.
+        :param name: name of the object
+        :param observers: observers of the object
+        :param state: state to observe
+        """
+        super().__init__(observable_object=self, name=name, state=state, observers=observers)
+
+    def __getattr__(self, item):
+        return object.__getattribute__(self, item)
+
+    # noinspection DuplicatedCode
+    def __getattribute__(self, attr):
+        """
+        Delegate the get attribute to the object and notify the observers.
+        :param attr: attribute name
+        :return: the attribute
+
+        """
+        value = object.__getattribute__(self, attr)
+
+        if callable(value) and attr in self._methods_to_observe:
+            def wrapped_method(*args, **kwargs):
+                result = value(*args[1:], **kwargs)
+                logging.debug("Notify observers of " + self._name + " for method " + attr)
+                self._update = attr
+                self.notify()
+                self._update = None
+                return result
+
+            return types.MethodType(wrapped_method, self)
+
+        return value
+
+    # noinspection DuplicatedCode
+    def __setattr__(self, attr, value):
+        """
+        Delegate the set attribute to the object and notify the observers.
+        :param attr: attribute name
+        :param value: value to set
+        """
+
+        if attr in ComposedGameStateObservable.__slots__ or attr in dir(ComposedGameStateObservable):
+            object.__setattr__(self, attr, value)
+            return
+        else:
+            object.__setattr__(self, attr, value)
+
+        if attr in self._attributes:
+            logging.debug("Notify observers of " + self._name + " for attribute " + attr)
+            if self._attributes[attr]:
+                self._update = self._attributes[attr][0]
+            else:
+                self._update = None
+            self.notify()
+            self._update = None

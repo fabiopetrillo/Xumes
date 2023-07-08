@@ -228,7 +228,7 @@ class TestGetattr(unittest.TestCase):
             return s
 
         state_attribute = State(func=func_sum_raise)
-        self.assertRaises(StateConversionError, get_object_from_attributes, li, state_attribute)
+        self.assertEqual(None, get_object_from_attributes(li, state_attribute))
 
     def test_state_with_func_on_tuple1(self):
         class A:
@@ -268,7 +268,7 @@ class TestGetattr(unittest.TestCase):
 
         state_attribute = State(func=lambda x: sum(x) + x[5])
 
-        self.assertRaises(StateConversionError, get_object_from_attributes, a, state_attribute)
+        self.assertEqual(None, get_object_from_attributes(a, state_attribute))
 
     def test_state_with_func_on_dict1(self):
         class A:
@@ -307,13 +307,12 @@ class TestGetattr(unittest.TestCase):
     def test_state_with_func_on_dict3_error(self):
         a = {"a": 1, "b": 2, "c": 3}
 
-        def func_raise(x):
+        def func_error(x):
             return x["d"]
 
-        state_attribute = State(func=func_raise)
+        state_attribute = State(func=func_error)
 
-        self.assertRaises(StateConversionError, get_object_from_attributes, a, state_attribute)
-
+        self.assertEqual(None, get_object_from_attributes(a, state_attribute))
 
 if __name__ == '__main__':
     unittest.main()

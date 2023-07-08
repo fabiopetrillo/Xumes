@@ -108,6 +108,9 @@ class FeatureStrategy(ABC):
             def assert_between(self, actual, expected_min, expected_max) -> None:
                 self._assertion_bucket.assert_between(data=actual, expected_min=expected_min, expected_max=expected_max)
 
+            def assert_not_between(self, actual, expected_min, expected_max) -> None:
+                self._assertion_bucket.assert_not_between(data=actual, expected_min=expected_min, expected_max=expected_max)
+
             def _make_loop(self) -> bool:
                 # Loop content method return False if the test is finished
 
