@@ -392,7 +392,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
 
 
 class ComposedGameStateObservable(StateObservable[OBJ, ST]):
-    __slots__ = ('_state', '_object', '_observers', '_name', '_methods_to_observe', '_update', '_attributes')
+    _slots = ('_state', '_object', '_observers', '_name', '_methods_to_observe', '_update', '_attributes')
 
     def __init__(self, observable_object: OBJ, name: str,
                  observers: IGameStateObserver | List[IGameStateObserver] = None,
@@ -417,18 +417,7 @@ class ComposedGameStateObservable(StateObservable[OBJ, ST]):
         Here it is a dictionary with the attributes of the object.
         """
         return GameElementState(get_object_from_attributes(self._object, self._state if not self._update else
-                                                           self._methods_to_observe[self._update]))
-
-    def _in_slots(self, attr) -> bool:
-        """
-        Check if the attribute is in the slots of the object
-        :param attr: str attribute name
-        :return: if the attribute is in the slots
-        """
-        for cls in type(self).__mro__:
-            if attr in getattr(cls, '__slots__', []):
-                return True
-        return False
+        self._methods_to_observe[self._update]))
 
     # noinspection DuplicatedCode
     def __getattr__(self, attr):
@@ -437,8 +426,7 @@ class ComposedGameStateObservable(StateObservable[OBJ, ST]):
         :param attr: attribute name
         :return: the attribute
         """
-
-        if self._in_slots(attr):
+        if attr in ComposedGameStateObservable._slots or attr in dir(ComposedGameStateObservable):
             return object.__getattr__(self, attr)
 
         value = getattr(self._object, attr)
@@ -463,7 +451,7 @@ class ComposedGameStateObservable(StateObservable[OBJ, ST]):
         :param attr: attribute name
         :param value: value to set
         """
-        if self._in_slots(attr):
+        if attr in ComposedGameStateObservable._slots or attr in dir(ComposedGameStateObservable):
             object.__setattr__(self, attr, value)
             return
         setattr(self._object, attr, value)
@@ -579,11 +567,44 @@ class ComposedGameStateObservable(StateObservable[OBJ, ST]):
 
 class InheritedGameStateObservable(ComposedGameStateObservable):
 
+    @staticmethod
+    def create(observable_class, name: str, state: List[State] | State | str | List[str] | None = None,
+               observers: IGameStateObserver | List[IGameStateObserver] = None,
+               *args,
+               **kwargs):
+        """
+        Static method to create a InheritedGameStateObservable.
+        Here we merge the observable_class with the InheritedGameStateObservable.
+        :param observable_class: class to observe
+        :param name: object name
+        :param state: `State` object or list of `State` objects
+        :param observers: observers of the object
+        :param args: args of the game class
+        :param kwargs: kwargs of the game class
+        :return: `ObservableClassWrapper` object
+        """
+
+        class ObservableClassWrapper(observable_class, InheritedGameStateObservable):
+            def __init__(self):
+                InheritedGameStateObservable.__init__(self, state=state, observers=observers, name=name)
+                observable_class.__init__(self, *args, **kwargs)
+
+            def __setattr__(self, attr, value):
+                InheritedGameStateObservable.__setattr__(self, attr, value)
+
+            def __getattribute__(self, attr):
+                return InheritedGameStateObservable.__getattribute__(self, attr)
+
+            def __getattr__(self, item):
+                return InheritedGameStateObservable.__getattr__(self, item)
+
+        return ObservableClassWrapper()
+
     def __init__(self, name: str,
                  observers: IGameStateObserver | List[IGameStateObserver] = None,
                  state: List[State] | State | str | List[str] = None, ):
         """
-        Create a GameStateObservable with a name and an object to observe.
+        Create a InheritedGameStateObservable with a name and an object to observe.
         :param name: name of the object
         :param observers: observers of the object
         :param state: state to observe
@@ -591,15 +612,20 @@ class InheritedGameStateObservable(ComposedGameStateObservable):
         super().__init__(observable_object=self, name=name, state=state, observers=observers)
 
     def __getattr__(self, item):
+        """
+        Override the get attribute to delegate the call to the object.
+        :param item: attribute name
+        :return: attribute value
+        """
         return object.__getattribute__(self, item)
 
     # noinspection DuplicatedCode
     def __getattribute__(self, attr):
         """
-        Delegate the get attribute to the object and notify the observers.
+        For every call to the object, notify the observers.
+        No delegation is done here. We use polymorphism to call the method of the object.
         :param attr: attribute name
-        :return: the attribute
-
+        :return: attribute value
         """
         value = object.__getattribute__(self, attr)
 
@@ -619,12 +645,12 @@ class InheritedGameStateObservable(ComposedGameStateObservable):
     # noinspection DuplicatedCode
     def __setattr__(self, attr, value):
         """
-        Delegate the set attribute to the object and notify the observers.
+        For every call to the object, notify the observers.
         :param attr: attribute name
         :param value: value to set
         """
 
-        if attr in ComposedGameStateObservable.__slots__ or attr in dir(ComposedGameStateObservable):
+        if attr in ComposedGameStateObservable._slots or attr in dir(ComposedGameStateObservable):
             object.__setattr__(self, attr, value)
             return
         else:

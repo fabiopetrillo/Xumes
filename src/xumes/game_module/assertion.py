@@ -82,8 +82,8 @@ class AssertionEqual(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is equal to the given value
     """
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, alpha=0.001):
+        super().__init__(alpha=alpha)
         self._value = value
         self._type = type(value)
 
@@ -114,8 +114,8 @@ class AssertionBetween(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is between the given values
     """
 
-    def __init__(self, min_value, max_value):
-        super().__init__()
+    def __init__(self, min_value, max_value, alpha=0.001):
+        super().__init__(alpha=alpha)
         assert min_value < max_value
         assert type(min_value) == type(max_value)
         self._min_value = min_value
@@ -159,8 +159,8 @@ class AssertionLessThan(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is less than the given value
     """
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, alpha=0.001):
+        super().__init__(alpha=alpha)
         self._value = value
         self._type = type(value)
 
@@ -197,8 +197,8 @@ class AssertionLessThanOrEqual(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is less than or equal to the given value
     """
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, alpha=0.001):
+        super().__init__(alpha=alpha)
         self._value = value
         self._type = type(value)
 
@@ -235,8 +235,8 @@ class AssertionGreaterThan(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is greater than the given value
     """
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, alpha=0.001):
+        super().__init__(alpha=alpha)
         self._value = value
         self._type = type(value)
 
@@ -273,8 +273,8 @@ class AssertionGreaterThanOrEqual(Assertion):
     Overloads the test method of the Assertion class to test if the mean of the data is greater than or equal to the given value
     """
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, alpha=0.001):
+        super().__init__(alpha=alpha)
         self._value = value
         self._type = type(value)
 

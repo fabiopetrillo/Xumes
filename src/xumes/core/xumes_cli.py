@@ -32,12 +32,14 @@ def get_debug_level(debug, info):
 @click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--timesteps", "-t", default=None, help="Number of timesteps to test the game.")
 @click.option("--iterations", "-i", default=None, help="Number of iterations to test the game.")
+@click.option("--log", is_flag=True, help="Log the game.")
 @click.option("--debug", is_flag=True, help="Debug debug level.")
 @click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--ip", default="localhost", help="IP of the training server.")
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
-def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info):
+@click.option("--alpha", "-a", default=0.001, help="Alpha of the training.")
+def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha):
     if path:
         os.chdir(path)
     else:
@@ -51,6 +53,11 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
     if test and not timesteps and not iterations:
         print("You must choose a number of timesteps or iterations to test the game.")
         return
+
+    if log:
+        log = True
+    else:
+        log = False
 
     logging.basicConfig(format='%(levelname)s:%(message)s', level=get_debug_level(debug, info))
 
@@ -68,8 +75,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
         iterations = int(iterations)
 
     test_manager = PygameTestManager(communication_service=CommunicationServiceTestManagerRestApi(ip=ip, port=port),
-                                     feature_strategy=BasicFeatureStrategy(),
-                                     mode=mode, timesteps=timesteps, iterations=iterations)
+                                     feature_strategy=BasicFeatureStrategy(alpha=alpha),
+                                     mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
     test_manager.test_all()
 
 

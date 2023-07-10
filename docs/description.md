@@ -7,11 +7,13 @@ You will need to implement these modules to use the framework. The following dia
 ![framework schema](schema.png)
 
 ### Game side
-The steps files are responsible for implementing the tests that will be executed by the framework. They are written in Gherkin, a language that allows you to write tests in a human-readable format. The framework will execute these tests by interacting with the game through the game side component.
+The steps files and features files are responsible for implementing the tests that will be executed by the framework. They are written in Gherkin, a language that allows you to write tests in a human-readable format. The framework will execute these tests by interacting with the game through the game side component.
 
 [How to implement the steps files?](steps.md)
+
+[How to implement the features file?](features.md)
 
 ### Training side
 The training side of the Xumes framework is responsible for predicting actions based on game states. It leverages the `stablebaselines` library, which provides a wide range of reinforcement learning (RL) algorithms to facilitate the implementation of the training process.
 
-[How to implement the training side?](implement_without_observables/training_side_without_observables.md)
+[How to implement the trainers?](trainers.md)

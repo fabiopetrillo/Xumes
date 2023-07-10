@@ -67,10 +67,7 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
                                          log_path=save_path, eval_freq=eval_freq,
                                          deterministic=True, render=False)
 
-        if not self.model:
-            self.model = self.algorithm(self.algorithm_type, self.env, verbose=1)
-
-        self.model = self.model.learn(
+        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1).learn(
             self.total_timesteps,
             callback=eval_callback,
             tb_log_name=test_name

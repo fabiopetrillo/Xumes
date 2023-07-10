@@ -70,16 +70,8 @@ class TestRunner(ABC):
         :param name: the name of the observable object.
         :param state: the state of the observable object.
         """
-
         observers = [self._observer]
-
-        class ObservableClassWrapper(observable_class, InheritedGameStateObservable):
-
-            def __init__(self):
-                InheritedGameStateObservable.__init__(self, state=state, observers=observers, name=name)
-                observable_class.__init__(self, *args, **kwargs)
-
-        return ObservableClassWrapper()
+        return InheritedGameStateObservable.create(observable_class, name, state, observers, *args, **kwargs)
 
     @abstractmethod
     def run_test(self) -> None:

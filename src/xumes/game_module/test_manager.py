@@ -57,7 +57,7 @@ class TestManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTestManager, feature_strategy: FeatureStrategy,
-                 mode: str = TEST_MODE, timesteps=None, iterations=None):
+                 mode: str = TEST_MODE, timesteps=None, iterations=None, do_logs: bool = False):
 
         self._load_tests()
         self._communication_service = communication_service
@@ -67,6 +67,7 @@ class TestManager:
         self._iterations = iterations
         self._feature_strategy: FeatureStrategy = feature_strategy
         self._assertion_queue = multiprocessing.Queue()
+        self._do_logs = do_logs
 
     @staticmethod
     def _load_tests():
@@ -95,7 +96,9 @@ class TestManager:
         game_service = self._build_game_service(
             self._feature_strategy.build_test_runner(mode=self._mode, timesteps=self._timesteps,
                                                      iterations=self._iterations, scenario=scenario,
-                                                     test_queue=self._assertion_queue), scenario_data.ip, scenario_data.port, )
+                                                     test_queue=self._assertion_queue,
+                                                     do_logs=self._do_logs,
+                                                     ), scenario_data.ip, scenario_data.port, )
         scenario_data.game_service = game_service
         return game_service
 

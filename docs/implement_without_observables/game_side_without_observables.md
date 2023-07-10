@@ -251,10 +251,11 @@ This is the same as `run_test()`, but you need to implement a way to render imag
 #### reset() implementation
 The reset implementation is used to restart the game. 
 If you want to overwrite game entities, don't forget to `detach()` observers and rebind the observables.
+
 ```python
     def reset(self):
-        self.entity.detach_all()
-        self.entity = self.bind(...)
+    self.entity.detach_all()
+    self.entity = self.bind(...)
 ```
 
 #### random_reset() implementation

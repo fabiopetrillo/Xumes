@@ -5,9 +5,10 @@ nav:
   - User guide:
       - "Installation": 'usage.md'
       - "Getting started": 'description.md'
-  - Tester:
-      - "Steps files": 'steps.md'
-      - ".feature files": 'features.md'
-      - "Start tester": 'start_tester.md'
-      - "Trainers files": 'trainers.md'
       - "CLI": 'cli.md'
+  - Testers guide:
+      - "Steps files": 'steps.md'
+      - "Features files": 'features.md'
+  - Trainers guide:
+      - "Trainers files": 'trainers.md'
+

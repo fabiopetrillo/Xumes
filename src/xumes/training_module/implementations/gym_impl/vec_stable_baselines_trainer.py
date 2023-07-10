@@ -42,9 +42,7 @@ class VecStableBaselinesTrainer(ITrainer):
                                          log_path=save_path, eval_freq=eval_freq,
                                          deterministic=True, render=False)
 
-        self.model = algorithm(algorithm_type, self._vec_env, verbose=1)
-
-        self.model = self.model.learn(
+        self.model = algorithm(algorithm_type, self._vec_env, verbose=1).learn(
             total_timesteps,
             callback=eval_callback,
         )

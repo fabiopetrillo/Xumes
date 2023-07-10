@@ -28,7 +28,7 @@ class AssertionBucket:
     ASSERT_MODE = "assert"
     COLLECT_MODE = "collect"
 
-    def __init__(self, test_name, queue: multiprocessing.Queue):
+    def __init__(self, test_name, queue: multiprocessing.Queue, alpha=0.001):
         super().__init__()
         self._data = []
         self._results: List[AssertionResult] = []
@@ -37,6 +37,7 @@ class AssertionBucket:
         self._mode = AssertionBucket.COLLECT_MODE
         self._queue = queue
         self._passed = True
+        self._alpha = alpha
 
     def reset_iterator(self):
         self._iterator = 0
@@ -54,34 +55,34 @@ class AssertionBucket:
             self._assert(expected=expected, assertion_strategy=assertion_strategy, opposite=opposite)
 
     def assert_true(self, data):
-        self._collect_or_assert(data, expected=True, assertion_strategy=AssertionEqual(True))
+        self._collect_or_assert(data, expected=True, assertion_strategy=AssertionEqual(True, alpha=self._alpha))
 
     def assert_false(self, data):
-        self._collect_or_assert(data, expected=False, assertion_strategy=AssertionEqual(True), opposite=True)
+        self._collect_or_assert(data, expected=False, assertion_strategy=AssertionEqual(True, alpha=self._alpha), opposite=True)
 
     def assert_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected))
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected, alpha=self._alpha))
 
     def assert_not_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected), opposite=True)
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected, alpha=self._alpha), opposite=True)
 
     def assert_greater_than(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThan(expected))
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThan(expected, alpha=self._alpha))
 
     def assert_greater_than_or_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThanOrEqual(expected))
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThanOrEqual(expected, alpha=self._alpha))
 
     def assert_less_than(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected))
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected, alpha=self._alpha))
 
     def assert_less_than_or_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThanOrEqual(expected))
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThanOrEqual(expected, alpha=self._alpha))
 
     def assert_between(self, data, expected_min, expected_max):
-        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max))
+        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha))
 
     def assert_not_between(self, data, expected_min, expected_max):
-        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max), opposite=True)
+        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha), opposite=True)
 
     def _collect(self, other):
         if self._iterator < len(self._data):

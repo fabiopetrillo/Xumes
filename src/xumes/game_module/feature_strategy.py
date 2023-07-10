@@ -42,15 +42,19 @@ class FeatureStrategy(ABC):
     delete_screen = create_registry()
     log = create_registry()
 
-    def __init__(self):
+    def __init__(self, alpha: float = 0.001):
         self.features: List[Feature] = []
+        self._alpha = alpha
 
     def build_test_runner(self, timesteps: int = None, iterations: int = None,
-                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None):
+                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None,
+                          do_logs: bool = False):
         # Get steps
         steps = scenario.steps
         feature_name = scenario.feature.name
         scenario_name = scenario.name
+        do_logs = do_logs
+        alpha = self._alpha
 
         class ConcreteTestRunner(TestRunner):
             def __init__(self, number_max_of_steps: int = None, number_max_of_tests: int = None):
@@ -63,11 +67,20 @@ class FeatureStrategy(ABC):
                 self._number_of_tests = 0
                 self._number_max_of_tests = number_max_of_tests
 
-                self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}", queue=test_queue)
+                self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
+                                                         queue=test_queue,
+                                                         alpha=alpha)
                 given.all[steps][0](self)
+
+                try:
+                    delete_screen.all[steps](self)
+                except KeyError:
+                    pass
+
                 when.all[steps][0](self)
 
                 self._logs = {}
+                self._do_logs = do_logs
 
             def _write_logs(self):
                 # Write logs in file
@@ -109,7 +122,8 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket.assert_between(data=actual, expected_min=expected_min, expected_max=expected_max)
 
             def assert_not_between(self, actual, expected_min, expected_max) -> None:
-                self._assertion_bucket.assert_not_between(data=actual, expected_min=expected_min, expected_max=expected_max)
+                self._assertion_bucket.assert_not_between(data=actual, expected_min=expected_min,
+                                                          expected_max=expected_max)
 
             def _make_loop(self) -> bool:
                 # Loop content method return False if the test is finished
@@ -134,7 +148,7 @@ class FeatureStrategy(ABC):
                 if not reset:
                     loop.all[steps](self)
 
-                if self._mode == TEST_MODE:
+                if self._mode == TEST_MODE and self._do_logs:
                     try:
                         # We get the logs of the current step
                         if steps not in self._logs:
@@ -171,7 +185,9 @@ class FeatureStrategy(ABC):
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
-                    self._write_logs()
+
+                    if self._do_logs:
+                        self._write_logs()
 
             def random_reset(self) -> None:
                 self.reset()
