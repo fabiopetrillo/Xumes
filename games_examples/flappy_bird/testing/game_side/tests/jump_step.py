@@ -5,6 +5,7 @@ from games_examples.flappy_bird.play import Game, BACKGROUND_COLOR
 from games_examples.flappy_bird.src.pipe import Pipe
 from games_examples.flappy_bird.src.pipe_generator import PipeGenerator
 from games_examples.flappy_bird.src.player import Player
+
 from xumes.game_module import State, given, when, loop, then, render, log
 
 
@@ -38,20 +39,27 @@ def test_impl(test_context):
     test_context.game.dt = 0.09
 
 
-@when("The first pipe is at the bottom and the next pipe is at the top")
-def test_impl(test_context):
+def get_height(x):
+    x = x / 100
+    return x * (HEIGHT - 100 - PIPE_SPACE) + 50
+
+
+
+@when("The first pipe is at {i} % and the next pipe is at {j} %")
+def test_impl(test_context, i, j):
+    i, j = int(i), int(j)
     test_context.game.reset()
     test_context.game.pipe_generator.pipes = [Pipe(player=test_context.game.player,
                                                    generator=test_context.game.pipe_generator,
-                                                   height=HEIGHT - 50 - PIPE_SPACE,
+                                                   height=get_height(i),
                                                    position=LEFT_POSITION + SIZE / 2 + SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2),
                                               Pipe(player=test_context.game.player,
                                                    generator=test_context.game.pipe_generator,
-                                                   height=50,
+                                                   height=get_height(j),
                                                    position=LEFT_POSITION + SIZE / 2 + 2 * SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2)]
     test_context.game.pipe_generator.notify()
 
-    test_context.game.clock.tick(60)
+    test_context.game.clock.tick(0)
 
 
 @loop
@@ -69,7 +77,12 @@ def test_impl(test_context):
 @then("The player should have passed two pipes")
 def test_impl(test_context):
     test_context.assert_true(test_context.game.player.points == 2)
-    test_context.assert_equal(test_context.game.player.points, 2)
+    test_context.assert_false(test_context.game.player.points == 1)
+    test_context.assert_greater(test_context.game.player.points, 1)
+    test_context.assert_greater_equal(test_context.game.player.points, 1)
+    test_context.assert_less_equal(test_context.game.player.points, 3)
+    test_context.assert_less(test_context.game.player.points, 3)
+    test_context.assert_between(test_context.game.player.points, 1, 3)
 
 
 @render

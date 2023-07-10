@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import multiprocessing
 import os
@@ -36,15 +37,31 @@ class FeatureStrategy(ABC):
 
     given = create_registry_content()
     when = create_registry_content()
-    loop = create_registry()
     then = create_registry_content()
+
+    loop = create_registry()
     render = create_registry()
     delete_screen = create_registry()
     log = create_registry()
 
     def __init__(self, alpha: float = 0.001):
         self.features: List[Feature] = []
+        self._steps_files: List[str] = []
         self._alpha = alpha
+        self._load_tests()
+
+    def _load_tests(self):
+        for file in os.listdir("./tests"):
+            if file.endswith(".py"):
+                module_path = os.path.join("./tests", file)
+                module_path = os.path.abspath(module_path)
+                module_name = os.path.basename(module_path)[:-3]
+
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                module_dep = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module_dep)
+
+                self._steps_files.append(file[:-3])
 
     def build_test_runner(self, timesteps: int = None, iterations: int = None,
                           mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None,
@@ -70,14 +87,14 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
                                                          queue=test_queue,
                                                          alpha=alpha)
-                given.all[steps][0](self)
+                given.all[steps]['func'](self, **given.all[steps]['params'])
 
                 try:
                     delete_screen.all[steps](self)
                 except KeyError:
                     pass
 
-                when.all[steps][0](self)
+                when.all[steps]['func'](self, **when.all[steps]['params'])
 
                 self._logs = {}
                 self._do_logs = do_logs
@@ -181,7 +198,7 @@ class FeatureStrategy(ABC):
                 if self._mode == TEST_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
-                    then.all[steps][0](self)
+                    then.all[steps]['func'](self, **then.all[steps]['params'])
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
@@ -194,14 +211,14 @@ class FeatureStrategy(ABC):
 
             def reset(self) -> None:
                 if self._mode == TEST_MODE:
-                    then.all[steps][0](self)
+                    then.all[steps]['func'](self, **then.all[steps]['params'])
                     self._assertion_bucket.reset_iterator()
-                when.all[steps][0](self)
+                when.all[steps]['func'](self, **when.all[steps]['params'])
                 self._number_of_tests += 1
 
             def delete_screen(self) -> None:
                 if steps in delete_screen.all:
-                    delete_screen.all[steps][0](self)
+                    delete_screen.all[steps]['func'](self)
 
         return ConcreteTestRunner(timesteps, iterations)
 
