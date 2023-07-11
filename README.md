@@ -14,3 +14,8 @@ The steps files and features files are responsible for implementing the tests th
 ### Training side
 The training side of the Xumes framework is responsible for predicting actions based on game states. It leverages the `stablebaselines` library, which provides a wide range of reinforcement learning (RL) algorithms to facilitate the implementation of the training process.
 
+## Future work
+
+- [ ] Improve the error handling for the BDD (steps not written yet for instance).
+- [ ] Change the Observable implementation.
+- [ ] Add tags in feature files.
