@@ -64,11 +64,6 @@ def test_impl(test_context, i, j):
     test_context.game.clock.tick(0)
 
 
-@when("The player is reset")
-def test_impl(test_context):
-    test_context.game.player.reset()
-
-
 @loop
 def test_impl(test_context):
     for event in pygame.event.get():

@@ -4,7 +4,6 @@ Feature: Testing the jump
     Given A game with a player
     And A pipe generator
     When The first pipe is at 50 % and the next pipe is at 100 %
-    And The player is reset
     Then The player should have passed 2 pipes
     And The player should have passed at least 1 pipes
 

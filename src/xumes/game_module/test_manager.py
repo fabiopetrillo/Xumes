@@ -146,7 +146,7 @@ class TestManager:
             results.append(assertion_report)
             if assertion_report.passed:
                 successes += 1
-                tests_passed_names += assertion_report.test_name + '\n'
+                tests_passed_names += '    - ' + assertion_report.test_name + '\n'
             else:
                 error_logs += assertion_report.error_logs
 
