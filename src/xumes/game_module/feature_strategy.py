@@ -3,11 +3,11 @@ import json
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict
 
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.core.modes import TEST_MODE
-from xumes.core.registry import create_registry_content, create_registry
+from xumes.core.registry import create_registry_content, create_registry, exec_registry_function
 from xumes.game_module.assertion_bucket import AssertionBucket
 from xumes.game_module.test_runner import TestRunner
 
@@ -47,6 +47,7 @@ class FeatureStrategy(ABC):
     def __init__(self, alpha: float = 0.001):
         self.features: List[Feature] = []
         self._steps_files: List[str] = []
+
         self._alpha = alpha
         self._load_tests()
 
@@ -87,15 +88,14 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
                                                          queue=test_queue,
                                                          alpha=alpha)
-                given.all[steps]['func'](self, **given.all[steps]['params'])
+                exec_registry_function(registry=given.all[steps], game_context=self)
 
                 try:
                     delete_screen.all[steps](self)
                 except KeyError:
                     pass
 
-                when.all[steps]['func'](self, **when.all[steps]['params'])
-
+                exec_registry_function(registry=when.all[steps], game_context=self)
                 self._logs = {}
                 self._do_logs = do_logs
 
@@ -198,7 +198,7 @@ class FeatureStrategy(ABC):
                 if self._mode == TEST_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
-                    then.all[steps]['func'](self, **then.all[steps]['params'])
+                    exec_registry_function(registry=then.all[steps], game_context=self)
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
@@ -211,9 +211,9 @@ class FeatureStrategy(ABC):
 
             def reset(self) -> None:
                 if self._mode == TEST_MODE:
-                    then.all[steps]['func'](self, **then.all[steps]['params'])
+                    exec_registry_function(registry=then.all[steps], game_context=self)
                     self._assertion_bucket.reset_iterator()
-                when.all[steps]['func'](self, **when.all[steps]['params'])
+                exec_registry_function(registry=when.all[steps], game_context=self)
                 self._number_of_tests += 1
 
             def delete_screen(self) -> None:

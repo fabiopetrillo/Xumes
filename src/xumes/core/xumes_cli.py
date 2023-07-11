@@ -33,6 +33,8 @@ def get_debug_level(debug, info):
 @click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--timesteps", "-t", default=None, help="Number of timesteps to test the game.")
 @click.option("--iterations", "-i", default=None, help="Number of iterations to test the game.")
+@click.option("--feature", "-f", default=None, help="Feature to test.")
+@click.option("--scenario", "-s", default=None, help="Scenario to test.")
 @click.option("--log", is_flag=True, help="Log the game.")
 @click.option("--debug", is_flag=True, help="Debug debug level.")
 @click.option("--info", is_flag=True, help="Info debug level.")
@@ -40,7 +42,7 @@ def get_debug_level(debug, info):
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
 @click.option("--alpha", "-a", default=0.001, help="Alpha of the training.")
-def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha):
+def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, feature, scenario):
     if path:
         os.chdir(path)
     else:
@@ -75,8 +77,18 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
     if iterations:
         iterations = int(iterations)
 
+    if feature:
+        # Parse features list to list of str
+        feature = feature.split(",")
+        feature = [f.strip() for f in feature]
+
+    if scenario:
+        # Parse scenarios list to list of str
+        scenario = scenario.split(",")
+        scenario = [s.strip() for s in scenario]
+
     test_manager = PygameTestManager(communication_service=CommunicationServiceTestManagerRestApi(ip=ip, port=port),
-                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha),
+                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=feature, scenarios_names=scenario),
                                      mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
     test_manager.test_all()
 
