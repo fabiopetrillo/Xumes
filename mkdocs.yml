@@ -1,5 +1,7 @@
 site_name: Xumes
 theme: readthedocs
+site_description: Xumes is a game testing tool for games
+site_author: Xumes
 
 nav:
   - User guide:
