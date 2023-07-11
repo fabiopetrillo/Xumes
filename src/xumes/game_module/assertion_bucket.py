@@ -8,15 +8,16 @@ from xumes.game_module.assertion_result import AssertionResult
 
 class AssertionReport:
 
-    def __init__(self, passed: bool, error_logs: str):
+    def __init__(self, passed: bool, error_logs: str, test_name: str):
         self.passed = passed
         self.error_logs = error_logs
+        self.test_name = test_name
 
     def __getstate__(self):
-        return self.passed, self.error_logs
+        return self.passed, self.error_logs, self.test_name
 
     def __setstate__(self, state):
-        self.passed, self.error_logs = state
+        self.passed, self.error_logs, self.test_name = state
 
 
 class AssertionBucket:
@@ -58,31 +59,38 @@ class AssertionBucket:
         self._collect_or_assert(data, expected=True, assertion_strategy=AssertionEqual(True, alpha=self._alpha))
 
     def assert_false(self, data):
-        self._collect_or_assert(data, expected=False, assertion_strategy=AssertionEqual(True, alpha=self._alpha), opposite=True)
+        self._collect_or_assert(data, expected=False, assertion_strategy=AssertionEqual(True, alpha=self._alpha),
+                                opposite=True)
 
     def assert_equal(self, data, expected):
         self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected, alpha=self._alpha))
 
     def assert_not_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected, alpha=self._alpha), opposite=True)
+        self._collect_or_assert(data, expected, assertion_strategy=AssertionEqual(expected, alpha=self._alpha),
+                                opposite=True)
 
     def assert_greater_than(self, data, expected):
         self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThan(expected, alpha=self._alpha))
 
     def assert_greater_than_or_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionGreaterThanOrEqual(expected, alpha=self._alpha))
+        self._collect_or_assert(data, expected,
+                                assertion_strategy=AssertionGreaterThanOrEqual(expected, alpha=self._alpha))
 
     def assert_less_than(self, data, expected):
         self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected, alpha=self._alpha))
 
     def assert_less_than_or_equal(self, data, expected):
-        self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThanOrEqual(expected, alpha=self._alpha))
+        self._collect_or_assert(data, expected,
+                                assertion_strategy=AssertionLessThanOrEqual(expected, alpha=self._alpha))
 
     def assert_between(self, data, expected_min, expected_max):
-        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha))
+        self._collect_or_assert(data, (expected_min, expected_max),
+                                assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha))
 
     def assert_not_between(self, data, expected_min, expected_max):
-        self._collect_or_assert(data, (expected_min, expected_max), assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha), opposite=True)
+        self._collect_or_assert(data, (expected_min, expected_max),
+                                assertion_strategy=AssertionBetween(expected_min, expected_max, alpha=self._alpha),
+                                opposite=True)
 
     def _collect(self, other):
         if self._iterator < len(self._data):
@@ -115,7 +123,8 @@ class AssertionBucket:
                               f"{'Actual':10}: {assertion_result.actual} \n" \
                               f"{'Expected':10}: {assertion_result.expected}\n"
         self._queue.put(AssertionReport(passed=self._passed,
-                                        error_logs=error_logs
+                                        error_logs=error_logs,
+                                        test_name=self._test_name
                                         ))
 
     def clear(self):

@@ -6,9 +6,11 @@ nav:
       - "Installation": 'usage.md'
       - "Getting started": 'description.md'
       - "CLI": 'cli.md'
-  - Testers guide:
+  - Testers:
       - "Steps files": 'steps.md'
       - "Features files": 'features.md'
-  - Trainers guide:
+  - Trainers:
       - "Trainers files": 'trainers.md'
+  - Documentation:
+      - "Architecture": 'architecture.md'
 

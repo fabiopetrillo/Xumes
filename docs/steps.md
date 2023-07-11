@@ -23,9 +23,11 @@ Each step file while require to implement the following methods using python dec
 - `@delete_screen` [Optional]: This method will be executed before the test. It is responsible for deleting the screen
   if possible.
 
+> **_NOTE:_** The `given`, `when` and `then` decorators can handle arguments. 
+
 The following diagram illustrates the execution flow of the steps files:
 
-![steps](steps_files_schema.png)
+![steps](schemas/steps_files_schema.png)
 
 ## 1. `@given`
 

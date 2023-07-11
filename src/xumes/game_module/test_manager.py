@@ -15,7 +15,8 @@ from xumes.game_module.implementations import PygameEventFactory, CommunicationS
 
 class ScenarioData:
 
-    def __init__(self, game_service: GameService = None, process: multiprocessing.Process = None, ip: str = None, port: int = None):
+    def __init__(self, game_service: GameService = None, process: multiprocessing.Process = None, ip: str = None,
+                 port: int = None):
         self.game_service = game_service
         self.process = process
         self.ip = ip
@@ -59,7 +60,6 @@ class TestManager:
     def __init__(self, communication_service: ICommunicationServiceTestManager, feature_strategy: FeatureStrategy,
                  mode: str = TEST_MODE, timesteps=None, iterations=None, do_logs: bool = False):
 
-        self._load_tests()
         self._communication_service = communication_service
         self._scenario_datas: Dict[Scenario, ScenarioData] = {}
         self._mode = mode
@@ -68,18 +68,6 @@ class TestManager:
         self._feature_strategy: FeatureStrategy = feature_strategy
         self._assertion_queue = multiprocessing.Queue()
         self._do_logs = do_logs
-
-    @staticmethod
-    def _load_tests():
-        for file in os.listdir("./tests"):
-            if file.endswith(".py"):
-                module_path = os.path.join("./tests", file)
-                module_path = os.path.abspath(module_path)
-                module_name = os.path.basename(module_path)[:-3]
-
-                spec = importlib.util.spec_from_file_location(module_name, module_path)
-                module_dep = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module_dep)
 
     def get_free_port(self, scenario) -> int:
         # Get the port for a given feature and scenario
@@ -150,6 +138,7 @@ class TestManager:
 
         results: List[AssertionReport] = []
         successes = 0
+        tests_passed_names = ''
         error_logs = ''
 
         while not self._assertion_queue.empty():
@@ -157,13 +146,15 @@ class TestManager:
             results.append(assertion_report)
             if assertion_report.passed:
                 successes += 1
+                tests_passed_names += '    - ' + assertion_report.test_name + '\n'
             else:
                 error_logs += assertion_report.error_logs
 
         # log results
         nb_test = len(results)
         header = f"{bcolors.BOLD}{bcolors.UNDERLINE}{'':15}TEST REPORT{'':15}{bcolors.ENDC}\n"
-        details = f"{successes} tests passed on a total of {nb_test}.\n" + error_logs
+        details = f"{successes} tests passed on a total of {nb_test}.\n" + \
+                  f"Tests passed:\n{tests_passed_names}\n"
         if successes < nb_test:
             print(f"{bcolors.FAIL}{header}")
             print(f"{bcolors.FAIL}{details}")

@@ -4,7 +4,7 @@
 The Xumes framework consists of two main components: the "Game side" and the "Training side". These components are implemented as separate Python modules within the framework: `game_module` and `training_module`.
 You will need to implement these modules to use the framework. The following diagram illustrates the architecture of the framework:
 
-![framework schema](schema.png)
+![framework schema](schemas/schema.png)
 
 ### Game side
 The steps files and features files are responsible for implementing the tests that will be executed by the framework. They are written in Gherkin, a language that allows you to write tests in a human-readable format. The framework will execute these tests by interacting with the game through the game side component.
