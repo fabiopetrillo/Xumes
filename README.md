@@ -32,3 +32,4 @@ Those limitations make testing difficult and impose a good definition of the tes
 - [ ] Create an architecture schema for the framework (not a usage schema).
 - [ ] Improve the documentation with descriptions of every classs of the framework.
 - [ ] Improve the documentation with advices on how to make good tests and how to choose good alphas.
+- [ ] Convert the documentaion to Sphynx.
