@@ -27,7 +27,8 @@ Those limitations make testing difficult and impose a good definition of the tes
 
 - [ ] Improve the error handling for the BDD (steps not written yet for instance).
 - [ ] Change the Observable implementation.
-- [ ] Add tags in feature files.
+- [ ] Add seed to perform same tests every times.
+- [X] Add tags in feature files.
 - [ ] Improve code coverage with unit tests.
 - [ ] Create an architecture schema for the framework (not a usage schema).
 - [ ] Improve the documentation with descriptions of every classs of the framework.
