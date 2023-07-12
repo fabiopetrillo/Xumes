@@ -3,7 +3,7 @@ import json
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List
 
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.core.modes import TEST_MODE
@@ -88,14 +88,14 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
                                                          queue=test_queue,
                                                          alpha=alpha)
-                exec_registry_function(registry=given.all[steps], game_context=self)
+                exec_registry_function(registry=given.all[steps], game_context=self, scenario_name=scenario_name)
 
                 try:
                     delete_screen.all[steps](self)
                 except KeyError:
                     pass
 
-                exec_registry_function(registry=when.all[steps], game_context=self)
+                exec_registry_function(registry=when.all[steps], game_context=self, scenario_name=scenario_name)
                 self._logs = {}
                 self._do_logs = do_logs
 
@@ -198,7 +198,7 @@ class FeatureStrategy(ABC):
                 if self._mode == TEST_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
-                    exec_registry_function(registry=then.all[steps], game_context=self)
+                    exec_registry_function(registry=then.all[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
@@ -211,9 +211,9 @@ class FeatureStrategy(ABC):
 
             def reset(self) -> None:
                 if self._mode == TEST_MODE:
-                    exec_registry_function(registry=then.all[steps], game_context=self)
+                    exec_registry_function(registry=then.all[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.reset_iterator()
-                exec_registry_function(registry=when.all[steps], game_context=self)
+                exec_registry_function(registry=when.all[steps], game_context=self, scenario_name=scenario_name)
                 self._number_of_tests += 1
 
             def delete_screen(self) -> None:

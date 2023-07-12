@@ -1,6 +1,4 @@
-import importlib.util
 import multiprocessing
-import os
 from abc import abstractmethod
 from typing import List, Dict
 
@@ -153,8 +151,10 @@ class TestManager:
         # log results
         nb_test = len(results)
         header = f"{bcolors.BOLD}{bcolors.UNDERLINE}{'':15}TEST REPORT{'':15}{bcolors.ENDC}\n"
-        details = f"{successes} tests passed on a total of {nb_test}.\n" + \
-                  f"Tests passed:\n{tests_passed_names}\n"
+        details = f"{successes} tests passed on a total of {nb_test}.\n"
+        details += f"Tests passed:\n{tests_passed_names}\n" if successes > 0 else ""
+        details += error_logs
+
         if successes < nb_test:
             print(f"{bcolors.FAIL}{header}")
             print(f"{bcolors.FAIL}{details}")

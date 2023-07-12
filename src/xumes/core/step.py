@@ -1,9 +1,10 @@
 
 class Step:
 
-    def __init__(self, func, content, params=None):
-        if params is None:
-            params = {}
+    def __init__(self, func, content):
         self.func = func
         self.content = content
-        self.params = params
+        self.params = {}
+
+    def add_params(self, scenario_name, params):
+        self.params[scenario_name] = params

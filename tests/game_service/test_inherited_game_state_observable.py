@@ -385,10 +385,8 @@ class TestInheritedGameStateObservable(TestCase):
                 self.v += 1
 
         d = self.test_runner.create(D, "d", State("v"), v=1)
-        print(self.test_runner._observer.update_state.call_count)
         a = A(B(C(d)))
         a.update()
-        print(self.test_runner._observer.update_state.call_count)
 
         self.assertEqual(self.test_runner._observer.update_state.call_count, 3)
 

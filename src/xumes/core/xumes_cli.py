@@ -5,7 +5,6 @@ import click
 
 from xumes.core.modes import TRAIN_MODE, TEST_MODE, RENDER_MODE, FEATURE_MODE, SCENARIO_MODE
 from xumes.game_module.implementations import CommunicationServiceTestManagerRestApi
-from xumes.game_module.implementations.features_impl.basic_feature_strategy import BasicFeatureStrategy
 from xumes.game_module.implementations.features_impl.gherkin_feature_strategy import GherkinFeatureStrategy
 from xumes.game_module.test_manager import PygameTestManager
 from xumes.training_module import VecStableBaselinesTrainerManager, StableBaselinesTrainerManager
@@ -33,8 +32,9 @@ def get_debug_level(debug, info):
 @click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--timesteps", "-t", default=None, help="Number of timesteps to test the game.")
 @click.option("--iterations", "-i", default=None, help="Number of iterations to test the game.")
-@click.option("--feature", "-f", default=None, help="Feature to test.")
-@click.option("--scenario", "-s", default=None, help="Scenario to test.")
+@click.option("--features", "-f", default=None, help="List of features to test.")
+@click.option("--scenarios", "-s", default=None, help="List of scenarios to test.")
+@click.option("--tags", default=None, help="Tags of the features to test.")
 @click.option("--log", is_flag=True, help="Log the game.")
 @click.option("--debug", is_flag=True, help="Debug debug level.")
 @click.option("--info", is_flag=True, help="Info debug level.")
@@ -42,7 +42,7 @@ def get_debug_level(debug, info):
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
 @click.option("--alpha", "-a", default=0.001, help="Alpha of the training.")
-def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, feature, scenario):
+def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, features, scenarios, tags):
     if path:
         os.chdir(path)
     else:
@@ -77,18 +77,23 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
     if iterations:
         iterations = int(iterations)
 
-    if feature:
+    if features:
         # Parse features list to list of str
-        feature = feature.split(",")
-        feature = [f.strip() for f in feature]
+        features = features.split(",")
+        features = [f.strip() for f in features]
 
-    if scenario:
+    if scenarios:
         # Parse scenarios list to list of str
-        scenario = scenario.split(",")
-        scenario = [s.strip() for s in scenario]
+        scenarios = scenarios.split(",")
+        scenarios = [s.strip() for s in scenarios]
+
+    if tags:
+        # Parse tags list to list of str
+        tags = tags.split(",")
+        tags = [t.strip() for t in tags]
 
     test_manager = PygameTestManager(communication_service=CommunicationServiceTestManagerRestApi(ip=ip, port=port),
-                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=feature, scenarios_names=scenario),
+                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=features, scenarios_names=scenarios, tags=tags),
                                      mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
     test_manager.test_all()
 

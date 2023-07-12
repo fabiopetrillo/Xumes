@@ -19,9 +19,6 @@ def test_impl(test_context):
         State("speedup", methods_to_observe=["jump", "move", "reset"]),
         State("points", methods_to_observe=["gain_point", "reset"])], position=HEIGHT // 2, game=test_context.game)
 
-
-@given("A pipe generator")
-def test_impl(test_context):
     def get_rect(x):
         return [x.left, x.top, x.right, x.bottom]
 

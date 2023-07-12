@@ -24,14 +24,15 @@ def create_registry_content():
     return registrar
 
 
-def exec_registry_function(registry: List[Step], game_context):
+def exec_registry_function(registry: List[Step], game_context, scenario_name: str):
     """
     Execute all functions from registry
+    :param scenario_name:
     :param registry:  of functions
     :param game_context: where the functions will be executed
     """
     for r in registry:
-        r.func(game_context, **r.params)
+        r.func(game_context, **r.params[scenario_name])
 
 
 def get_content_from_registry(registry: List[Step]):

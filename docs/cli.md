@@ -22,6 +22,7 @@ The options are:
 | --path                 | The path to the folder where the tests are located.                                                |
 | --features  [Optional] | List of features you want to test separated by comas. All if not specified.                        |
 | --scenarios [Optional] | List of scenarios you want to test separated by comas. All if not specified.                       |
+| --tags      [Optional] | List of tags you want to test separated by comas. All if not specified.                            |
 | --alpha -a  [Optional] | [when testing] The alpha value for the Student t-test.                                             |
 | --log       [Optional] | If you want to log the results.                                                                    |
 | --ip        [Optional] | The ip of the training server (default=localhost).                                                 |

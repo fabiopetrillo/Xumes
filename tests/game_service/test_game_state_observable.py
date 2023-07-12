@@ -211,7 +211,7 @@ class TestGameStateObservable(TestCase):
 
             def update(self):
                 for b in self.b_list:
-                    b.update()
+                    b.update_state()
 
         class B:
             def __init__(self, b):

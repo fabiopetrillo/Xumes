@@ -14,10 +14,12 @@ class GherkinFeatureStrategy(FeatureStrategy):
     Using the .feature files, we can get all features and scenarios.
     It also implements a way to filter the features and scenarios that we want to run.
     """
-    def __init__(self, alpha: float = 0.001, features_names: List[str] = None, scenarios_names: List[str] = None):
+    def __init__(self, alpha: float = 0.001, features_names: List[str] = None, scenarios_names: List[str] = None,
+                 tags: List[str] = None):
         super().__init__(alpha)
         self._selected_features: List[str] = features_names
         self._selected_scenarios: List[str] = scenarios_names
+        self._selected_tags: List[str] = tags
         self._steps = []
 
     def retrieve_feature(self):
@@ -53,17 +55,31 @@ class GherkinFeatureStrategy(FeatureStrategy):
                     for scenario in feature['children']:
                         scenario = scenario['scenario']
 
-                        if self._selected_scenarios is None or scenario['name'] in self._selected_scenarios:
+                        # If the scenario has tags, we check if the scenario has one of the selected tags
+                        has_tag = False
+
+                        if self._selected_tags is None:
+                            has_tag = True
+                        else:
+                            if 'tags' in scenario:
+                                for tag in scenario['tags']:
+                                    if tag['name'][1:] in self._selected_tags:  # We remove the @ from the tag
+                                        has_tag = True
+                                        break
+                            else:
+                                has_tag = False
+
+                        if (self._selected_scenarios is None or scenario['name'] in self._selected_scenarios) and has_tag:
                             # Find the steps file for the scenario using pattern matching
-                            steps_file, given_params, when_params, then_params = self._find_steps_file(scenario)
+                            steps_file, given_params, when_params, then_params = self._find_steps_file(scenario, feature_obj.name)
 
                             # Fill parameters
                             for i in range(len(given_params)):
-                                self.given.all[steps_file][i].params = given_params[i]
+                                self.given.all[steps_file][i].add_params(scenario['name'], given_params[i])
                             for i in range(len(when_params)):
-                                self.when.all[steps_file][i].params = when_params[i]
+                                self.when.all[steps_file][i].add_params(scenario['name'], when_params[i])
                             for i in range(len(then_params)):
-                                self.then.all[steps_file][i].params = then_params[i]
+                                self.then.all[steps_file][i].add_params(scenario['name'], then_params[i])
 
                             # We create a Scenario object
                             scenario_obj = Scenario(scenario['name'], steps_file, feature_obj)
@@ -103,7 +119,8 @@ class GherkinFeatureStrategy(FeatureStrategy):
                 "then_contents": then_contents
             })
 
-    def _find_steps_file(self, scenario: Dict):
+    # noinspection SpellCheckingInspection
+    def _find_steps_file(self, scenario: Dict, feature_name: str):
         """
         Find the steps file for the scenario using pattern matching.
         """
@@ -148,7 +165,7 @@ class GherkinFeatureStrategy(FeatureStrategy):
             if given_parameters != False and when_parameters != False and then_parameters != False:
                 return steps_file_name, given_parameters, when_parameters, then_parameters
         # If no steps file was found, raise an exception
-        raise Exception("Steps file for scenario: " + scenario['name'] + " not found.")
+        raise Exception(f"Steps file for scenario: {feature_name}/{scenario['name']} not found.")
 
     @staticmethod
     def _steps_matching(step_files_steps, scenario_steps):
@@ -158,6 +175,7 @@ class GherkinFeatureStrategy(FeatureStrategy):
             tmp = []
             for i in range(len(step_files_steps)):
                 param = GherkinFeatureStrategy._pattern_matching(step_files_steps[i], scenario_steps[i])
+                # noinspection PySimplifyBooleanCheck
                 if param != False:
                     tmp.append(param)
                 else:

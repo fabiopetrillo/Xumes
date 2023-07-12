@@ -417,7 +417,7 @@ class ComposedGameStateObservable(StateObservable[OBJ, ST]):
         Here it is a dictionary with the attributes of the object.
         """
         return GameElementState(get_object_from_attributes(self._object, self._state if not self._update else
-        self._methods_to_observe[self._update]))
+                                                           self._methods_to_observe[self._update]))
 
     # noinspection DuplicatedCode
     def __getattr__(self, attr):

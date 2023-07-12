@@ -288,7 +288,7 @@ class A:
 
     def update(self):
         for b in self.b_list:
-            b.update()
+            b.update_state()
 
 
 class B:
@@ -397,7 +397,7 @@ The `@loop` decorator is used to define the game loop of our test. It's useful t
 ```python
 @loop
 def test_impl(test_context):
-    test_context.game.update()
+    test_context.game.update_state()
 ```
 
 ## 4. `@then`

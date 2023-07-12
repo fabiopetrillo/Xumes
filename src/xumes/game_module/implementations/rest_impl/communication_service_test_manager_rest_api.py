@@ -19,7 +19,7 @@ class CommunicationServiceTestManagerRestApi(ICommunicationServiceTestManager):
                 # noinspection HttpUrlsUsage
                 urllib.request.urlopen(f'http://{self.ip}:{self.port}/ping')
                 break
-            except Exception as e:
+            except urllib.error.URLError:
                 logging.info(f"Waiting for connection with {self.ip}:{self.port}...")
                 sleep(1)
 

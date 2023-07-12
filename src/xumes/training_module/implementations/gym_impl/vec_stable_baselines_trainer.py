@@ -1,6 +1,4 @@
 import logging
-import os
-from typing import Optional
 
 from stable_baselines3.common.callbacks import EvalCallback
 # noinspection PyUnresolvedReferences

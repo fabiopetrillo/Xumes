@@ -1,4 +1,4 @@
-from typing import List, TypeVar
+from typing import TypeVar
 
 SW = TypeVar("SW")
 

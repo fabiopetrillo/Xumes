@@ -7,6 +7,7 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
     def disable(self):
         self.HEADER = ''
         self.OKBLUE = ''
