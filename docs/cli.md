@@ -45,14 +45,15 @@ $ python -m xumes trainer [options]
 
 The options are:
 
-| Option              | Description                                                                                               |
-|---------------------|-----------------------------------------------------------------------------------------------------------|
-| --train             | To use the train mode. The number of steps will be decided by the trainers inside the python file.        |
-| --test              | To use the test mode. The number of steps is decided by the tester.                                       |
-| --path              | The path to the folder where the trainers are located.                                                    |
-| --mode   [Optional] | Mode of the training. (scenario=one model per scenario, feature=one model per feature) [default=feature]. |
-| --debug  [Optional] | If you want to see the debug messages.                                                                    |
-| --info   [Optional] | If you want to see the info messages.                                                                     |
-| --port   [Optional] | The port of the training server.                                                                          |
+| Option                       | Description                                                                                               |
+|------------------------------|-----------------------------------------------------------------------------------------------------------|
+| --train                      | To use the train mode. The number of steps will be decided by the trainers inside the python file.        |
+| --test                       | To use the test mode. The number of steps is decided by the tester.                                       |
+| --path                       | The path to the folder where the trainers are located.                                                    |
+| --tensorboard -tb [Optional] | Save logs to _logs folder to be use with the tensorboard.                                                 |
+| --mode   [Optional]          | Mode of the training. (scenario=one model per scenario, feature=one model per feature) [default=feature]. |
+| --debug  [Optional]          | If you want to see the debug messages.                                                                    |
+| --info   [Optional]          | If you want to see the info messages.                                                                     |
+| --port   [Optional]          | The port of the training server.                                                                          |
 
 The trainer will run the agents and will save the models in the `models` folder.

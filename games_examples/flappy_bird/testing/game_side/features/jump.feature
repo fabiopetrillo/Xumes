@@ -48,7 +48,7 @@ Feature: Testing the jump
     Then The player should have passed 2 pipes
     And The player should have passed at least 1 pipes
 
-  @critic
+  @critic1
   Scenario: Top and bottom
     Given A game with a player
     And A pipe generator

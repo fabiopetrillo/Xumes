@@ -30,7 +30,7 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000):
+                 port: int = 5000, do_logs: bool = False):
         self._load_trainers()
         self._trainer_processes: Dict[str, multiprocessing.Process] = {}
         self._mode = mode
@@ -38,6 +38,8 @@ class TrainerManager:
         self._tasks = Queue()
         self._task_condition = threading.Condition()
         self._port = port
+        self._do_logs = do_logs
+
 
     # noinspection DuplicatedCode
     @staticmethod
@@ -103,7 +105,7 @@ class TrainerManager:
     def create_and_train(self, feature: str, scenario: str, port: int):
         # Create a new trainer and train it
         trainer = self.create_trainer(feature, scenario, port)
-        trainer.train(self._model_path(feature, scenario))
+        trainer.train(self._model_path(feature, scenario), logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None, logs_name=scenario)
 
     def create_and_play(self, feature: str, scenario: str, port: int):
         # Create a new trainer and play it
@@ -167,7 +169,6 @@ class StableBaselinesTrainerManager(TrainerManager):
     Concrete trainer manager for stable baselines trainers
     Use to train each agent on a different model
     """
-
     def reset_trainer(self):
         pass
 
@@ -231,8 +232,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int,
-                 mode=TEST_MODE):
-        super().__init__(communication_service, mode=mode, port=port)
+                 mode=TEST_MODE, do_logs=False):
+        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
@@ -267,7 +268,9 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
 
         self.vec_trainer.make()
         logging.info("Training model")
-        self.vec_trainer.train(self._model_path(self._trained_feature, ""))
+        self.vec_trainer.train(self._model_path(self._trained_feature, ""),
+                               logs_path=self._model_path(self._trained_feature, "") + "/_logs" if self._do_logs else None,
+                               logs_name=self._trained_feature if self._do_logs else None)
         logging.info("Saving model")
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
 

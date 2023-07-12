@@ -29,7 +29,7 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
                  total_timesteps: int = 1000000,
                  algorithm_type: str = "MultiInputPolicy",
                  algorithm=stable_baselines3.PPO,
-                 random_reset_rate: float = 1.0
+                 random_reset_rate: float = 0.0,
                  ):
         super().__init__(entity_manager, communication_service)
         if observation_space is not None and action_space is not None:
@@ -60,17 +60,17 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
             random_reset_rate=self.random_reset_rate
         ), filename=None, allow_early_resets=True)
 
-    def train(self, save_path: str = None, eval_freq: int = 10000, log_path: str = None, test_name: str = None):
+    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None):
         eval_callback = None
         if save_path:
             eval_callback = EvalCallback(self.env, best_model_save_path=save_path,
                                          log_path=save_path, eval_freq=eval_freq,
                                          deterministic=True, render=False)
 
-        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1).learn(
+        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1, tensorboard_log=logs_path).learn(
             self.total_timesteps,
             callback=eval_callback,
-            tb_log_name=test_name
+            tb_log_name=logs_name,
         )
 
         self.finished()

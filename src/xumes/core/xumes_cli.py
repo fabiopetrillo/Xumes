@@ -102,11 +102,12 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--test", is_flag=True, help="Test mode")
 @click.option("--train", is_flag=True, help="Train mode.")
 @click.option("--mode", default=FEATURE_MODE, help="Mode of the training. (scenario, feature=default)")
+@click.option("--tensorboard", "-tb", is_flag=True, help="Save logs to _logs folder to be use with the tensorboard.")
 @click.option("--debug", is_flag=True, help="Debug debug level.")
 @click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers folder.")
-def trainer(train, debug, test, path, mode, port, info):
+def trainer(train, debug, test, path, mode, port, info, tensorboard):
     if path:
         os.chdir(path)
     if not path:
@@ -133,9 +134,9 @@ def trainer(train, debug, test, path, mode, port, info):
 
     if model_mode == FEATURE_MODE:
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
-                                                            mode=mode)
+                                                            mode=mode, do_logs=tensorboard)
     elif model_mode == SCENARIO_MODE:
-        training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode)
+        training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode, do_logs=tensorboard)
 
     if training_manager is not None:
         training_manager.run_communication_service()

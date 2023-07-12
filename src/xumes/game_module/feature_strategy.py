@@ -100,11 +100,11 @@ class FeatureStrategy(ABC):
                 self._do_logs = do_logs
 
             def _write_logs(self):
-                # Write logs in file
-                os.makedirs('logs', exist_ok=True)
-                os.makedirs('logs/' + self._feature, exist_ok=True)
-                os.makedirs('logs/' + self._feature + '/' + self._scenario, exist_ok=True)
-                with open('logs/' + self._feature + "/" + self._scenario + "/logs.json", 'w') as f:
+                # Write _logs in file
+                os.makedirs('_logs', exist_ok=True)
+                os.makedirs('_logs/' + self._feature, exist_ok=True)
+                os.makedirs('_logs/' + self._feature + '/' + self._scenario, exist_ok=True)
+                with open('_logs/' + self._feature + "/" + self._scenario + "/_logs.json", 'w') as f:
                     f.write(str(json.dumps(self._logs)))
 
             def _continue_test(self) -> bool:
@@ -167,14 +167,14 @@ class FeatureStrategy(ABC):
 
                 if self._mode == TEST_MODE and self._do_logs:
                     try:
-                        # We get the logs of the current step
+                        # We get the _logs of the current step
                         if steps not in self._logs:
                             self._logs[steps] = []
 
                         if self._number_of_tests == len(self._logs[steps]):
                             self._logs[steps].append([])
                         elif self._number_of_tests > len(self._logs[steps]):
-                            raise Exception("The number of tests is greater than the number of logs")
+                            raise Exception("The number of tests is greater than the number of _logs")
 
                         self._logs[steps][self._number_of_tests].append(log.all[steps](self))
                     except KeyError:
