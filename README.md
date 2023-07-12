@@ -34,3 +34,4 @@ Those limitations make testing difficult and impose a good definition of the tes
 - [ ] Improve the documentation with descriptions of every classs of the framework.
 - [ ] Improve the documentation with advices on how to make good tests and how to choose good alphas.
 - [ ] Convert the documentation to Sphynx.
+- [ ] Add a class to pass data from game to training (for the moment is Dict).
