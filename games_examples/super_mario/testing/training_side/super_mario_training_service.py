@@ -67,7 +67,8 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
 
     def convert_actions(self, raw_actions):
         directions = ["nothing", "left", "right"]
-        positions = ["nothing", "up", "space"]
+        positions = ["nothing", "space"]
+        #print(raw_actions)
         self.actions = [directions[raw_actions[0]], positions[raw_actions[1]]]
         return self.actions
 
@@ -89,9 +90,9 @@ if __name__ == "__main__":
                 'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
                 'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
         }),
-        action_space=spaces.MultiDiscrete([3, 3]),
+        action_space=spaces.MultiDiscrete([3, 2]),
         max_episode_length=2000,
-        total_timesteps=int(2e5),
+        total_timesteps=int(50000),
         algorithm_type="MultiInputPolicy",
         algorithm=stable_baselines3.PPO,
         random_reset_rate=0.0
@@ -102,5 +103,5 @@ if __name__ == "__main__":
             training_service.train(save_path="./models", log_path="./logs", test_name="test")
             training_service.save("./models/model")
         elif sys.argv[1] == "-play":
-            training_service.load("./models/best_model.zip")
+            training_service.load("./models/model.zip")
             training_service.play(100000)
