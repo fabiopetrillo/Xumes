@@ -1,5 +1,7 @@
 import logging
 import os
+import platform
+from multiprocessing import set_start_method
 
 import click
 
@@ -43,6 +45,11 @@ def get_debug_level(debug, info):
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
 @click.option("--alpha", "-a", default=0.001, help="Alpha of the training.")
 def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, features, scenarios, tags):
+    # change start method to fork to avoid errors with multiprocessing
+    # Windows does not support the fork start method
+    if platform.system() != "Windows":
+        set_start_method('fork')
+
     if path:
         os.chdir(path)
     else:
@@ -108,6 +115,11 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers folder.")
 def trainer(train, debug, test, path, mode, port, info, tensorboard):
+    # change start method to fork to avoid errors with multiprocessing
+    # Windows does not support the fork start method
+    if platform.system() != "Windows":
+        set_start_method('fork')
+
     if path:
         os.chdir(path)
     if not path:
