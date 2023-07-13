@@ -27,7 +27,7 @@ Each step file while require to implement the following methods using python dec
 
 The following diagram illustrates the execution flow of the steps files:
 
-![steps](schemas/steps_files_schema.png)
+![steps](source/_static/schemas/steps_files_schema.png)
 
 ## 1. `@given`
 

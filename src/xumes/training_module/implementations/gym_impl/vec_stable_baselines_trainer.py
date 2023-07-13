@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from stable_baselines3.common.callbacks import EvalCallback
 # noinspection PyUnresolvedReferences
@@ -7,13 +7,14 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecEnvW
 
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.training_module.i_trainer import ITrainer
+from xumes.training_module.training_service import MarkovTrainingService
 
 
 class VecStableBaselinesTrainer(ITrainer):
 
     def __init__(self):
         self._vec_env = None
-        self._markov_training_services = []
+        self._markov_training_services: List[MarkovTrainingService] = []
         self._envs = []
         self._first_training_service = None
         self.model = None
