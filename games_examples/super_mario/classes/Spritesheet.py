@@ -1,11 +1,15 @@
+import os
+
 import pygame
 
+current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+img_path = os.path.join(current_directory, 'img')
 
 class Spritesheet(object):
     def __init__(self, filename):
         try:
-            self.sheet = pygame.image.load(filename)
-            self.sheet = pygame.image.load(filename)
+            self.sheet = pygame.image.load(img_path + "/" + filename)
+            self.sheet = pygame.image.load(img_path + "/" + filename)
             if not self.sheet.get_alpha():
                 self.sheet.set_colorkey((0, 0, 0))
         except pygame.error:

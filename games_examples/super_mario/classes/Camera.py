@@ -1,4 +1,4 @@
-from classes.Maths import Vec2D
+from games_examples.super_mario.classes.Maths import Vec2D
 
 
 class Camera:

@@ -1,6 +1,6 @@
 from copy import copy
 
-from entities.EntityBase import EntityBase
+from games_examples.super_mario.entities.EntityBase import EntityBase
 
 
 class Coin(EntityBase):

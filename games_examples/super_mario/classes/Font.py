@@ -1,9 +1,14 @@
-from classes.Spritesheet import Spritesheet
+import os
+
+from games_examples.super_mario.classes.Spritesheet import Spritesheet
 import pygame
 
+current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+img_path = os.path.join(current_directory, 'img')
 
 class Font(Spritesheet):
     def __init__(self, filePath, size):
+        file = img_path + "/" + filePath
         Spritesheet.__init__(self, filename=filePath)
         self.chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
         self.charSprites = self.loadFont()

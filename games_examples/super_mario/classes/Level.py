@@ -1,16 +1,20 @@
 import json
+import os
+
 import pygame
 
-from classes.Sprites import Sprites
-from classes.Tile import Tile
-from entities.Coin import Coin
-from entities.CoinBrick import CoinBrick
-from entities.Goomba import Goomba
-from entities.Mushroom import RedMushroom
-from entities.Koopa import Koopa
-from entities.CoinBox import CoinBox
-from entities.RandomBox import RandomBox
+from games_examples.super_mario.classes.Sprites import Sprites
+from games_examples.super_mario.classes.Tile import Tile
+from games_examples.super_mario.entities.Coin import Coin
+from games_examples.super_mario.entities.CoinBrick import CoinBrick
+from games_examples.super_mario.entities.Goomba import Goomba
+from games_examples.super_mario.entities.Mushroom import RedMushroom
+from games_examples.super_mario.entities.Koopa import Koopa
+from games_examples.super_mario.entities.CoinBox import CoinBox
+from games_examples.super_mario.entities.RandomBox import RandomBox
 
+current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+level_path = os.path.join(current_directory, 'levels')
 
 class Level:
     def __init__(self, screen, sound, dashboard):
@@ -23,7 +27,8 @@ class Level:
         self.entityList = []
 
     def loadLevel(self, levelname):
-        with open("./levels/{}.json".format(levelname)) as jsonData:
+        file = os.path.join(level_path, '{}.json')
+        with open(file.format(levelname)) as jsonData:
             data = json.load(jsonData)
             self.loadLayers(data)
             self.loadObjects(data)

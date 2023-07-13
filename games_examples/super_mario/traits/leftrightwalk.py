@@ -1,6 +1,6 @@
 import random
 
-from classes.Collider import Collider
+from games_examples.super_mario.classes.Collider import Collider
 
 
 class LeftRightWalkTrait:

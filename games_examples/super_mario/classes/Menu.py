@@ -3,7 +3,7 @@ import sys
 import os
 import pygame
 
-from classes.Spritesheet import Spritesheet
+from games_examples.super_mario.classes.Spritesheet import Spritesheet
 
 
 class Menu:

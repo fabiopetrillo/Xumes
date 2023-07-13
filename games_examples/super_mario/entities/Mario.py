@@ -1,17 +1,17 @@
 import pygame
 
-from classes.Animation import Animation
-from classes.Camera import Camera
-from classes.Collider import Collider
-from classes.EntityCollider import EntityCollider
-from classes.Input import Input
-from classes.Sprites import Sprites
-from entities.EntityBase import EntityBase
-from entities.Mushroom import RedMushroom
-from traits.bounce import bounceTrait
-from traits.go import GoTrait
-from traits.jump import JumpTrait
-from classes.Pause import Pause
+from games_examples.super_mario.classes.Animation import Animation
+from games_examples.super_mario.classes.Camera import Camera
+from games_examples.super_mario.classes.Collider import Collider
+from games_examples.super_mario.classes.EntityCollider import EntityCollider
+from games_examples.super_mario.classes.Input import Input
+from games_examples.super_mario.classes.Sprites import Sprites
+from games_examples.super_mario.entities.EntityBase import EntityBase
+from games_examples.super_mario.entities.Mushroom import RedMushroom
+from games_examples.super_mario.traits.bounce import bounceTrait
+from games_examples.super_mario.traits.go import GoTrait
+from games_examples.super_mario.traits.jump import JumpTrait
+from games_examples.super_mario.classes.Pause import Pause
 
 spriteCollection = Sprites().spriteCollection
 smallAnimation = Animation(
@@ -56,6 +56,7 @@ class Mario(EntityBase):
         self.EntityCollider = EntityCollider(self)
         self.dashboard = dashboard
         self.restart = False
+        self.ending_level = False
         self.pause = False
         self.pauseObj = Pause(screen, self, dashboard)
 
@@ -68,6 +69,7 @@ class Mario(EntityBase):
         self.applyGravity()
         self.checkEntityCollision()
         self.input.checkForInput()
+        self.end_level()
 
     def moveMario(self):
         self.rect.y += self.vel.y
@@ -171,6 +173,12 @@ class Mario(EntityBase):
             pygame.display.update()
             self.input.checkForInput()
         self.restart = True
+
+    def end_level(self):
+        print(self.rect.x)
+        if int(self.rect.x) > (self.levelObj.levelLength -1)*32 - 2*32:
+            self.restart = True
+            self.ending_level = True
 
     def getPos(self):
         return self.camera.x + self.rect.x, self.rect.y

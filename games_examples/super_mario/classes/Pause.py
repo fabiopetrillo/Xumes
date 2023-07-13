@@ -1,8 +1,8 @@
 import pygame
 import sys
 
-from classes.Spritesheet import Spritesheet
-from classes.GaussianBlur import GaussianBlur
+from games_examples.super_mario.classes.Spritesheet import Spritesheet
+from games_examples.super_mario.classes.GaussianBlur import GaussianBlur
 
 class Pause:
     def __init__(self, screen, entity, dashboard):
@@ -10,7 +10,7 @@ class Pause:
         self.entity = entity
         self.dashboard = dashboard
         self.state = 0
-        self.spritesheet = Spritesheet("./img/title_screen.png")
+        self.spritesheet = Spritesheet("title_screen.png")
         self.pause_srfc = GaussianBlur().filter(self.screen, 0, 0, 640, 480)
         self.dot = self.spritesheet.image_at(
             0, 150, 2, colorkey=[255, 0, 220], ignoreTileSize=True

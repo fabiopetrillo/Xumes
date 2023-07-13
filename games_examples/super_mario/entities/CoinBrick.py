@@ -1,7 +1,7 @@
 from copy import copy
 
-from entities.EntityBase import EntityBase
-from entities.Item import Item
+from games_examples.super_mario.entities.EntityBase import EntityBase
+from games_examples.super_mario.entities.Item import Item
 
 
 class CoinBrick(EntityBase):

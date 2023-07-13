@@ -1,5 +1,5 @@
 {
-    "spriteSheetURL": "./img/tiles.png",
+    "spriteSheetURL": "tiles.png",
     "type":"background",
     "sprites":[
         {

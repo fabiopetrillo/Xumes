@@ -1,9 +1,9 @@
-from classes.Animation import Animation
-from classes.Collider import Collider
-from classes.EntityCollider import EntityCollider
-from classes.Maths import Vec2D
-from entities.EntityBase import EntityBase
-from traits.leftrightwalk import LeftRightWalkTrait
+from games_examples.super_mario.classes.Animation import Animation
+from games_examples.super_mario.classes.Collider import Collider
+from games_examples.super_mario.classes.EntityCollider import EntityCollider
+from games_examples.super_mario.classes.Maths import Vec2D
+from games_examples.super_mario.entities.EntityBase import EntityBase
+from games_examples.super_mario.traits.leftrightwalk import LeftRightWalkTrait
 
 
 class Goomba(EntityBase):

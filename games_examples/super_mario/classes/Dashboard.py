@@ -1,6 +1,6 @@
 import pygame
 
-from classes.Font import Font
+from games_examples.super_mario.classes.Font import Font
 
 
 class Dashboard(Font):

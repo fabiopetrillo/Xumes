@@ -1,29 +1,35 @@
 import json
+import os
 
-from classes.Animation import Animation
-from classes.Sprite import Sprite
-from classes.Spritesheet import Spritesheet
+from games_examples.super_mario.classes.Animation import Animation
+from games_examples.super_mario.classes.Sprite import Sprite
+from games_examples.super_mario.classes.Spritesheet import Spritesheet
 
-
+current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sprite_path = os.path.join(current_directory, 'sprites')
+#current_directory = os.path.abspath(os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..')), '..'))  #os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+#print(current_directory)
 class Sprites:
     def __init__(self):
         self.spriteCollection = self.loadSprites(
             [
-                "./sprites/Mario.json",
-                "./sprites/Goomba.json",
-                "./sprites/Koopa.json",
-                "./sprites/Animations.json",
-                "./sprites/BackgroundSprites.json",
-                "./sprites/ItemAnimations.json",
-                "./sprites/RedMushroom.json"
+                sprite_path + "/Mario.json",
+                sprite_path + "/Goomba.json",
+                sprite_path + "/Koopa.json",
+                sprite_path + "/Animations.json",
+                sprite_path + "/BackgroundSprites.json",
+                sprite_path + "/ItemAnimations.json",
+                sprite_path + "/RedMushroom.json"
             ]
         )
 
     def loadSprites(self, urlList):
         resDict = {}
         for url in urlList:
+            print(url)
             with open(url) as jsonData:
                 data = json.load(jsonData)
+                print(data["spriteSheetURL"])
                 mySpritesheet = Spritesheet(data["spriteSheetURL"])
                 dic = {}
                 if data["type"] == "background":

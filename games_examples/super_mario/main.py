@@ -1,44 +1,69 @@
 import pygame
-from classes.Dashboard import Dashboard
-from classes.Level import Level
-from classes.Menu import Menu
-from classes.Sound import Sound
-from entities.Mario import Mario
 
+from games_examples.super_mario.classes.Level import Level
+from games_examples.super_mario.classes.Menu import Menu
+from games_examples.super_mario.classes.Sound import Sound
+from games_examples.super_mario.entities.Mario import Mario
+from games_examples.super_mario.classes.Dashboard import Dashboard
 
 windowSize = 640, 480
 
 
-def main():
-    pygame.mixer.pre_init(44100, -16, 2, 4096)
-    pygame.init()
-    screen = pygame.display.set_mode(windowSize)
-    max_frame_rate = 60
-    dashboard = Dashboard("./img/font.png", 8, screen)
-    sound = Sound()
-    level = Level(screen, sound, dashboard)
-    menu = Menu(screen, dashboard, level, sound)
+class Game:
+    terminated = False
 
-    while not menu.start:
-        menu.update()
+    def __init__(self):
 
-    mario = Mario(0, 0, level, screen, dashboard, sound)
-    clock = pygame.time.Clock()
+        pygame.mixer.pre_init(44100, -16, 2, 4096)
+        pygame.init()
+        self.screen = pygame.display.set_mode(windowSize)
+        self.max_frame_rate = 60
+        self.dashboard = Dashboard("font.png", 8, self.screen)
+        self.sound = Sound()
+        self.level = Level(self.screen, self.sound, self.dashboard)
+        self.level.loadLevel("Level1-2")
+        #self.menu = Menu(self.screen, self.dashboard, self.level, self.sound)
+        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
+        self.clock = pygame.time.Clock()
+        #self.mario = None
+        #self.clock = None
 
-    while not mario.restart:
-        pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(clock.get_fps())))
-        if mario.pause:
-            mario.pauseObj.update()
-        else:
-            level.drawLevel(mario.camera)
-            dashboard.update()
-            mario.update()
+    def run(self):
+        #while not self.menu.start:
+            #self.menu.update()
+
+        while True:
+            pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.clock.get_fps())))
+            #if self.mario.pause:
+            #    self.mario.pauseObj.update()
+            #else:
+            self.level.drawLevel(self.mario.camera)
+            self.dashboard.update()
+            self.mario.update()
+            self.render()
+
+            if self.mario.restart:
+                self.terminated = True
+                self.reset()
+
+
+
+    def render(self):
         pygame.display.update()
-        clock.tick(max_frame_rate)
-    return 'restart'
+        self.clock.tick(self.max_frame_rate)
+
+    def reset(self):
+        self.dashboard = Dashboard("font.png", 8, self.screen)
+        self.sound = Sound()
+        self.level = Level(self.screen, self.sound, self.dashboard)
+        self.level.loadLevel("Level1-2")
+        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
+        self.clock = pygame.time.Clock()
+        self.terminated = False
+
+
 
 
 if __name__ == "__main__":
-    exitmessage = 'restart'
-    while exitmessage == 'restart':
-        exitmessage = main()
+    game = Game()
+    game.run()

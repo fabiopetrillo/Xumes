@@ -1,7 +1,7 @@
 from copy import copy
 
-from classes.Dashboard import Dashboard
-from classes.Maths import Vec2D
+from games_examples.super_mario.classes.Dashboard import Dashboard
+from games_examples.super_mario.classes.Maths import Vec2D
 
 
 class Item(Dashboard):
