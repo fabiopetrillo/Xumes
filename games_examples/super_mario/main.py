@@ -42,10 +42,10 @@ class Game:
         pygame.display.update()
         self.clock.tick(self.max_frame_rate)
 
-    def reset(self):
+    def reset(self, feature):
         self.dashboard = Dashboard("font.png", 8, self.screen)
         self.sound = Sound()
-        self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, self.feature)
+        self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
         self.clock = pygame.time.Clock()
         self.terminated = False

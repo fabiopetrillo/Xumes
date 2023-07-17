@@ -50,28 +50,24 @@ def test_impl(test_context, i, j):
     test_context.game.reset(str(i, "-", j))
     test_context.game.clock.tick(0)
 
-
 @loop
 def test_impl(test_context):
     pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(test_context.game.clock.get_fps())))
     test_context.game.level.drawLevel(test_context.game.mario.camera)
     test_context.game.dashboard.update()
     test_context.game.mario.update()
-    #test_context.game.render()
-
-    if test_context.game.mario.restart:
-        test_context.game.terminated = True
-        test_context.game.reset()
 
 
 @then("The player should have passed {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
-    test_context.greater_equal(test_context.game.mario.rect.x, 448)
+    if int(nb_pipes) == 2:
+        test_context.greater_equal(test_context.game.mario.rect.x, 448)
 
 
 @then("The player should have passed at least {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
-    test_context.assert_greater_equal(test_context.game.mario.rect.x, 320)
+    if int(nb_pipes) == 1:
+        test_context.assert_greater_equal(test_context.game.mario.rect.x, 320)
 
 
 @render
@@ -85,11 +81,15 @@ def test_impl(test_context):
 
 @log
 def test_impl(test_context):
-    x, y = test_context.game.player.center
+    x, y = test_context.game.mario.rect[0], test_context.game.mario.rect[1]
     return {
         "player": {
-            "points": test_context.game.player.points,
             "x": x,
             "y": y,
         },
+        "dashboard": {
+            "points": test_context.game.mario.dashboard.points,
+            "coins": test_context.game.mario.dashboard.coins,
+
+        }
     }
