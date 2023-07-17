@@ -44,7 +44,8 @@ def get_debug_level(debug, info):
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./tests folder.")
 @click.option("--alpha", "-a", default=0.001, help="Alpha of the training.")
-def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, features, scenarios, tags):
+def tester(train, debug, render, test, ip, port, path, timesteps, iterations, info, log, alpha, features, scenarios,
+           tags):
     # change start method to fork to avoid errors with multiprocessing
     # Windows does not support the fork start method
     if platform.system() != "Windows":
@@ -100,7 +101,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
         tags = [t.strip() for t in tags]
 
     test_manager = PygameTestManager(communication_service=CommunicationServiceTestManagerRestApi(ip=ip, port=port),
-                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=features, scenarios_names=scenarios, tags=tags),
+                                     feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=features,
+                                                                             scenarios_names=scenarios, tags=tags),
                                      mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
     test_manager.test_all()
 
@@ -148,10 +150,11 @@ def trainer(train, debug, test, path, mode, port, info, tensorboard):
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
                                                             mode=mode, do_logs=tensorboard)
     elif model_mode == SCENARIO_MODE:
-        training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode, do_logs=tensorboard)
+        training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode,
+                                                         do_logs=tensorboard)
 
-    if training_manager is not None:
-        training_manager.run_communication_service()
+    if training_manager:
+        training_manager.start()
     else:
-        print("You must choose a valid mode.")
+        print("You must choose a mode to train the model.")
         return

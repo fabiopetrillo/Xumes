@@ -3,12 +3,11 @@ import json
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List
 
 from xumes.core.errors.running_ends_error import RunningEndsError
 from xumes.core.modes import TEST_MODE
 from xumes.core.registry import create_registry_content, create_registry, exec_registry_function
-from xumes.core.step import Step
 from xumes.game_module.assertion_bucket import AssertionBucket
 from xumes.game_module.test_runner import TestRunner
 
@@ -35,13 +34,9 @@ class FeatureStrategy(ABC):
     FeatureStrategy is a class that implements the strategy pattern to define a way to get
     all features.
     """
-    registry_given: Dict[str, List[Step]] = {}
-    registry_when: Dict[str, List[Step]] = {}
-    registry_then: Dict[str, List[Step]] = {}
-
-    given = create_registry_content(registry_given)
-    when = create_registry_content(registry_when)
-    then = create_registry_content(registry_then)
+    given = create_registry_content()
+    when = create_registry_content()
+    then = create_registry_content()
 
     loop = create_registry()
     render = create_registry()
@@ -68,7 +63,7 @@ class FeatureStrategy(ABC):
 
                 self._steps_files.append(file[:-3])
 
-    def build_test_runner(self, timesteps: int = None, iterations: int = None,
+    def build_test_runner(self, alpha, given_r, when_r, then_r, loop_r, render_r, log_r, delete_screen_r, timesteps: int = None, iterations: int = None,
                           mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None,
                           do_logs: bool = False):
         # Get steps
@@ -76,7 +71,6 @@ class FeatureStrategy(ABC):
         feature_name = scenario.feature.name
         scenario_name = scenario.name
         do_logs = do_logs
-        alpha = self._alpha
 
         class ConcreteTestRunner(TestRunner):
             def __init__(self, number_max_of_steps: int = None, number_max_of_tests: int = None):
@@ -92,14 +86,10 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
                                                          queue=test_queue,
                                                          alpha=alpha)
-                exec_registry_function(registry=FeatureStrategy.registry_given[steps], game_context=self, scenario_name=scenario_name)
 
-                try:
-                    delete_screen.all[steps](self)
-                except KeyError:
-                    pass
+                exec_registry_function(registry=given_r.all[steps], game_context=self, scenario_name=scenario_name)
 
-                exec_registry_function(registry=FeatureStrategy.registry_when[steps], game_context=self, scenario_name=scenario_name)
+                exec_registry_function(registry=when_r.all[steps], game_context=self, scenario_name=scenario_name)
                 self._logs = {}
                 self._do_logs = do_logs
 
@@ -167,7 +157,7 @@ class FeatureStrategy(ABC):
                         return False
 
                 if not reset:
-                    loop.all[steps](self)
+                    loop_r.all[steps](self)
 
                 if self._mode == TEST_MODE and self._do_logs:
                     try:
@@ -180,7 +170,7 @@ class FeatureStrategy(ABC):
                         elif self._number_of_tests > len(self._logs[steps]):
                             raise Exception("The number of tests is greater than the number of _logs")
 
-                        self._logs[steps][self._number_of_tests].append(log.all[steps](self))
+                        self._logs[steps][self._number_of_tests].append(log_r.all[steps](self))
                     except KeyError:
                         pass
                 return True
@@ -195,14 +185,14 @@ class FeatureStrategy(ABC):
                 while True:
                     if not self._make_loop():
                         break
-                    render.all[steps](self)
+                    render_r.all[steps](self)
                 self._do_assert_and_log()
 
             def _do_assert_and_log(self) -> None:
                 if self._mode == TEST_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
-                    exec_registry_function(registry=FeatureStrategy.registry_then[steps], game_context=self, scenario_name=scenario_name)
+                    exec_registry_function(registry=then_r.all[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
@@ -215,14 +205,14 @@ class FeatureStrategy(ABC):
 
             def reset(self) -> None:
                 if self._mode == TEST_MODE:
-                    exec_registry_function(registry=FeatureStrategy.registry_then[steps], game_context=self, scenario_name=scenario_name)
+                    exec_registry_function(registry=then_r.all[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.reset_iterator()
-                exec_registry_function(registry=FeatureStrategy.registry_when[steps], game_context=self, scenario_name=scenario_name)
+                exec_registry_function(registry=when_r.all[steps], game_context=self, scenario_name=scenario_name)
                 self._number_of_tests += 1
 
             def delete_screen(self) -> None:
-                if steps in delete_screen.all:
-                    delete_screen.all[steps]['func'](self)
+                if steps in delete_screen_r.all:
+                    delete_screen_r.all[steps]['func'](self)
 
         return ConcreteTestRunner(timesteps, iterations)
 

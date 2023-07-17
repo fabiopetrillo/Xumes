@@ -1,18 +1,10 @@
 Feature: Testing the jump
 
   @basic
-  Scenario: Top and bottom
+  Scenario: Middle and middle
     Given A game with a player
     And A pipe generator
-    When The first pipe is at 50 % and the next pipe is at 100 %
-    Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipes
-
-  @basic
-  Scenario: Bottom and top
-    Given A game with a player
-    And A pipe generator
-    When The first pipe is at 100 % and the next pipe is at 50 %
+    When The first pipe is at 50 % and the next pipe is at 50 %
     Then The player should have passed 2 pipes
     And The player should have passed at least 1 pipes
 
@@ -49,7 +41,7 @@ Feature: Testing the jump
     And The player should have passed at least 1 pipes
 
   @critic
-  Scenario: Top and bottom
+  Scenario: Bottom and top
     Given A game with a player
     And A pipe generator
     When The first pipe is at 100 % and the next pipe is at 0 %
@@ -57,7 +49,7 @@ Feature: Testing the jump
     And The player should have passed at least 1 pipes
 
   @critic
-  Scenario: Bottom and top
+  Scenario: Top and bottom
     Given A game with a player
     And A pipe generator
     When The first pipe is at 0 % and the next pipe is at 100 %

@@ -11,38 +11,30 @@ class CommunicationServiceTrainerManagerRestApi(ICommunicationServiceTrainerMana
     def __init__(self):
         self.app = Flask(__name__)
 
-    def connect_trainer(self, trainer_manager, tasks, task_condition) -> None:
+    def connect_trainer(self, trainer_manager) -> None:
         @self.app.route("/connect", methods=['POST'])
         def connect():
             feature, scenario, port = request.json['feature'], request.json['scenario'], request.json['port']
-            tasks.put((trainer_manager.connect_trainer, feature, scenario, port))
-            with task_condition:
-                task_condition.notify_all()
+            trainer_manager.connect_trainer(feature, scenario, port)
             return "Trainer connected!"
 
-    def disconnect_trainer(self, trainer_manager, tasks, task_condition) -> None:
+    def disconnect_trainer(self, trainer_manager) -> None:
         @self.app.route("/disconnect", methods=['POST'])
         def disconnect():
             feature, scenario = request.json['feature'], request.json['scenario']
-            tasks.put((trainer_manager.disconnect_trainer, feature, scenario))
-            with task_condition:
-                task_condition.notify_all()
+            trainer_manager.disconnect_trainer(feature, scenario)
             return "Trainer disconnected!"
 
-    def start_training(self, trainer_manager, tasks, task_condition) -> None:
+    def start_training(self, trainer_manager) -> None:
         @self.app.route("/start", methods=['POST'])
         def start_training():
-            tasks.put((trainer_manager.run,))
-            with task_condition:
-                task_condition.notify_all()
+            trainer_manager.run()
             return "Training started!"
 
-    def reset(self, trainer_manager, tasks, task_condition) -> None:
+    def reset(self, trainer_manager) -> None:
         @self.app.route("/reset", methods=['POST'])
         def reset():
-            tasks.put((trainer_manager.reset_trainer,))
-            with task_condition:
-                task_condition.notify_all()
+            trainer_manager.reset_trainer()
             return "Training reset!"
 
     def ping(self):
@@ -50,10 +42,10 @@ class CommunicationServiceTrainerManagerRestApi(ICommunicationServiceTrainerMana
         def ping():
             return "pong"
 
-    def run(self, trainer_manager, tasks, task_condition, port) -> None:
-        self.connect_trainer(trainer_manager, tasks, task_condition)
-        self.disconnect_trainer(trainer_manager, tasks, task_condition)
-        self.start_training(trainer_manager, tasks, task_condition)
-        self.reset(trainer_manager, tasks, task_condition)
+    def run(self, trainer_manager, port) -> None:
+        self.connect_trainer(trainer_manager)
+        self.disconnect_trainer(trainer_manager)
+        self.start_training(trainer_manager)
+        self.reset(trainer_manager)
         self.ping()
         self.app.run(port=port)

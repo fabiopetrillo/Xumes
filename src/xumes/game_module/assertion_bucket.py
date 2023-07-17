@@ -74,14 +74,14 @@ class AssertionBucket:
 
     def assert_greater_than_or_equal(self, data, expected):
         self._collect_or_assert(data, expected,
-                                assertion_strategy=AssertionGreaterThanOrEqual(expected, alpha=self._alpha))
+                                assertion_strategy=AssertionLessThan(expected, alpha=self._alpha), opposite=True)
 
     def assert_less_than(self, data, expected):
         self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected, alpha=self._alpha))
 
     def assert_less_than_or_equal(self, data, expected):
         self._collect_or_assert(data, expected,
-                                assertion_strategy=AssertionLessThanOrEqual(expected, alpha=self._alpha))
+                                assertion_strategy=AssertionGreaterThan(expected, alpha=self._alpha), opposite=True)
 
     def assert_between(self, data, expected_min, expected_max):
         self._collect_or_assert(data, (expected_min, expected_max),

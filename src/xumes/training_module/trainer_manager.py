@@ -3,10 +3,8 @@ import importlib.util
 import logging
 import multiprocessing
 import os
-import threading
 from abc import abstractmethod
 from multiprocessing import Process
-from queue import Queue, Empty
 from typing import List, Dict
 
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
@@ -35,11 +33,8 @@ class TrainerManager:
         self._trainer_processes: Dict[str, multiprocessing.Process] = {}
         self._mode = mode
         self._communication_service = communication_service
-        self._tasks = Queue()
-        self._task_condition = threading.Condition()
         self._port = port
         self._do_logs = do_logs
-
 
     # noinspection DuplicatedCode
     @staticmethod
@@ -54,32 +49,14 @@ class TrainerManager:
                 module_dep = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module_dep)
 
+    def start(self):
+        self._communication_service.run(self, self._port)
+
     def run(self):
         if self._mode == TRAIN_MODE:
             self.train()
         elif self._mode == TEST_MODE:
             self.play()
-
-    def _tasks_loop(self):
-
-        # We will run the communication service until we receive a "start_training" task
-        while True:
-            with self._task_condition:
-                self._task_condition.wait()
-            while not self._tasks.empty():
-                try:
-                    task = self._tasks.get(block=False)
-                    func = task[0]
-                    args = task[1:]
-                    func(*args)
-                except Empty:
-                    break
-
-    def run_communication_service(self):
-        # Create a thread to run the communication service
-        threading.Thread(target=self._communication_service.run,
-                         args=(self, self._tasks, self._task_condition, self._port)).start()
-        self._tasks_loop()
 
     def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
         # Create a new process to train or use an agent
@@ -87,12 +64,13 @@ class TrainerManager:
 
         if self._mode == TRAIN_MODE:
             process = Process(target=self.create_and_train, args=(feature, scenario, port,))
-            self._trainer_processes[name] = process
             process.start()
+            self._trainer_processes[name] = process
+
         elif self._mode == TEST_MODE:
             process = Process(target=self.create_and_play, args=(feature, scenario, port,))
-            self._trainer_processes[name] = process
             process.start()
+            self._trainer_processes[name] = process
 
     def disconnect_trainer(self, feature: str, scenario: str) -> None:
         # Terminate the process
@@ -105,7 +83,9 @@ class TrainerManager:
     def create_and_train(self, feature: str, scenario: str, port: int):
         # Create a new trainer and train it
         trainer = self.create_trainer(feature, scenario, port)
-        trainer.train(self._model_path(feature, scenario), logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None, logs_name=scenario)
+        trainer.train(self._model_path(feature, scenario),
+                      logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None,
+                      logs_name=scenario)
 
     def create_and_play(self, feature: str, scenario: str, port: int):
         # Create a new trainer and play it
@@ -169,6 +149,7 @@ class StableBaselinesTrainerManager(TrainerManager):
     Concrete trainer manager for stable baselines trainers
     Use to train each agent on a different model
     """
+
     def reset_trainer(self):
         pass
 
@@ -269,7 +250,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self.vec_trainer.make()
         logging.info("Training model")
         self.vec_trainer.train(self._model_path(self._trained_feature, ""),
-                               logs_path=self._model_path(self._trained_feature, "") + "/_logs" if self._do_logs else None,
+                               logs_path=self._model_path(self._trained_feature,
+                                                          "") + "/_logs" if self._do_logs else None,
                                logs_name=self._trained_feature if self._do_logs else None)
         logging.info("Saving model")
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")

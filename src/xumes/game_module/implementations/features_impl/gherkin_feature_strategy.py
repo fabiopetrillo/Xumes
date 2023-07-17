@@ -75,11 +75,11 @@ class GherkinFeatureStrategy(FeatureStrategy):
 
                             # Fill parameters
                             for i in range(len(given_params)):
-                                self.registry_given[steps_file][i].add_params(scenario['name'], given_params[i])
+                                self.given.all[steps_file][i].add_params(scenario['name'], given_params[i])
                             for i in range(len(when_params)):
-                                self.registry_when[steps_file][i].add_params(scenario['name'], when_params[i])
+                                self.when.all[steps_file][i].add_params(scenario['name'], when_params[i])
                             for i in range(len(then_params)):
-                                self.registry_then[steps_file][i].add_params(scenario['name'], then_params[i])
+                                self.then.all[steps_file][i].add_params(scenario['name'], then_params[i])
 
                             # We create a Scenario object
                             scenario_obj = Scenario(scenario['name'], steps_file, feature_obj)
@@ -94,17 +94,17 @@ class GherkinFeatureStrategy(FeatureStrategy):
         Just taking the content of the steps files and putting in the gherkin steps list
         """
         self._steps.clear()
-        for name in self.registry_given:
+        for name in self.given.all:
             try:
-                given = self.registry_given[name]
+                given = self.given.all[name]
             except IndexError:
                 raise Exception("Given steps not found.")
             try:
-                when = self.registry_when[name]
+                when = self.when.all[name]
             except IndexError:
                 raise Exception("When steps not found.")
             try:
-                then = self.registry_then[name]
+                then = self.then.all[name]
             except IndexError:
                 raise Exception("Then steps not found.")
 

@@ -84,6 +84,14 @@ class TestManager:
                                                      iterations=self._iterations, scenario=scenario,
                                                      test_queue=self._assertion_queue,
                                                      do_logs=self._do_logs,
+                                                     alpha=self._feature_strategy._alpha,
+                                                     given_r=self._feature_strategy.given,
+                                                     when_r=self._feature_strategy.when,
+                                                     then_r=self._feature_strategy.then,
+                                                     loop_r=self._feature_strategy.loop,
+                                                     log_r=self._feature_strategy.log,
+                                                     render_r=self._feature_strategy.render,
+                                                     delete_screen_r=self._feature_strategy.delete_screen,
                                                      ), scenario_data.ip, scenario_data.port, )
         scenario_data.game_service = game_service
         return game_service

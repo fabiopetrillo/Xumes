@@ -29,7 +29,6 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
                  total_timesteps: int = 1000000,
                  algorithm_type: str = "MultiInputPolicy",
                  algorithm=stable_baselines3.PPO,
-                 random_reset_rate: float = 0.0,
                  ):
         super().__init__(entity_manager, communication_service)
         if observation_space is not None and action_space is not None:
@@ -39,7 +38,6 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
                 training_service=self,
                 observation_space=observation_space,
                 action_space=action_space,
-                random_reset_rate=random_reset_rate
             ), filename=None, allow_early_resets=True)
         self.algorithm = algorithm
         self.algorithm_type = algorithm_type
@@ -57,7 +55,6 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
             training_service=self,
             observation_space=self.observation_space,
             action_space=self.action_space,
-            random_reset_rate=self.random_reset_rate
         ), filename=None, allow_early_resets=True)
 
     def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None):

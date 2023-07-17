@@ -5,7 +5,8 @@ from typing import List, Dict
 from xumes.core.step import Step
 
 
-def create_registry_content(registry: Dict[str, List[Step]]):
+def create_registry_content():
+    registry = {}
 
     def registrar(content: str):
         def decorator(func):
@@ -19,6 +20,7 @@ def create_registry_content(registry: Dict[str, List[Step]]):
 
         return decorator
 
+    registrar.all = registry
     return registrar
 
 
