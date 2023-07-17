@@ -17,16 +17,18 @@ current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'
 level_path = os.path.join(current_directory, 'levels')
 
 class Level:
-    def __init__(self, screen, sound, dashboard):
+    def __init__(self, screen, sound, dashboard, levelname, feature):
         self.sprites = Sprites()
+        self.feature = feature
         self.dashboard = dashboard
         self.sound = sound
         self.screen = screen
         self.level = None
         self.levelLength = 0
         self.entityList = []
+        self.loadLevel(levelname, self.feature)
 
-    def loadLevel(self, levelname):
+    def loadLevel(self, levelname, feature):
         file = os.path.join(level_path, '{}.json')
         with open(file.format(levelname)) as jsonData:
             data = json.load(jsonData)
@@ -72,8 +74,12 @@ class Level:
             self.addBushSprite(x, y)
         for x, y in data["level"]["objects"]["cloud"]:
             self.addCloudSprite(x, y)
-        for x, y, z in data["level"]["objects"]["pipe"]:
-            self.addPipeSprite(x, y, z)
+        if self.feature is not None:
+            for x, y, z in data["level"]["objects"]["pipe"][self.feature]:
+                self.addPipeSprite(x, y, z)
+        else:
+            for x, y, z in data["level"]["objects"]["pipe"]:
+                self.addPipeSprite(x, y, z)
         for x, y in data["level"]["objects"]["sky"]:
             self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
         for x, y in data["level"]["objects"]["ground"]:
@@ -114,7 +120,7 @@ class Level:
         except IndexError:
             return
 
-    def addPipeSprite(self, x, y, length=2):
+    def addPipeSprite(self, x, y, length=8):
         try:
             # add pipe head
             self.level[y][x] = Tile(

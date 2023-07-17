@@ -10,9 +10,9 @@ from xumes.game_module import TestRunner, GameService, PygameEventFactory, Commu
 
 class SuperMarioTestRunner(TestRunner):
 
-    def __init__(self):
+    def __init__(self, levelname, feature):
         super().__init__()
-        self.game = Game()
+        self.game = Game(levelname, feature)
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["run", "reset"]))
 
         def _get_rect(rect):
@@ -41,7 +41,8 @@ class SuperMarioTestRunner(TestRunner):
             State("ending_level", methods_to_observe="end_level"),
             State("levelObj", State("entityList", [State(entity, func=_get_attributes) for entity in entities]),
                   methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
-            State("dashboard", func=get_dash, methods_to_observe=["_onCollisionWithItem", "_onCollisionWithBlock", "killEntity", "_onCollisionWithItem"])
+            State("dashboard", func=get_dash, methods_to_observe=["_onCollisionWithItem", "_onCollisionWithBlock",
+                                                                  "killEntity", "_onCollisionWithItem"])
             #State("dashboard", State("coins"), methods_to_observe=["_onCollisionWithItem", "_onCollisionWithBlock"]),
             #State("dashboard", State("points"), methods_to_observe=["killEntity", "_onCollisionWithItem"])
         ])
