@@ -1,6 +1,6 @@
 import importlib.util
 import json
-import multiprocessing
+import multiprocess
 import os
 from abc import ABC, abstractmethod
 from typing import List
@@ -64,7 +64,7 @@ class FeatureStrategy(ABC):
                 self._steps_files.append(file[:-3])
 
     def build_test_runner(self, alpha, given_r, when_r, then_r, loop_r, render_r, log_r, delete_screen_r, timesteps: int = None, iterations: int = None,
-                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None,
+                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocess.Queue = None,
                           do_logs: bool = False):
         # Get steps
         steps = scenario.steps

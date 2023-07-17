@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocess
 from abc import abstractmethod
 from typing import List, Dict
 
@@ -13,7 +13,7 @@ from xumes.game_module.implementations import PygameEventFactory, CommunicationS
 
 class ScenarioData:
 
-    def __init__(self, game_service: GameService = None, process: multiprocessing.Process = None, ip: str = None,
+    def __init__(self, game_service: GameService = None, process: multiprocess.Process = None, ip: str = None,
                  port: int = None):
         self.game_service = game_service
         self.process = process
@@ -64,7 +64,7 @@ class TestManager:
         self._timesteps = timesteps
         self._iterations = iterations
         self._feature_strategy: FeatureStrategy = feature_strategy
-        self._assertion_queue = multiprocessing.Queue()
+        self._assertion_queue = multiprocess.Queue()
         self._do_logs = do_logs
 
     def get_free_port(self, scenario) -> int:
@@ -108,17 +108,17 @@ class TestManager:
         # For all scenarios, we run the test
         for feature in features:
             # Check if all tests are finished
-            active_processes = multiprocessing.Value('i', 0)
+            active_processes = multiprocess.Value('i', 0)
 
             for scenario in feature.scenarios:
 
                 self._communication_service.connect_trainer(self, scenario)
 
                 if self._mode == TEST_MODE or self._mode == TRAIN_MODE:  # no render
-                    process = multiprocessing.Process(target=self.run_test, args=(scenario, active_processes,))
+                    process = multiprocess.Process(target=self.run_test, args=(scenario, active_processes,))
                 else:  # render
-                    process = multiprocessing.Process(target=self.run_test_render,
-                                                      args=(scenario, active_processes,))
+                    process = multiprocess.Process(target=self.run_test_render,
+                                                   args=(scenario, active_processes,))
                 process.start()
                 active_processes.value += 1
                 self._scenario_datas[scenario].process = process

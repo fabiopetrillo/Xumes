@@ -1,7 +1,7 @@
 import logging
 import os
 import platform
-from multiprocessing import set_start_method
+from multiprocess import set_start_method
 
 import click
 

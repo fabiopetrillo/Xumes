@@ -1,10 +1,10 @@
 import importlib.util
 import importlib.util
 import logging
-import multiprocessing
+import multiprocess
 import os
+
 from abc import abstractmethod
-from multiprocessing import Process
 from typing import List, Dict
 
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
@@ -30,7 +30,7 @@ class TrainerManager:
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
                  port: int = 5000, do_logs: bool = False):
         self._load_trainers()
-        self._trainer_processes: Dict[str, multiprocessing.Process] = {}
+        self._trainer_processes: Dict[str, multiprocess.Process] = {}
         self._mode = mode
         self._communication_service = communication_service
         self._port = port
@@ -63,12 +63,12 @@ class TrainerManager:
         name = self._trainer_name(feature, scenario)
 
         if self._mode == TRAIN_MODE:
-            process = Process(target=self.create_and_train, args=(feature, scenario, port,))
+            process = multiprocess.Process(target=self.create_and_train, args=(feature, scenario, port,))
             process.start()
             self._trainer_processes[name] = process
 
         elif self._mode == TEST_MODE:
-            process = Process(target=self.create_and_play, args=(feature, scenario, port,))
+            process = multiprocess.Process(target=self.create_and_play, args=(feature, scenario, port,))
             process.start()
             self._trainer_processes[name] = process
 
@@ -239,7 +239,7 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self._training_services_datas = set()
 
     def train(self):
-        process = Process(target=self._train_agent)
+        process = multiprocess.Process(target=self._train_agent)
         process.start()
         self._process = process
 
@@ -257,7 +257,7 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
 
     def play(self):
-        process = Process(target=self._play_agent)
+        process = multiprocess.Process(target=self._play_agent)
         process.start()
         self._process = process
 

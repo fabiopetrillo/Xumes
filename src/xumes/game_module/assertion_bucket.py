@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocess
 from typing import List
 
 from xumes.game_module.assertion import IAssertionStrategy, AssertionEqual, AssertionGreaterThan, \
@@ -29,7 +29,7 @@ class AssertionBucket:
     ASSERT_MODE = "assert"
     COLLECT_MODE = "collect"
 
-    def __init__(self, test_name, queue: multiprocessing.Queue, alpha=0.001):
+    def __init__(self, test_name, queue: multiprocess.Queue, alpha=0.001):
         super().__init__()
         self._data = []
         self._results: List[AssertionResult] = []
