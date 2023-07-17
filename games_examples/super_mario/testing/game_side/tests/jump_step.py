@@ -25,8 +25,8 @@ def test_impl(test_context):
         } for item in lst]
 
     test_context.game = test_context.create(Game, "game",
-                                            state=State("terminated", methods_to_observe=["run", "reset"]), levelname="Level1-2")
-
+                                            state=State("terminated", methods_to_observe=["run", "reset"]),
+                                            levelname="jump_feature", feature="100-100")
     entities = ["Coin", "CoinBox", "CoinBrick", "EntityBase", "Goomba", "Item", "Koopa", "Mushroom", "RandomBox"]
     test_context.game.mario = test_context.create(Mario, "mario", state=[
             State("rect", func=_get_rect, methods_to_observe="move"),
@@ -45,79 +45,40 @@ def test_impl(test_context):
                                                   gravity=0.8)
 
 
-@given("A pipe generator")
-def test_impl(test_context):
-    def get_rect(x):
-        return [x.left, x.top, x.right, x.bottom]
-
-    test_context.game.pipe_generator = test_context.create(PipeGenerator, name="pipe_generator",
-                                                           state=State("pipes",
-                                                                       [
-                                                                           State(
-                                                                               "rect1",
-                                                                               func=get_rect),
-                                                                           State(
-                                                                               "rect2",
-                                                                               func=get_rect),
-                                                                       ],
-                                                                       methods_to_observe=["move", "reset"]
-                                                                       ),
-                                                           game=test_context.game)
-
-    test_context.game.dt = 0.09
-
-
-def get_height(x):
-    x = x / 100
-    return x * (HEIGHT - 100 - PIPE_SPACE) + 50
-
-
 @when("The first pipe is at {i} % and the next pipe is at {j} %")
 def test_impl(test_context, i, j):
-    i, j = int(i), int(j)
-    test_context.game.reset()
-    test_context.game.pipe_generator.pipes = [Pipe(player=test_context.game.player,
-                                                   generator=test_context.game.pipe_generator,
-                                                   height=get_height(i),
-                                                   position=LEFT_POSITION + SIZE / 2 + SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2),
-                                              Pipe(player=test_context.game.player,
-                                                   generator=test_context.game.pipe_generator,
-                                                   height=get_height(j),
-                                                   position=LEFT_POSITION + SIZE / 2 + 2 * SPACE_BETWEEN_PIPES - PIPE_WIDTH / 2)]
-    test_context.game.pipe_generator.notify()
-
+    test_context.game.reset(str(i, "-", j))
     test_context.game.clock.tick(0)
 
 
 @loop
 def test_impl(test_context):
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                test_context.game.player.jump()
+    pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(test_context.game.clock.get_fps())))
+    test_context.game.level.drawLevel(test_context.game.mario.camera)
+    test_context.game.dashboard.update()
+    test_context.game.mario.update()
+    #test_context.game.render()
 
-    # Make all game state modification
-    test_context.game.player.move(test_context.game.dt)
-    test_context.game.pipe_generator.move(test_context.game.dt)
+    if test_context.game.mario.restart:
+        test_context.game.terminated = True
+        test_context.game.reset()
 
 
 @then("The player should have passed {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
-    test_context.assert_true(test_context.game.player.points == int(nb_pipes))
+    test_context.greater_equal(test_context.game.mario.rect.x, 448)
 
 
 @then("The player should have passed at least {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
-    test_context.assert_greater_equal(test_context.game.player.points, int(nb_pipes))
+    test_context.assert_greater_equal(test_context.game.mario.rect.x, 320)
 
 
 @render
 def test_impl(test_context):
     # Background
-    test_context.game.screen.fill(BACKGROUND_COLOR)
-
-    test_context.game.render()
-    pygame.display.flip()
+    pygame.display.update()
+    test_context.game.clock.tick(test_context.game.max_frame_rate)
 
     test_context.game.dt = test_context.game.clock.tick(60) / 1000
 
