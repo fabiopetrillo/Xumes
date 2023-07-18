@@ -107,7 +107,8 @@ class TrainerManager:
         raise NotImplementedError
 
     @abstractmethod
-    def create_trainer(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue) -> ITrainer:
+    def create_trainer(self, feature: str, scenario: str, port: int, observation_r, action_r, reward_r, terminated_r,
+                       config_r) -> ITrainer:
         # Abstract method to create a trainer for a specific feature and scenario
         # This method should be implemented by the concrete trainer manager
         raise NotImplementedError
@@ -140,10 +141,9 @@ class StableBaselinesTrainerManager(TrainerManager):
     def train(self):
         pass
 
-    def create_trainer(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue) -> ITrainer:
+    def create_trainer(self, feature: str, scenario: str, port: int, observation_r, action_r, reward_r, terminated_r,
+                       config_r) -> ITrainer:
         # We use the decorators to implement the trainer's methods
-
-        observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
 
         class ConcreteTrainer(StableBaselinesTrainer):
             def convert_obs(self) -> OBST:
@@ -198,14 +198,16 @@ class StableBaselinesTrainerManager(TrainerManager):
 
     def create_and_train(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
         # Create a new trainer and train it
-        trainer = self.create_trainer(feature, scenario, port, queue)
+        observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
         trainer.train(self._model_path(feature, scenario),
                       logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None,
                       logs_name=scenario)
 
     def create_and_play(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
         # Create a new trainer and play it
-        trainer = self.create_trainer(feature, scenario, port, queue)
+        observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
         trainer.load(self._model_path(feature, scenario) + "/best_model")
         trainer.play(timesteps=None)
 
@@ -260,10 +262,7 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
 
         for (feature, scenario, port) in self._training_services_datas:
-            registry_queue = multiprocess.Queue()
-            registry_queue.put((observation_r, action_r, reward_r, terminated_r, config_r))
-
-        self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, registry_queue, ))
+            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
 
         self.vec_trainer.make()
         logging.info("Training model")
@@ -285,11 +284,9 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
 
     def _play_agent(self, registry_queue):
         observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
-        for (feature, scenario, port) in self._training_services_datas:
-            registry_queue = multiprocess.Queue()
-            registry_queue.put((observation_r, action_r, reward_r, terminated_r, config_r))
 
-            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, registry_queue, ))
+        for (feature, scenario, port) in self._training_services_datas:
+            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
 
         self.vec_trainer.make()
         # logging.info("Loading model")
