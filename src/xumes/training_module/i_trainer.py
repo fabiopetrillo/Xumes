@@ -5,7 +5,7 @@ from typing import Optional
 class ITrainer:
 
     @abstractmethod
-    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None):
+    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None, previous_model_path: Optional[str] = None):
         """
         Implementation of the training algorithm.
         """

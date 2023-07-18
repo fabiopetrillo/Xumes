@@ -118,7 +118,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers folder.")
-def trainer(train, debug, test, path, mode, port, info, tensorboard):
+@click.option("--model", default=None, type=click.Path(), help="Path of the model to load if you want to use a base model for your training.")
+def trainer(train, debug, test, path, mode, port, info, tensorboard, model):
     # change start method to fork to avoid errors with multiprocessing
     # Windows does not support the fork start method
     if platform.system() != "Windows":
@@ -130,6 +131,7 @@ def trainer(train, debug, test, path, mode, port, info, tensorboard):
         print("You must choose a path to save the model.")
         return
 
+    print(model)
     logging.basicConfig(format='%(levelname)s:%(message)s', level=get_debug_level(debug, info))
 
     if not train and not test:
@@ -150,13 +152,13 @@ def trainer(train, debug, test, path, mode, port, info, tensorboard):
 
     if model_mode == FEATURE_MODE:
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
-                                                            mode=mode, do_logs=tensorboard)
+                                                            mode=mode, do_logs=tensorboard, model_path=model)
     elif model_mode == SCENARIO_MODE:
         training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode,
-                                                         do_logs=tensorboard)
+                                                         do_logs=tensorboard, model_path=model)
 
     if training_manager:
         training_manager.start()
     else:
-        print("You must choose a mode to train the model.")
+        print("You must choose between --scenario or --feature.")
         return

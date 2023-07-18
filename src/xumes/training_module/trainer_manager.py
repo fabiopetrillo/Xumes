@@ -40,13 +40,15 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000, do_logs: bool = False):
+                 port: int = 5000, do_logs: bool = False, model_path: str = None):
         self._load_trainers()
         self._trainer_processes: Dict[str, multiprocess.Process] = {}
         self._mode = mode
         self._communication_service = communication_service
         self._port = port
         self._do_logs = do_logs
+        self._previous_model_path = model_path
+
 
     # noinspection DuplicatedCode
     @staticmethod
@@ -202,7 +204,7 @@ class StableBaselinesTrainerManager(TrainerManager):
         trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
         trainer.train(self._model_path(feature, scenario),
                       logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None,
-                      logs_name=scenario)
+                      logs_name=scenario, previous_model_path=self._previous_model_path)
 
     def create_and_play(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
         # Create a new trainer and play it
@@ -225,8 +227,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int,
-                 mode=TEST_MODE, do_logs=False):
-        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs)
+                 mode=TEST_MODE, do_logs=False, model_path: str = None):
+        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs, model_path=model_path)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
@@ -269,7 +271,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self.vec_trainer.train(self._model_path(self._trained_feature, ""),
                                logs_path=self._model_path(self._trained_feature,
                                                           "") + "/_logs" if self._do_logs else None,
-                               logs_name=self._trained_feature if self._do_logs else None)
+                               logs_name=self._trained_feature if self._do_logs else None,
+                               previous_model_path=self._previous_model_path)
         logging.info("Saving model")
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
 

@@ -57,18 +57,27 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
             action_space=self.action_space,
         ), filename=None, allow_early_resets=True)
 
-    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None):
+    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None,
+              logs_name: Optional[str] = None, previous_model_path: Optional[str] = None):
         eval_callback = None
         if save_path:
             eval_callback = EvalCallback(self.env, best_model_save_path=save_path,
                                          log_path=save_path, eval_freq=eval_freq,
                                          deterministic=True, render=False)
 
-        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1, tensorboard_log=logs_path).learn(
-            self.total_timesteps,
-            callback=eval_callback,
-            tb_log_name=logs_name,
-        )
+        if previous_model_path:
+            self.model = self.algorithm(self.algorithm_type, self.env, verbose=1, tensorboard_log=logs_path).load(
+                previous_model_path, env=self.env).learn(
+                self.total_timesteps,
+                callback=eval_callback,
+                tb_log_name=logs_name,
+            )
+        else:
+            self.model = self.algorithm(self.algorithm_type, self.env, verbose=1, tensorboard_log=logs_path).learn(
+                self.total_timesteps,
+                callback=eval_callback,
+                tb_log_name=logs_name,
+            )
 
         self.finished()
 
@@ -76,7 +85,7 @@ class StableBaselinesTrainer(MarkovTrainingService, ABC):
         self.model.save(path)
 
     def load(self, path: str):
-        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1).load(path)
+        self.model = self.algorithm(self.algorithm_type, self.env, verbose=1).load(path, env=self.env)
 
     def play(self, timesteps: Optional[int] = None):
         obs, _ = self.env.reset()
