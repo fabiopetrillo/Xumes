@@ -6,7 +6,8 @@ from xumes.core.colors import bcolors
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
 from xumes.game_module.game_service import GameService
 from xumes.game_module.assertion_bucket import AssertionReport
-from xumes.game_module.feature_strategy import FeatureStrategy, Scenario
+from xumes.game_module.feature_strategy import FeatureStrategy, Scenario, given_registry, when_registry, then_registry, \
+    loop_registry, render_registry, log_registry, delete_screen_registry
 from xumes.game_module.i_communication_service_test_manager import ICommunicationServiceTestManager
 from xumes.game_module.implementations import PygameEventFactory, CommunicationServiceGameMq
 
@@ -16,6 +17,7 @@ class ScenarioData:
     def __init__(self, game_service: GameService = None, process: multiprocess.Process = None, ip: str = None,
                  port: int = None):
         self.game_service = game_service
+        self.registry_queue = multiprocess.Queue()
         self.process = process
         self.ip = ip
         self.port = port
@@ -84,14 +86,7 @@ class TestManager:
                                                      iterations=self._iterations, scenario=scenario,
                                                      test_queue=self._assertion_queue,
                                                      do_logs=self._do_logs,
-                                                     alpha=self._feature_strategy._alpha,
-                                                     given_r=self._feature_strategy.given,
-                                                     when_r=self._feature_strategy.when,
-                                                     then_r=self._feature_strategy.then,
-                                                     loop_r=self._feature_strategy.loop,
-                                                     log_r=self._feature_strategy.log,
-                                                     render_r=self._feature_strategy.render,
-                                                     delete_screen_r=self._feature_strategy.delete_screen,
+                                                     registry_queue=scenario_data.registry_queue
                                                      ), scenario_data.ip, scenario_data.port, )
         scenario_data.game_service = game_service
         return game_service
@@ -114,6 +109,7 @@ class TestManager:
 
                 self._communication_service.connect_trainer(self, scenario)
 
+                self._scenario_datas[scenario].registry_queue.put((given_registry, when_registry, then_registry, loop_registry, render_registry, delete_screen_registry, log_registry))
                 if self._mode == TEST_MODE or self._mode == TRAIN_MODE:  # no render
                     process = multiprocess.Process(target=self.run_test, args=(scenario, active_processes,))
                 else:  # render

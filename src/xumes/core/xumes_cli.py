@@ -6,6 +6,7 @@ from multiprocess import set_start_method
 import click
 
 from xumes.core.modes import TRAIN_MODE, TEST_MODE, RENDER_MODE, FEATURE_MODE, SCENARIO_MODE
+from xumes.game_module.feature_strategy import FeatureStrategy
 from xumes.game_module.implementations import CommunicationServiceTestManagerRestApi
 from xumes.game_module.implementations.features_impl.gherkin_feature_strategy import GherkinFeatureStrategy
 from xumes.game_module.test_manager import PygameTestManager
@@ -102,7 +103,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 
     test_manager = PygameTestManager(communication_service=CommunicationServiceTestManagerRestApi(ip=ip, port=port),
                                      feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=features,
-                                                                             scenarios_names=scenarios, tags=tags),
+                                                                             scenarios_names=scenarios, tags=tags,
+                                                                             ),
                                      mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
     test_manager.test_all()
 
