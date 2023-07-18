@@ -86,10 +86,11 @@ def test_impl(test_context):
         "player": {
             "x": x,
             "y": y,
+            "powerUp": test_context.game.mario.powerUpState,
         },
         "dashboard": {
             "points": test_context.game.mario.dashboard.points,
             "coins": test_context.game.mario.dashboard.coins,
-
-        }
+        },
+        "entities": test_context.game.mario.levelObj.entityList,
     }

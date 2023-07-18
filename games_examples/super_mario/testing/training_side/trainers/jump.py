@@ -11,14 +11,17 @@ def train_impl(game_context):
     game_context.player_x, game_context.coins, game_context.points, game_context.player_state = 0, 0, 0, 0
     game_context.actions = ["nothing", "nothing"]
 
-    game_context.observation_space = spaces.Dict({
+    dct = {
         'mario_rect': spaces.Box(-1, 1, dtype=np.float32, shape=(2,)),
         'mario_powerUpState': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
         'ending_level': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
         'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
-    }),
+    }
+    for i in range(len(game_context.mario.levelObj.entityList)):
+        dct["entity_" + str(i)] = spaces.Dict(game_context.mario.levelObj.entityList[i])
 
+    game_context.observation_space = spaces.Dict(dct),
     game_context.action_space = spaces.MultiDiscrete([3, 2]),
     game_context.max_episode_length = 2000,
     game_context.total_timesteps = int(50000),
@@ -28,13 +31,19 @@ def train_impl(game_context):
 
 @observation
 def train_impl(game_context):
-    return {
+    dct = {
         'mario_rect': np.array([game_context.mario.rect]),
         'mario_powerUpState': np.array([game_context.mario.powerUpState]),
         'ending_level': np.array([game_context.mario.ending_level]),
-        'dashboard_coins': np.array([game_context.mario.dashboard[0]]),
-        'dashboard_points': np.array([game_context.mario.dashboard[1]]),
+        'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
+        'dashboard_points': np.array([game_context.mario.dashboard.points]),
+        'entities': np.array([game_context.mario.levelObj.entityList])
     }
+
+    for i in range(len(game_context.mario.levelObj.entityList)):
+        dct["entity_" + str(i)]: np.array([game_context.mario.levelObj.entityList[i]])
+
+    return dct
 
 
 @reward
