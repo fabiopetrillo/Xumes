@@ -16,6 +16,8 @@ from games_examples.super_mario.entities.RandomBox import RandomBox
 current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 level_path = os.path.join(current_directory, 'levels')
 
+nb_entites = 0
+
 class Level:
     def __init__(self, screen, sound, dashboard, levelname, feature):
         self.sprites = Sprites()
@@ -36,6 +38,7 @@ class Level:
             self.loadObjects(data)
             self.loadEntities(data)
             self.levelLength = data["length"]
+            nb_entites = len(self.entityList)
 
     def loadEntities(self, data):
         try:
@@ -93,6 +96,7 @@ class Level:
             entity.update(cam)
             if entity.alive is None:
                 self.entityList.remove(entity)
+                nb_entites = len(self.entityList)
 
     def drawLevel(self, camera):
         try:

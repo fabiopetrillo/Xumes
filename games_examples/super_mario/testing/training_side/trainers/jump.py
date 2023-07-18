@@ -18,8 +18,8 @@ def train_impl(game_context):
         'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
     }
-    for i in range(len(game_context.mario.levelObj.entityList)):
-        dct["entity_" + str(i)] = spaces.Dict(game_context.mario.levelObj.entityList[i])
+    for idx in range(len(game_context.mario.levelObj.entityList)):
+        dct[f'entity_{idx}'] = spaces.Dict(game_context.mario.levelObj.entityList[idx])
 
     game_context.observation_space = spaces.Dict(dct),
     game_context.action_space = spaces.MultiDiscrete([3, 2]),
@@ -40,8 +40,8 @@ def train_impl(game_context):
         'entities': np.array([game_context.mario.levelObj.entityList])
     }
 
-    for i in range(len(game_context.mario.levelObj.entityList)):
-        dct["entity_" + str(i)]: np.array([game_context.mario.levelObj.entityList[i]])
+    for idx in range(len(game_context.mario.levelObj.entityList)):
+        dct[f'entity_{idx}']: np.array([game_context.mario.levelObj.entityList[idx]])
 
     return dct
 

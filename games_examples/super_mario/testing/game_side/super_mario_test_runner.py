@@ -20,6 +20,7 @@ class SuperMarioTestRunner(TestRunner):
 
         def _get_attributes(lst):
             return [{
+                'name': item.__name__,
                 'type': item.type,
                 'position': {
                     'x': item.rect.x,
@@ -41,10 +42,10 @@ class SuperMarioTestRunner(TestRunner):
             State("ending_level", methods_to_observe="end_level"),
             State("levelObj", State("entityList", [State(entity, func=_get_attributes) for entity in entities]),
                   methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
-            State("dashboard", func=get_dash, methods_to_observe=["_onCollisionWithItem", "_onCollisionWithBlock",
-                                                                  "killEntity", "_onCollisionWithItem"])
-            #State("dashboard", State("coins"), methods_to_observe=["_onCollisionWithItem", "_onCollisionWithBlock"]),
-            #State("dashboard", State("points"), methods_to_observe=["killEntity", "_onCollisionWithItem"])
+            State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
+                                                                                      "_onCollisionWithBlock",
+                                                                                      "killEntity",
+                                                                                      "_onCollisionWithItem"])
         ])
 
     def run_test(self) -> None:
@@ -52,16 +53,11 @@ class SuperMarioTestRunner(TestRunner):
         while True:
 
             self.test_client.wait()
-            #pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.game.clock.get_fps())))
-            #if self.game.mario.pause:
-            #    self.game.mario.pauseObj.update()
-            #else:
             self.game.level.drawLevel(self.game.mario.camera)
             self.game.dashboard.update()
             self.game.mario.update()
-            #self.game.render()
 
-            if self.game.mario.restart:
+            if self.game.mario.restart or self.game.mario.end_level:
                 self.game.terminated = True
         #    self.game.reset()
 
@@ -79,14 +75,14 @@ class SuperMarioTestRunner(TestRunner):
                 self.game.mario.update()
                 self.game.render()
 
-            if self.game.mario.restart or self.game.mario.level_ending:
+            if self.game.mario.restart or self.game.mario.end_level:
                 self.game.terminated = True
                 #self.game.reset()
 
-            #self.game.render()
+            self.game.render()
 
     def reset(self) -> None:
-        self.game.reset()
+        self.game.reset(None)
 
     def random_reset(self) -> None:
         self.reset()
@@ -103,7 +99,7 @@ if __name__ == "__main__":
         if sys.argv[1] == "-render":
             logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-        game_service = GameService(test_runner=SuperMarioTestRunner(),
+        game_service = GameService(test_runner=SuperMarioTestRunner("Level1-2", None),
                                    event_factory=PygameEventFactory(),
                                    communication_service=CommunicationServiceGameMq(ip="localhost"))
         if sys.argv[1] == "-test":
@@ -112,7 +108,7 @@ if __name__ == "__main__":
             game_service.run_render()
 
     else:
-        game = Game()
+        game = Game("Level1-2", None)
         game.run()
 
 

@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 import stable_baselines3
 from gymnasium.vector.utils import spaces
+from games_examples.super_mario.classes.Level import nb_entites
 
 from xumes.training_module import StableBaselinesTrainer, JsonGameElementStateConverter, CommunicationServiceTrainingMq, AutoEntityManager
 
@@ -25,25 +26,37 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
                          total_timesteps, algorithm_type, algorithm, random_reset_rate)
 
         self.player_x, self.coins, self.points, self.player_state = 0, 0, 0, 0
+        self.nb_entities = 100
         self.actions = ["nothing", "nothing"]
 
     def convert_obs(self):
 
-        return {
+        dct = {
             'mario_rect': np.array([self.mario.rect]),
             'mario_powerUpState': np.array([self.mario.powerUpState]),
             'ending_level': np.array([self.mario.ending_level]),
-            'dashboard_coins': np.array([self.mario.dashboard[0]]),
-            'dashboard_points': np.array([self.mario.dashboard[1]]),
+            'dashboard_coins': np.array([self.mario.dashboard.coins]),
+            'dashboard_points': np.array([self.mario.dashboard.points]),
         }
+
+        for idx, entity in enumerate(self.mario.levelObj.entityList):
+            dct[f'entity_{idx}_name']: np.array([entity.name])
+            dct[f'entity_{idx}_type']: np.array([entity.type])
+            dct[f'entity_{idx}_position']: np.array([entity.position.x, entity.position.y])
+            dct[f'entity_{idx}_alive']: np.array([entity.alive])
+            dct[f'entity_{idx}_active']: np.array([entity.active])
+            dct[f'entity_{idx}_bouncing']: np.array([entity.bouncing])
+            dct[f'entity_{idx}_onGround']: np.array([entity.onGround])
+
+        return dct
 
     def convert_reward(self):
 
         reward = 0
 
-        if self.mario.dashboard[0] > self.coins:
+        if self.mario.dashboard.coins > self.coins:
             reward += 0.6
-        if self.mario.dashboard[1] > self.points:
+        if self.mario.dashboard.points > self.points:
             reward += 0.5
         if self.game.terminated or (self.player_state > self.mario.powerUpState):
             reward -= 5
@@ -68,7 +81,6 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
     def convert_actions(self, raw_actions):
         directions = ["nothing", "left", "right"]
         positions = ["nothing", "space"]
-        #print(raw_actions)
         self.actions = [directions[raw_actions[0]], positions[raw_actions[1]]]
         return self.actions
 
@@ -80,16 +92,27 @@ if __name__ == "__main__":
         elif sys.argv[1] == "-play":
             logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
+    dct = {
+        'mario_rect': spaces.Box(-1, 1, dtype=np.float32, shape=(2,)),
+        'mario_powerUpState': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
+        'ending_level': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
+        'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
+        'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,)),
+    }
+
+    for idx in range(nb_entites):
+        dct[f'entity_{idx}_name'] = spaces.Discrete(10)
+        dct[f'entity_{idx}_type'] = spaces.Discrete(3)
+        dct[f'entity_{idx}_position'] = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32)
+        dct[f'entity_{idx}_alive'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_active'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_bouncing'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_onGround'] = spaces.Discrete(2)
+
     training_service = SuperMarioTrainingService(
         entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
         communication_service=CommunicationServiceTrainingMq(),
-        observation_space=spaces.Dict({
-                'mario_rect': spaces.Box(-1, 1, dtype=np.float32, shape=(2,)),
-                'mario_powerUpState': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
-                'ending_level': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
-                'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
-                'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
-        }),
+        observation_space = spaces.Dict(dct),
         action_space=spaces.MultiDiscrete([3, 2]),
         max_episode_length=2000,
         total_timesteps=int(50000),
