@@ -51,6 +51,7 @@ The options are:
 | --test                       | To use the test mode. The number of steps is decided by the tester.                                       |
 | --path                       | The path to the folder where the trainers are located.                                                    |
 | --tensorboard -tb [Optional] | Save logs to _logs folder to be use with the tensorboard.                                                 |
+| --model  [Optional]          | The path to the previous trained model if you want to train from a model.                                 |
 | --mode   [Optional]          | Mode of the training. (scenario=one model per scenario, feature=one model per feature) [default=feature]. |
 | --debug  [Optional]          | If you want to see the debug messages.                                                                    |
 | --info   [Optional]          | If you want to see the info messages.                                                                     |

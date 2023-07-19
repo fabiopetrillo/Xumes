@@ -256,7 +256,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 try:
                     return func([get_object_from_attributes(o, attributes) for o in obj])
                 except Exception as e:
-                    logging.error(
+                    logging.debug(
                         "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
                     return None
             return [get_object_from_attributes(o, attributes) for o in obj]
@@ -266,7 +266,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 try:
                     return func(tuple([get_object_from_attributes(o, attributes) for o in obj]))
                 except Exception as e:
-                    logging.error(
+                    logging.debug(
                         "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
                     return None
             return tuple([get_object_from_attributes(o, attributes) for o in obj])
@@ -279,7 +279,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 try:
                     return func({k: get_object_from_attributes(v, attributes) for k, v in obj.items()})
                 except Exception as e:
-                    logging.error(
+                    logging.debug(
                         "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
                     return None
             return {k: get_object_from_attributes(v, attributes) for k, v in obj.items()}
@@ -295,7 +295,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                 try:
                     attr_result = func(get_object_from_attributes(attr, attributes.attributes))
                 except Exception as e:
-                    logging.error(
+                    logging.debug(
                         "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(e))
                     attr_result = None
             else:
@@ -325,7 +325,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                     try:
                         attrs_func_dict[a.name] = a.func(get_object_from_attributes(attrs_dict[a.name], a.attributes))
                     except Exception as err:
-                        logging.error(
+                        logging.debug(
                             "Error in representation function + " + str(func) + " for " + str(obj) + " : " + str(err))
 
                         attrs_func_dict[a.name] = None
@@ -376,7 +376,7 @@ def get_object_from_attributes(obj, attributes: List[State] | State | List[str] 
                             get_object_from_attributes(attributes_dict[attribute.name],
                                                        attribute.attributes))
                     except Exception as e:
-                        logging.error(
+                        logging.debug(
                             "Error in representation function + " + str(attribute.func) + " for " + str(
                                 obj) + " : " + str(e))
 

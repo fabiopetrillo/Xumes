@@ -1,12 +1,10 @@
 import importlib.util
 import importlib.util
 import logging
-import multiprocessing
+import multiprocess
 import os
-import threading
+
 from abc import abstractmethod
-from multiprocessing import Process
-from queue import Queue, Empty
 from typing import List, Dict
 
 from xumes.core.modes import TEST_MODE, TRAIN_MODE
@@ -17,6 +15,18 @@ from xumes.training_module.i_trainer import ITrainer
 from xumes.training_module.implementations import JsonGameElementStateConverter, CommunicationServiceTrainingMq
 from xumes.training_module.implementations.gym_impl.stable_baselines_trainer import OBST, StableBaselinesTrainer
 from xumes.training_module.implementations.gym_impl.vec_stable_baselines_trainer import VecStableBaselinesTrainer
+
+observation = create_registry()
+action = create_registry()
+reward = create_registry()
+terminated = create_registry()
+config = create_registry()
+
+observation_registry = observation.all
+action_registry = action.all
+reward_registry = reward.all
+terminated_registry = terminated.all
+config_registry = config.all
 
 
 class TrainerManager:
@@ -30,15 +40,14 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000, do_logs: bool = False):
+                 port: int = 5000, do_logs: bool = False, model_path: str = None):
         self._load_trainers()
-        self._trainer_processes: Dict[str, multiprocessing.Process] = {}
+        self._trainer_processes: Dict[str, multiprocess.Process] = {}
         self._mode = mode
         self._communication_service = communication_service
-        self._tasks = Queue()
-        self._task_condition = threading.Condition()
         self._port = port
         self._do_logs = do_logs
+        self._previous_model_path = model_path
 
 
     # noinspection DuplicatedCode
@@ -54,64 +63,38 @@ class TrainerManager:
                 module_dep = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module_dep)
 
+    def start(self):
+        self._communication_service.run(self, self._port)
+
     def run(self):
         if self._mode == TRAIN_MODE:
             self.train()
         elif self._mode == TEST_MODE:
             self.play()
 
-    def _tasks_loop(self):
+    # connect_trainer, disconnect_trainer, create_and_train, create_and_play
+    # shall not be abstract methods, but because of the registry queue they are
+    #  for the moment. TODO find a pattern to avoid this
 
-        # We will run the communication service until we receive a "start_training" task
-        while True:
-            with self._task_condition:
-                self._task_condition.wait()
-            while not self._tasks.empty():
-                try:
-                    task = self._tasks.get(block=False)
-                    func = task[0]
-                    args = task[1:]
-                    func(*args)
-                except Empty:
-                    break
-
-    def run_communication_service(self):
-        # Create a thread to run the communication service
-        threading.Thread(target=self._communication_service.run,
-                         args=(self, self._tasks, self._task_condition, self._port)).start()
-        self._tasks_loop()
-
+    @abstractmethod
     def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
         # Create a new process to train or use an agent
-        name = self._trainer_name(feature, scenario)
+        raise NotImplementedError
 
-        if self._mode == TRAIN_MODE:
-            process = Process(target=self.create_and_train, args=(feature, scenario, port,))
-            self._trainer_processes[name] = process
-            process.start()
-        elif self._mode == TEST_MODE:
-            process = Process(target=self.create_and_play, args=(feature, scenario, port,))
-            self._trainer_processes[name] = process
-            process.start()
-
+    @abstractmethod
     def disconnect_trainer(self, feature: str, scenario: str) -> None:
         # Terminate the process
-        name = self._trainer_name(feature, scenario)
-        if name in self._trainer_processes:
-            self._trainer_processes[name].terminate()
-            self._trainer_processes[name].join()
-            del self._trainer_processes[name]
+        raise NotImplementedError
 
-    def create_and_train(self, feature: str, scenario: str, port: int):
+    @abstractmethod
+    def create_and_train(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
         # Create a new trainer and train it
-        trainer = self.create_trainer(feature, scenario, port)
-        trainer.train(self._model_path(feature, scenario), logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None, logs_name=scenario)
+        raise NotImplementedError
 
-    def create_and_play(self, feature: str, scenario: str, port: int):
+    @abstractmethod
+    def create_and_play(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
         # Create a new trainer and play it
-        trainer = self.create_trainer(feature, scenario, port)
-        trainer.load(self._model_path(feature, scenario) + "/best_model")
-        trainer.play(timesteps=None)
+        raise NotImplementedError
 
     @abstractmethod
     def play(self):
@@ -126,7 +109,8 @@ class TrainerManager:
         raise NotImplementedError
 
     @abstractmethod
-    def create_trainer(self, feature: str, scenario: str, port: int) -> ITrainer:
+    def create_trainer(self, feature: str, scenario: str, port: int, observation_r, action_r, reward_r, terminated_r,
+                       config_r) -> ITrainer:
         # Abstract method to create a trainer for a specific feature and scenario
         # This method should be implemented by the concrete trainer manager
         raise NotImplementedError
@@ -144,31 +128,12 @@ class TrainerManager:
         raise NotImplementedError
 
 
-def make_observation():
-    return create_registry()
-
-
-def make_action():
-    return create_registry()
-
-
-def make_reward():
-    return create_registry()
-
-
-def make_terminated():
-    return create_registry()
-
-
-def make_config():
-    return create_registry()
-
-
 class StableBaselinesTrainerManager(TrainerManager):
     """
     Concrete trainer manager for stable baselines trainers
     Use to train each agent on a different model
     """
+
     def reset_trainer(self):
         pass
 
@@ -178,51 +143,81 @@ class StableBaselinesTrainerManager(TrainerManager):
     def train(self):
         pass
 
-    observation = make_observation()
-    action = make_action()
-    reward = make_reward()
-    terminated = make_terminated()
-    config = make_config()
-
-    def create_trainer(self, feature: str, scenario: str, port: int) -> ITrainer:
+    def create_trainer(self, feature: str, scenario: str, port: int, observation_r, action_r, reward_r, terminated_r,
+                       config_r) -> ITrainer:
         # We use the decorators to implement the trainer's methods
 
         class ConcreteTrainer(StableBaselinesTrainer):
             def convert_obs(self) -> OBST:
-                return observation.all[feature](self)
+                return observation_r[feature](self)
 
             def convert_reward(self) -> float:
-                return reward.all[feature](self)
+                return reward_r[feature](self)
 
             def convert_terminated(self) -> bool:
-                return terminated.all[feature](self)
+                return terminated_r[feature](self)
 
             def convert_actions(self, raws_actions) -> List[str]:
-                return action.all[feature](self, raws_actions)
+                return action_r[feature](self, raws_actions)
 
         try:
             trainer = ConcreteTrainer(entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
                                       communication_service=CommunicationServiceTrainingMq(port=port))
 
-            config.all[feature](trainer)
+            config_r[feature](trainer)
             trainer.make()
         except Exception as e:
             raise Exception(f"Error while creating trainer: {e}")
 
         return trainer
 
+    def connect_trainer(self, feature: str, scenario: str, port: int) -> None:
+        # Create a new process to train or use an agent
+        name = self._trainer_name(feature, scenario)
+
+        registry_queue = multiprocess.Queue()
+        registry_queue.put(
+            (observation_registry, action_registry, reward_registry, terminated_registry, config_registry))
+
+        if self._mode == TRAIN_MODE:
+            process = multiprocess.Process(target=self.create_and_train,
+                                           args=(feature, scenario, port, registry_queue,))
+            process.start()
+            self._trainer_processes[name] = process
+
+        elif self._mode == TEST_MODE:
+            process = multiprocess.Process(target=self.create_and_play, args=(feature, scenario, port, registry_queue,))
+            process.start()
+            self._trainer_processes[name] = process
+
+    def disconnect_trainer(self, feature: str, scenario: str) -> None:
+        # Terminate the process
+        name = self._trainer_name(feature, scenario)
+        if name in self._trainer_processes:
+            self._trainer_processes[name].terminate()
+            self._trainer_processes[name].join()
+            del self._trainer_processes[name]
+
+    def create_and_train(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
+        # Create a new trainer and train it
+        observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
+        trainer.train(self._model_path(feature, scenario),
+                      logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None,
+                      logs_name=scenario, previous_model_path=self._previous_model_path)
+
+    def create_and_play(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
+        # Create a new trainer and play it
+        observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
+        trainer.load(self._model_path(feature, scenario) + "/best_model")
+        trainer.play(timesteps=None)
+
     def _trainer_name(self, feature, scenario) -> str:
         return feature + "_" + scenario
 
     def _model_path(self, feature, scenario) -> str:
         return "./models/" + feature + "/" + scenario
-
-
-observation = StableBaselinesTrainerManager.observation
-action = StableBaselinesTrainerManager.action
-reward = StableBaselinesTrainerManager.reward
-terminated = StableBaselinesTrainerManager.terminated
-config = StableBaselinesTrainerManager.config
 
 
 class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
@@ -232,8 +227,8 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int,
-                 mode=TEST_MODE, do_logs=False):
-        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs)
+                 mode=TEST_MODE, do_logs=False, model_path: str = None):
+        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs, model_path=model_path)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
@@ -258,30 +253,43 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self._training_services_datas = set()
 
     def train(self):
-        process = Process(target=self._train_agent)
+        registry_queue = multiprocess.Queue()
+        registry_queue.put(
+            (observation_registry, action_registry, reward_registry, terminated_registry, config_registry))
+        process = multiprocess.Process(target=self._train_agent, args=(registry_queue,))
         process.start()
         self._process = process
 
-    def _train_agent(self):
+    def _train_agent(self, registry_queue):
+        observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
+
         for (feature, scenario, port) in self._training_services_datas:
-            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port))
+            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
 
         self.vec_trainer.make()
         logging.info("Training model")
         self.vec_trainer.train(self._model_path(self._trained_feature, ""),
-                               logs_path=self._model_path(self._trained_feature, "") + "/_logs" if self._do_logs else None,
-                               logs_name=self._trained_feature if self._do_logs else None)
+                               logs_path=self._model_path(self._trained_feature,
+                                                          "") + "/_logs" if self._do_logs else None,
+                               logs_name=self._trained_feature if self._do_logs else None,
+                               previous_model_path=self._previous_model_path)
         logging.info("Saving model")
         self.vec_trainer.save(self._model_path(self._trained_feature, "") + "/best_model")
 
     def play(self):
-        process = Process(target=self._play_agent)
+        registry_queue = multiprocess.Queue()
+        registry_queue.put(
+            (observation_registry, action_registry, reward_registry, terminated_registry, config_registry))
+
+        process = multiprocess.Process(target=self._play_agent, args=(registry_queue,))
         process.start()
         self._process = process
 
-    def _play_agent(self):
+    def _play_agent(self, registry_queue):
+        observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
+
         for (feature, scenario, port) in self._training_services_datas:
-            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port))
+            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
 
         self.vec_trainer.make()
         # logging.info("Loading model")

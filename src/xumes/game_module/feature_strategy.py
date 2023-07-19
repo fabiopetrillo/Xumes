@@ -1,6 +1,6 @@
 import importlib.util
 import json
-import multiprocessing
+import multiprocess
 import os
 from abc import ABC, abstractmethod
 from typing import List
@@ -28,6 +28,22 @@ class Feature:
         self.scenarios: List[Scenario] = scenarios
         self.name = name
 
+given = create_registry_content()
+when = create_registry_content()
+then = create_registry_content()
+
+loop = create_registry()
+render = create_registry()
+delete_screen = create_registry()
+log = create_registry()
+
+given_registry = given.all
+when_registry = when.all
+then_registry = then.all
+loop_registry = loop.all
+render_registry = render.all
+delete_screen_registry = delete_screen.all
+log_registry = log.all
 
 class FeatureStrategy(ABC):
     """
@@ -35,14 +51,6 @@ class FeatureStrategy(ABC):
     all features.
     """
 
-    given = create_registry_content()
-    when = create_registry_content()
-    then = create_registry_content()
-
-    loop = create_registry()
-    render = create_registry()
-    delete_screen = create_registry()
-    log = create_registry()
 
     def __init__(self, alpha: float = 0.001):
         self.features: List[Feature] = []
@@ -50,6 +58,14 @@ class FeatureStrategy(ABC):
 
         self._alpha = alpha
         self._load_tests()
+
+        self.given = given
+        self.when = when
+        self.then = then
+        self.loop = loop
+        self.render = render
+        self.delete_screen = delete_screen
+        self.log = log
 
     def _load_tests(self):
         for file in os.listdir("./tests"):
@@ -65,14 +81,15 @@ class FeatureStrategy(ABC):
                 self._steps_files.append(file[:-3])
 
     def build_test_runner(self, timesteps: int = None, iterations: int = None,
-                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocessing.Queue = None,
-                          do_logs: bool = False):
+                          mode: str = TEST_MODE, scenario: Scenario = None, test_queue: multiprocess.Queue = None,
+                          do_logs: bool = False, registry_queue: multiprocess.Queue = None):
         # Get steps
         steps = scenario.steps
         feature_name = scenario.feature.name
         scenario_name = scenario.name
         do_logs = do_logs
         alpha = self._alpha
+        given_r, when_r, then_r, loop_r, render_r, delete_screen_r, log_r = registry_queue.get()
 
         class ConcreteTestRunner(TestRunner):
             def __init__(self, number_max_of_steps: int = None, number_max_of_tests: int = None):
@@ -88,14 +105,10 @@ class FeatureStrategy(ABC):
                 self._assertion_bucket = AssertionBucket(test_name=f"{self._feature}/{self._scenario}",
                                                          queue=test_queue,
                                                          alpha=alpha)
-                exec_registry_function(registry=given.all[steps], game_context=self, scenario_name=scenario_name)
 
-                try:
-                    delete_screen.all[steps](self)
-                except KeyError:
-                    pass
+                exec_registry_function(registry=given_r[steps], game_context=self, scenario_name=scenario_name)
 
-                exec_registry_function(registry=when.all[steps], game_context=self, scenario_name=scenario_name)
+                exec_registry_function(registry=when_r[steps], game_context=self, scenario_name=scenario_name)
                 self._logs = {}
                 self._do_logs = do_logs
 
@@ -163,7 +176,7 @@ class FeatureStrategy(ABC):
                         return False
 
                 if not reset:
-                    loop.all[steps](self)
+                    loop_r[steps](self)
 
                 if self._mode == TEST_MODE and self._do_logs:
                     try:
@@ -176,7 +189,7 @@ class FeatureStrategy(ABC):
                         elif self._number_of_tests > len(self._logs[steps]):
                             raise Exception("The number of tests is greater than the number of _logs")
 
-                        self._logs[steps][self._number_of_tests].append(log.all[steps](self))
+                        self._logs[steps][self._number_of_tests].append(log_r[steps](self))
                     except KeyError:
                         pass
                 return True
@@ -191,14 +204,14 @@ class FeatureStrategy(ABC):
                 while True:
                     if not self._make_loop():
                         break
-                    render.all[steps](self)
+                    render_r[steps](self)
                 self._do_assert_and_log()
 
             def _do_assert_and_log(self) -> None:
                 if self._mode == TEST_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
-                    exec_registry_function(registry=then.all[steps], game_context=self, scenario_name=scenario_name)
+                    exec_registry_function(registry=then_r[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.send_results()
                     self._assertion_bucket.clear()
                     self._assertion_bucket.collect_mode()
@@ -211,14 +224,14 @@ class FeatureStrategy(ABC):
 
             def reset(self) -> None:
                 if self._mode == TEST_MODE:
-                    exec_registry_function(registry=then.all[steps], game_context=self, scenario_name=scenario_name)
+                    exec_registry_function(registry=then_r[steps], game_context=self, scenario_name=scenario_name)
                     self._assertion_bucket.reset_iterator()
-                exec_registry_function(registry=when.all[steps], game_context=self, scenario_name=scenario_name)
+                exec_registry_function(registry=when_r[steps], game_context=self, scenario_name=scenario_name)
                 self._number_of_tests += 1
 
             def delete_screen(self) -> None:
-                if steps in delete_screen.all:
-                    delete_screen.all[steps]['func'](self)
+                if steps in delete_screen_r:
+                    delete_screen_r[steps]['func'](self)
 
         return ConcreteTestRunner(timesteps, iterations)
 
@@ -230,11 +243,3 @@ class FeatureStrategy(ABC):
         raise NotImplementedError
 
 
-# Decorators
-given = FeatureStrategy.given
-when = FeatureStrategy.when
-loop = FeatureStrategy.loop
-then = FeatureStrategy.then
-render = FeatureStrategy.render
-delete_screen = FeatureStrategy.delete_screen
-log = FeatureStrategy.log

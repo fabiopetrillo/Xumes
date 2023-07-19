@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocess
 from typing import List
 
 from xumes.game_module.assertion import IAssertionStrategy, AssertionEqual, AssertionGreaterThan, \
@@ -29,7 +29,7 @@ class AssertionBucket:
     ASSERT_MODE = "assert"
     COLLECT_MODE = "collect"
 
-    def __init__(self, test_name, queue: multiprocessing.Queue, alpha=0.001):
+    def __init__(self, test_name, queue: multiprocess.Queue, alpha=0.001):
         super().__init__()
         self._data = []
         self._results: List[AssertionResult] = []
@@ -74,14 +74,14 @@ class AssertionBucket:
 
     def assert_greater_than_or_equal(self, data, expected):
         self._collect_or_assert(data, expected,
-                                assertion_strategy=AssertionGreaterThanOrEqual(expected, alpha=self._alpha))
+                                assertion_strategy=AssertionLessThan(expected, alpha=self._alpha), opposite=True)
 
     def assert_less_than(self, data, expected):
         self._collect_or_assert(data, expected, assertion_strategy=AssertionLessThan(expected, alpha=self._alpha))
 
     def assert_less_than_or_equal(self, data, expected):
         self._collect_or_assert(data, expected,
-                                assertion_strategy=AssertionLessThanOrEqual(expected, alpha=self._alpha))
+                                assertion_strategy=AssertionGreaterThan(expected, alpha=self._alpha), opposite=True)
 
     def assert_between(self, data, expected_min, expected_max):
         self._collect_or_assert(data, (expected_min, expected_max),

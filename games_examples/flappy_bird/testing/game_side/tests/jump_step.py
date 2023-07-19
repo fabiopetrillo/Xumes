@@ -88,9 +88,7 @@ def test_impl(test_context, nb_pipes):
 
 @render
 def test_impl(test_context):
-    # Background
     test_context.game.screen.fill(BACKGROUND_COLOR)
-
     test_context.game.render()
     pygame.display.flip()
 

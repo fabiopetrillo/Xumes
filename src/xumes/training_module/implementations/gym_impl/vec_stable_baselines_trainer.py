@@ -28,9 +28,13 @@ class VecStableBaselinesTrainer(ITrainer):
     def make(self):
         self._vec_env = DummyVecEnv(self._envs)
 
-    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None, logs_name: Optional[str] = None):
+    def train(self, save_path: str = None, eval_freq: int = 10000, logs_path: Optional[str] = None,
+              logs_name: Optional[str] = None, previous_model_path: Optional[str] = None):
         if self._first_training_service is None:
             raise Exception("No training services added")
+
+        if self._vec_env is None:
+            self.make()
 
         algorithm = self._first_training_service.algorithm
         algorithm_type = self._first_training_service.algorithm_type
@@ -42,11 +46,19 @@ class VecStableBaselinesTrainer(ITrainer):
                                          log_path=save_path, eval_freq=eval_freq,
                                          deterministic=True, render=False)
 
-        self.model = algorithm(algorithm_type, self._vec_env, verbose=1, tensorboard_log=logs_path).learn(
-            total_timesteps,
-            callback=eval_callback,
-            tb_log_name=logs_name
-        )
+        if previous_model_path:
+            self.model = algorithm(algorithm_type, self._vec_env, verbose=1, tensorboard_log=logs_path).load(
+                previous_model_path, env=self._vec_env).learn(
+                total_timesteps,
+                callback=eval_callback,
+                tb_log_name=logs_name
+            )
+        else:
+            self.model = algorithm(algorithm_type, self._vec_env, verbose=1, tensorboard_log=logs_path).learn(
+                total_timesteps,
+                callback=eval_callback,
+                tb_log_name=logs_name
+            )
 
         for training_service in self._markov_training_services:
             training_service.finished()
@@ -58,11 +70,13 @@ class VecStableBaselinesTrainer(ITrainer):
         if self._first_training_service is None:
             raise Exception("No training services added")
 
+        if self._vec_env is None:
+            self.make()
+
         algorithm = self._first_training_service.algorithm
         algorithm_type = self._first_training_service.algorithm_type
 
-        self.model = algorithm(algorithm_type, self._vec_env, verbose=1)
-        self.model = self.model.load(path)
+        self.model = algorithm(algorithm_type, self._vec_env, verbose=1).load(path, env=self._vec_env)
 
     def play(self, timesteps: int = None):
 
