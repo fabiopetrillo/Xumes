@@ -26,7 +26,6 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
                          total_timesteps, algorithm_type, algorithm, random_reset_rate)
 
         self.player_x, self.coins, self.points, self.player_state = 0, 0, 0, 0
-        self.nb_entities = 100
         self.actions = ["nothing", "nothing"]
 
     def convert_obs(self):
@@ -40,13 +39,13 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
         }
 
         for idx, entity in enumerate(self.mario.levelObj.entityList):
-            dct[f'entity_{idx}_name']: np.array([entity.name])
-            dct[f'entity_{idx}_type']: np.array([entity.type])
-            dct[f'entity_{idx}_position']: np.array([entity.position.x, entity.position.y])
-            dct[f'entity_{idx}_alive']: np.array([entity.alive])
-            dct[f'entity_{idx}_active']: np.array([entity.active])
-            dct[f'entity_{idx}_bouncing']: np.array([entity.bouncing])
-            dct[f'entity_{idx}_onGround']: np.array([entity.onGround])
+            dct[f'entity_{idx}_name'] = np.array([entity.name])
+            dct[f'entity_{idx}_type'] = np.array([entity.type])
+            dct[f'entity_{idx}_position'] = np.array([entity.position.x, entity.position.y])
+            dct[f'entity_{idx}_alive'] = np.array([entity.alive])
+            dct[f'entity_{idx}_active'] = np.array([entity.active])
+            dct[f'entity_{idx}_bouncing'] = np.array([entity.bouncing])
+            dct[f'entity_{idx}_onGround'] = np.array([entity.onGround])
 
         return dct
 
@@ -79,10 +78,10 @@ class SuperMarioTrainingService(StableBaselinesTrainer):
         return self.game.terminated
 
     def convert_actions(self, raw_actions):
-        directions = ["nothing", "left", "right"]
-        positions = ["nothing", "space"]
-        self.actions = [directions[raw_actions[0]], positions[raw_actions[1]]]
-        return self.actions
+        #print(raw_actions)
+        moves = [["nothing", "space"], ["nothing", "up"], ["nothing", "left"], ["nothing", "right"]]
+        return [moves[0][int(raw_actions[0])], moves[1][int(raw_actions[1])],
+                moves[2][int(raw_actions[2])], moves[3][int(raw_actions[3])]]
 
 
 if __name__ == "__main__":
@@ -112,8 +111,8 @@ if __name__ == "__main__":
     training_service = SuperMarioTrainingService(
         entity_manager=AutoEntityManager(JsonGameElementStateConverter()),
         communication_service=CommunicationServiceTrainingMq(),
-        observation_space = spaces.Dict(dct),
-        action_space=spaces.MultiDiscrete([3, 2]),
+        observation_space=spaces.Dict(dct),
+        action_space=spaces.MultiBinary(4),
         max_episode_length=2000,
         total_timesteps=int(50000),
         algorithm_type="MultiInputPolicy",

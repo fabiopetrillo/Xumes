@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 
 from games_examples.super_mario.classes.Level import Level
@@ -24,33 +26,44 @@ class Game:
         self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, self.feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
         self.clock = pygame.time.Clock()
+        self.running = True
 
     def run(self):
 
         while True:
+
             pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.clock.get_fps())))
             self.level.drawLevel(self.mario.camera)
             self.dashboard.update()
             self.mario.update()
-            self.render()
 
-            if self.mario.restart:
-                self.terminated = True
-                self.reset()
+            if self.mario.restart or self.mario.ending_level:
+                self.end_game()
+
+            self.check_end()
+
+            self.render()
 
     def render(self):
         pygame.display.update()
         self.clock.tick(self.max_frame_rate)
 
+    def check_end(self):
+        if self.terminated:
+            self.reset(None)
+
+    def end_game(self):
+        self.terminated = True
+
     def reset(self, feature):
+        self.terminated = False
         self.dashboard = Dashboard("font.png", 8, self.screen)
         self.sound = Sound()
         self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
         self.clock = pygame.time.Clock()
-        self.terminated = False
 
 
 if __name__ == "__main__":
-    game = Game("Level1-1", None)
+    game = Game("Level1-2", None)
     game.run()

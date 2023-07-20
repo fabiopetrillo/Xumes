@@ -12,6 +12,7 @@ from games_examples.super_mario.traits.bounce import bounceTrait
 from games_examples.super_mario.traits.go import GoTrait
 from games_examples.super_mario.traits.jump import JumpTrait
 from games_examples.super_mario.classes.Pause import Pause
+from games_examples.super_mario.classes.Level import nb_entites
 
 spriteCollection = Sprites().spriteCollection
 smallAnimation = Animation(
@@ -68,8 +69,8 @@ class Mario(EntityBase):
         self.camera.move()
         self.applyGravity()
         self.checkEntityCollision()
-        self.input.checkForInput()
         self.end_level()
+        self.input.checkForInput()
 
     def moveMario(self):
         self.rect.y += self.vel.y
@@ -175,7 +176,6 @@ class Mario(EntityBase):
         self.restart = True
 
     def end_level(self):
-        print(self.rect.x)
         if int(self.rect.x) > (self.levelObj.levelLength -1)*32 - 2*32:
             self.restart = True
             self.ending_level = True

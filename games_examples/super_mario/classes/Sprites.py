@@ -7,8 +7,6 @@ from games_examples.super_mario.classes.Spritesheet import Spritesheet
 
 current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sprite_path = os.path.join(current_directory, 'sprites')
-#current_directory = os.path.abspath(os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..')), '..'))  #os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-#print(current_directory)
 class Sprites:
     def __init__(self):
         self.spriteCollection = self.loadSprites(
@@ -26,10 +24,8 @@ class Sprites:
     def loadSprites(self, urlList):
         resDict = {}
         for url in urlList:
-            print(url)
             with open(url) as jsonData:
                 data = json.load(jsonData)
-                print(data["spriteSheetURL"])
                 mySpritesheet = Spritesheet(data["spriteSheetURL"])
                 dic = {}
                 if data["type"] == "background":

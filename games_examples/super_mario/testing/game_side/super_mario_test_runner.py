@@ -10,37 +10,34 @@ from xumes.game_module import TestRunner, GameService, PygameEventFactory, Commu
 
 class SuperMarioTestRunner(TestRunner):
 
+    def get_rect(self, rect):
+        return [rect.x, rect.y]
+
+    def get_attributes(self, lst):
+        return [{
+            'name': item.__name__,
+            'type': item.type,
+            'position': {
+                'x': item.rect.x,
+                'y': item.rect.y
+            },
+            'alive': item.alive,
+            'active': item.active,
+            'bouncing': item.boucing,
+            'onGround': item.onGround
+        } for item in lst]
+
     def __init__(self, levelname, feature):
         super().__init__()
         self.game = Game(levelname, feature)
         self.game = self.bind(self.game, "game", state=State("terminated", methods_to_observe=["run", "reset"]))
 
-        def _get_rect(rect):
-            return [rect.x, rect.y]
-
-        def _get_attributes(lst):
-            return [{
-                'name': item.__name__,
-                'type': item.type,
-                'position': {
-                    'x': item.rect.x,
-                    'y': item.rect.y
-                },
-                'alive': item.alive,
-                'active': item.active,
-                'bouncing': item.boucing,
-                'onGround': item.onGround
-            } for item in lst]
-
-        def get_dash(item):
-            return [item.coins, item.points]
-
-        entities = ["Coin", "CoinBox", "CoinBrick", "EntityBase", "Goomba", "Item", "Koopa", "Mushroom", "RandomBox"]
+        self.entities = ["Coin", "CoinBox", "CoinBrick", "EntityBase", "Goomba", "Item", "Koopa", "Mushroom", "RandomBox"]
         self.game.mario = self.bind(Mario(0, 0, self.game.level, self.game.screen, self.game.dashboard, self.game.sound), "mario", state=[
-            State("rect", func=_get_rect, methods_to_observe="move"),
+            State("rect", func=self.get_rect, methods_to_observe="move"),
             State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
             State("ending_level", methods_to_observe="end_level"),
-            State("levelObj", State("entityList", [State(entity, func=_get_attributes) for entity in entities]),
+            State("levelObj", State("entityList", [State(entity, func=self.get_attributes) for entity in self.entities]),
                   methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
             State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
                                                                                       "_onCollisionWithBlock",
@@ -57,13 +54,20 @@ class SuperMarioTestRunner(TestRunner):
             self.game.dashboard.update()
             self.game.mario.update()
 
-            if self.game.mario.restart or self.game.mario.end_level:
-                self.game.terminated = True
+            if self.game.mario.restart or self.game.mario.ending_level:
+                self.game.end_game()
+
+            #self.game.check_end()
+
+            self.game.render()
+
+            #if self.game.mario.restart or self.game.mario.end_level:
+            #    self.game.terminated = True
         #    self.game.reset()
 
     def run_test_render(self) -> None:
 
-        while True:
+        while not self.game.mario.restart:
 
             self.test_client.wait()
             pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.game.clock.get_fps())))
@@ -75,14 +79,28 @@ class SuperMarioTestRunner(TestRunner):
                 self.game.mario.update()
                 self.game.render()
 
-            if self.game.mario.restart or self.game.mario.end_level:
-                self.game.terminated = True
+            #if self.game.mario.restart or self.game.mario.end_level:
+            #    self.game.terminated = True
                 #self.game.reset()
 
             self.game.render()
 
     def reset(self) -> None:
         self.game.reset(None)
+        print(self.game.mario.rect)
+        self.game.mario = self.bind(
+            Mario(0, 0, self.game.level, self.game.screen, self.game.dashboard, self.game.sound), "mario", state=[
+                State("rect", func=self.get_rect, methods_to_observe="move"),
+                State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
+                State("ending_level", methods_to_observe="end_level"),
+                State("levelObj",
+                      State("entityList", [State(entity, func=self.get_attributes) for entity in self.entities]),
+                      methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
+                State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
+                                                                                          "_onCollisionWithBlock",
+                                                                                          "killEntity",
+                                                                                          "_onCollisionWithItem"])
+            ])
 
     def random_reset(self) -> None:
         self.reset()
