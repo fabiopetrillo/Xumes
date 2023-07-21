@@ -49,6 +49,129 @@ class TestInheritedGameStateObservable(TestCase):
         self.assertEqual(self.test_runner._observer.update_state.call_count, 4)
         self.assertEqual(a.a, 1)
 
+    def test_create_inherited(self):
+
+        class A:
+
+            def __init__(self):
+                self.a = 0
+
+        class B(A):
+
+            def update_a(self):
+                self.update()
+
+            def update(self):
+                self.a += 1
+
+        b = self.test_runner.create(B, "a", State("a", methods_to_observe=["update"]))
+        b.update_a()
+        self.assertEqual(self.test_runner._observer.update_state.call_count, 4)
+        self.assertEqual(b.a, 1)
+
+    def test_create_inherited2(self):
+
+        class A:
+
+            def __init__(self):
+                self.a = 0
+
+        class B(A):
+            def __init__(self):
+                super().__init__()
+                self.b = 0
+
+            def update_a(self):
+                self.update()
+
+            def update(self):
+                self.a += 1
+
+        b = self.test_runner.create(B, "a", State("a", methods_to_observe=["update"]))
+        b.update_a()
+        self.assertEqual(self.test_runner._observer.update_state.call_count, 4)
+        self.assertEqual(b.a, 1)
+
+    def test_create_inherited3(self):
+
+        class A:
+
+            def __init__(self):
+                self.a = 0
+
+        class B(A):
+            def __init__(self):
+                super(B, self).__init__()
+                self.b = 0
+
+            def update_a(self):
+                self.update()
+
+            def update(self):
+                self.a += 1
+
+        b = self.test_runner.create(B, "a", State("a", methods_to_observe=["update"]))
+        b.update_a()
+        self.assertEqual(self.test_runner._observer.update_state.call_count, 4)
+        self.assertEqual(b.a, 1)
+
+    def test_create_inherited4(self):
+
+        class A:
+
+            def __init__(self):
+                self.a = (0, 0)
+
+        class B(A):
+            def __init__(self):
+                super(B, self).__init__()
+                self.b = 0
+
+            def update_a(self):
+                self.update()
+
+            def update(self):
+                self.a = (self.a[0] + 1, self.a[1] + 1)
+
+        def get_a(a):
+            return [a[0], a[1]]
+
+        b = self.test_runner.create(B, "a", State("a", methods_to_observe=["update"], func=get_a))
+        b.update_a()
+        self.assertEqual(self.test_runner._observer.update_state.call_count, 4)
+        self.assertEqual(b.a, (1, 1))
+
+    def test_create_inherited5(self):
+
+        class C:
+
+            def __init__(self):
+                self.c = 0
+
+        class A:
+
+            def __init__(self):
+                self.c = C()
+
+        class B(A):
+            def __init__(self):
+                super(B, self).__init__()
+                self.b = 0
+
+            def update_a(self):
+                self.update()
+
+            def update(self):
+                self.c.c += 1
+
+        def get_c(a):
+            return a.c.c
+
+        b = self.test_runner.create(B, "a", State("a", methods_to_observe=["update"], func=get_c))
+        b.update_a()
+        self.assertEqual(self.test_runner._observer.update_state.call_count, 2)
+        self.assertEqual(b.c.c, 1)
+
     def test_create_with_args(self):
         class A:
 
