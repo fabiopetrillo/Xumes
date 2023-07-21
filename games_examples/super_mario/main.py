@@ -22,9 +22,9 @@ class Game:
         self.screen = pygame.display.set_mode(windowSize)
         self.max_frame_rate = 60
         self.dashboard = Dashboard("font.png", 8, self.screen)
-        self.sound = Sound()
-        self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, self.feature)
-        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
+        #self.sound = Sound()
+        self.level = Level(self.screen,self.dashboard, self.levelname, self.feature)
+        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard)
         self.clock = pygame.time.Clock()
         self.running = True
 
@@ -58,7 +58,7 @@ class Game:
     def reset(self, feature):
         self.terminated = False
         self.dashboard = Dashboard("font.png", 8, self.screen)
-        self.sound = Sound()
+        #self.sound = Sound()
         self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
         self.clock = pygame.time.Clock()

@@ -1,40 +1,36 @@
 Feature: Testing the jump
 
   @basic
-  Scenario: Jump over 2 pipes
+  Scenario: Jump 100:100
     Given A game with a player
-    When  The first pipe is at 100% and the next pipe is at 100%
+    When The first pipe is at 100 % and the next pipe is at 100 %
     Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipe
+    And The player should have passed at least 1 pipes
 
   @basic
-  Scenario: Jump over 2 pipes
+  Scenario: Jump 80:120
     Given A game with a player
-    And An entity List
-    When The first pipe is at 80% and the next pipe is at 120%
+    When The first pipe is at 80 % and the next pipe is at 120 %
     Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipe
+    And The player should have passed at least 1 pipes
 
   @basic
-  Scenario: Jump over 2 pipes
+  Scenario: Jump 80:100
     Given A game with a player
-    And An entity List
-    When The first pipe is at 80% and the next pipe is at 100%
+    When The first pipe is at 100 % and the next pipe is at 80 %
     Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipe
+    And The player should have passed at least 1 pipes
 
   @critic
-  Scenario: Jump over 2 pipes
+  Scenario: Jump 150:100
     Given A game with a player
-    And An entity List
-    When The first pipe is at 150% and the next pipe is at 100%
+    When The first pipe is at 150 % and the next pipe is at 100 %
     Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipe
+    And The player should have passed at least 1 pipes
 
   @critic
-  Scenario: Jump over 2 pipes
+  Scenario: Jump 100:150
     Given A game with a player
-    And An entity List
-    When The first pipe is at 100% and the next pipe is at 150%
+    When The first pipe is at 100 % and the next pipe is at 150 %
     Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipe
+    And The player should have passed at least 1 pipes

@@ -19,11 +19,11 @@ level_path = os.path.join(current_directory, 'levels')
 nb_entites = 0
 
 class Level:
-    def __init__(self, screen, sound, dashboard, levelname, feature):
+    def __init__(self, screen, dashboard, levelname, feature):
         self.sprites = Sprites()
         self.feature = feature
         self.dashboard = dashboard
-        self.sound = sound
+        #self.sound = sound
         self.screen = screen
         self.level = None
         self.levelLength = 0

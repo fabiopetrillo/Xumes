@@ -4,6 +4,8 @@ from gymnasium.vector.utils import spaces
 
 from xumes.training_module import observation, reward, terminated, action, config
 
+from games_examples.super_mario.classes.Level import nb_entites
+
 
 @config
 def train_impl(game_context):
@@ -18,11 +20,18 @@ def train_impl(game_context):
         'dashboard_coins': spaces.Box(0, 1, dtype=np.float32, shape=(1,)),
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
     }
-    for idx in range(len(game_context.mario.levelObj.entityList)):
-        dct[f'entity_{idx}'] = spaces.Dict(game_context.mario.levelObj.entityList[idx])
+
+    for idx in range(nb_entites):
+        dct[f'entity_{idx}_name'] = spaces.Discrete(10)
+        dct[f'entity_{idx}_type'] = spaces.Discrete(3)
+        dct[f'entity_{idx}_position'] = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32)
+        dct[f'entity_{idx}_alive'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_active'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_bouncing'] = spaces.Discrete(2)
+        dct[f'entity_{idx}_onGround'] = spaces.Discrete(2)
 
     game_context.observation_space = spaces.Dict(dct),
-    game_context.action_space = spaces.MultiDiscrete([3, 2]),
+    game_context.action_space = spaces.MultiBinary(4),
     game_context.max_episode_length = 2000,
     game_context.total_timesteps = int(50000),
     game_context.algorithm_type = "MultiInputPolicy",
@@ -37,11 +46,16 @@ def train_impl(game_context):
         'ending_level': np.array([game_context.mario.ending_level]),
         'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
         'dashboard_points': np.array([game_context.mario.dashboard.points]),
-        'entities': np.array([game_context.mario.levelObj.entityList])
     }
 
-    for idx in range(len(game_context.mario.levelObj.entityList)):
-        dct[f'entity_{idx}']: np.array([game_context.mario.levelObj.entityList[idx]])
+    for idx, entity in enumerate(game_context.mario.levelObj.entityList):
+        dct[f'entity_{idx}_name'] = np.array([entity.name])
+        dct[f'entity_{idx}_type'] = np.array([entity.type])
+        dct[f'entity_{idx}_position'] = np.array([entity.position.x, entity.position.y])
+        dct[f'entity_{idx}_alive'] = np.array([entity.alive])
+        dct[f'entity_{idx}_active'] = np.array([entity.active])
+        dct[f'entity_{idx}_bouncing'] = np.array([entity.bouncing])
+        dct[f'entity_{idx}_onGround'] = np.array([entity.onGround])
 
     return dct
 
@@ -79,9 +93,10 @@ def train_impl(game_context):
 
 @action
 def train_impl(game_context, raw_actions):
-    directions = ["nothing", "left", "right"]
-    positions = ["nothing", "space"]
-    game_context.actions = [directions[raw_actions[0]], positions[raw_actions[1]]]
-    return game_context.actions
+    moves = [["nothing", "space"], ["nothing", "up"], ["nothing", "left"], ["nothing", "right"]]
+    return [moves[0][int(raw_actions[0])], moves[1][int(raw_actions[1])],
+            moves[2][int(raw_actions[2])], moves[3][int(raw_actions[3])]]
+
+
 
 

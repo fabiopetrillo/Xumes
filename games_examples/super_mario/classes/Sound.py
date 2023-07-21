@@ -5,6 +5,8 @@ from pygame import mixer
 current_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sfx_path = os.path.join(current_directory, 'sfx')
 
+mixer.init(44100, -16, 2, 1024)
+
 class Sound:
     def __init__(self):
         self.music_channel = mixer.Channel(0)

@@ -50,6 +50,7 @@ def test_impl(test_context, i, j):
     test_context.game.reset(str(i, "-", j))
     test_context.game.clock.tick(0)
 
+
 @loop
 def test_impl(test_context):
     pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(test_context.game.clock.get_fps())))
@@ -84,13 +85,14 @@ def test_impl(test_context):
     x, y = test_context.game.mario.rect[0], test_context.game.mario.rect[1]
     return {
         "player": {
-            "x": x,
-            "y": y,
+            "position": {
+                "x": x,
+                "y": y,
+            },
             "powerUp": test_context.game.mario.powerUpState,
         },
         "dashboard": {
             "points": test_context.game.mario.dashboard.points,
             "coins": test_context.game.mario.dashboard.coins,
         },
-        "entities": test_context.game.mario.levelObj.entityList,
     }
