@@ -33,7 +33,7 @@ def get_debug_level(debug, info):
 @click.option("--render", is_flag=True, help="Render the game.")
 @click.option("--test", is_flag=True, help="Test mode.")
 @click.option("--train", is_flag=True, help="Train mode.")
-@click.option("--timesteps", "-t", default=None, help="Number of timesteps to test the game.")
+@click.option("--timesteps", "-ts", default=None, help="Number of timesteps to test the game.")
 @click.option("--iterations", "-i", default=None, help="Number of iterations to test the game.")
 @click.option("--features", "-f", default=None, help="List of features to test.")
 @click.option("--scenarios", "-s", default=None, help="List of scenarios to test.")
@@ -117,7 +117,7 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--debug", is_flag=True, help="Debug debug level.")
 @click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--port", default=5000, help="Port of the training server.")
-@click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers folder.")
+@click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers.rst folder.")
 @click.option("--model", default=None, type=click.Path(), help="Path of the model to load if you want to use a base model for your training.")
 def trainer(train, debug, test, path, mode, port, info, tensorboard, model):
     # change start method to fork to avoid errors with multiprocessing

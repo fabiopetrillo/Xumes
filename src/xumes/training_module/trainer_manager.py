@@ -53,9 +53,9 @@ class TrainerManager:
     # noinspection DuplicatedCode
     @staticmethod
     def _load_trainers():
-        for file in os.listdir("./trainers"):
+        for file in os.listdir("./trainers.rst"):
             if file.endswith(".py"):
-                module_path = os.path.join("./trainers", file)
+                module_path = os.path.join("./trainers.rst", file)
                 module_path = os.path.abspath(module_path)
                 module_name = os.path.basename(module_path)[:-3]
 
@@ -130,7 +130,7 @@ class TrainerManager:
 
 class StableBaselinesTrainerManager(TrainerManager):
     """
-    Concrete trainer manager for stable baselines trainers
+    Concrete trainer manager for stable baselines trainers.rst
     Use to train each agent on a different model
     """
 
@@ -222,7 +222,7 @@ class StableBaselinesTrainerManager(TrainerManager):
 
 class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     """
-    Concrete trainer manager for stable baselines trainers
+    Concrete trainer manager for stable baselines trainers.rst
     Use to train all agents on the same model
     """
 
