@@ -53,9 +53,9 @@ class TrainerManager:
     # noinspection DuplicatedCode
     @staticmethod
     def _load_trainers():
-        for file in os.listdir("./trainers.rst"):
+        for file in os.listdir("./trainers"):
             if file.endswith(".py"):
-                module_path = os.path.join("./trainers.rst", file)
+                module_path = os.path.join("./trainers", file)
                 module_path = os.path.abspath(module_path)
                 module_name = os.path.basename(module_path)[:-3]
 
