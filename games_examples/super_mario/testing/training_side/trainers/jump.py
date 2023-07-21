@@ -41,7 +41,7 @@ def train_impl(game_context):
 @observation
 def train_impl(game_context):
     dct = {
-        'mario_rect': np.array([game_context.mario.rect]),
+        'mario_rect': np.array(game_context.mario.rect),
         'mario_powerUpState': np.array([game_context.mario.powerUpState]),
         'ending_level': np.array([game_context.mario.ending_level]),
         'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
@@ -63,9 +63,9 @@ def train_impl(game_context):
 @reward
 def train_impl(game_context):
     reward = 0
-    if game_context.mario.dashboard[0] > game_context.coins:
+    if game_context.mario.dashboard.coins > game_context.coins:
         reward += 0.6
-    if game_context.mario.dashboard[1] > game_context.points:
+    if game_context.mario.dashboard.points > game_context.points:
         reward += 0.5
     if game_context.game.terminated or (game_context.player_state > game_context.mario.powerUpState):
         reward -= 5
@@ -87,7 +87,7 @@ def train_impl(game_context):
 
 @terminated
 def train_impl(game_context):
-    term = game_context.game.terminated or game_context.mario.rect.x >= 448
+    term = game_context.game.terminated or game_context.mario.rect[0] >= 448
     return term
 
 

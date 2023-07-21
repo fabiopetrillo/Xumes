@@ -8,7 +8,11 @@ class JsonGameStateObserver(Dict, IGameStateObserver):
     instance = None
 
     def update_state(self, obs) -> None:
-        self[obs.name] = obs.state().state
+        state = obs.state()
+        if obs.name not in self.keys():
+            self[obs.name] = state.state
+        else:
+            self[obs.name].update(state.state)
 
         def base_class():
             if obs.__class__.__name__ != obs.object.__class__.__name__:

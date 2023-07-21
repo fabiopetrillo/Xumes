@@ -28,16 +28,17 @@ def test_impl(test_context):
                                             state=State("terminated", methods_to_observe=["run", "reset"]),
                                             levelname="jump_feature", feature="100-100")
     entities = ["Coin", "CoinBox", "CoinBrick", "EntityBase", "Goomba", "Item", "Koopa", "Mushroom", "RandomBox"]
+
     test_context.game.mario = test_context.create(Mario, "mario", state=[
-            State("rect", func=_get_rect, methods_to_observe="move"),
-            State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
-            State("ending_level", methods_to_observe="end_level"),
-            State("levelObj", State("entityList", [State(entity, func=_get_attributes) for entity in entities]),
-                  methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
-            State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
-                                                                                      "_onCollisionWithBlock",
-                                                                                      "killEntity",
-                                                                                      "_onCollisionWithItem"])
+        State("rect", func=_get_rect, methods_to_observe="moveMario"),
+        State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
+        State("ending_level", methods_to_observe="end_level"),
+        State("levelObj", State("entityList", func=_get_attributes),
+              methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
+        State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
+                                                                                  "_onCollisionWithBlock",
+                                                                                  "killEntity",
+                                                                                  "_onCollisionWithItem"])
     ],
                                                   x=0, y=0, level=test_context.game.level,
                                                   screen=test_context.game.screen,
@@ -49,6 +50,39 @@ def test_impl(test_context):
 def test_impl(test_context, i, j):
     level = str(i + "-" + j)
     test_context.game.reset(level)
+
+    def _get_rect(rect):
+        return [rect.x, rect.y]
+
+    def _get_attributes(lst):
+        return [{
+            'type': item.type,
+            'position': {
+                'x': item.rect.x,
+                'y': item.rect.y
+            },
+            'alive': item.alive,
+            'active': item.active,
+            'bouncing': item.boucing,
+            'onGround': item.onGround
+        } for item in lst]
+
+    test_context.game.mario = test_context.create(Mario, "mario", state=[
+        State("rect", func=_get_rect, methods_to_observe="moveMario"),
+        State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
+        State("ending_level", methods_to_observe="end_level"),
+        State("levelObj", State("entityList", func=_get_attributes),
+              methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
+        State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
+                                                                                  "_onCollisionWithBlock",
+                                                                                  "killEntity",
+                                                                                  "_onCollisionWithItem"])
+    ],
+                                                  x=0, y=0, level=test_context.game.level,
+                                                  screen=test_context.game.screen,
+                                                  dashboard=test_context.game.dashboard,
+                                                  gravity=0.8)
+    test_context.game.mario.notify()
     test_context.game.clock.tick(0)
 
 
