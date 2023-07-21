@@ -13,11 +13,10 @@ class Item(Dashboard):
         self.coin_animation = copy(collection.get("coin-item").animation)
         self.sound_played = False
 
-    def spawnCoin(self, cam, sound, dashboard):
+    def spawnCoin(self, cam, dashboard):
         if not self.sound_played:
             self.sound_played = True
             dashboard.points += 100
-            sound.play_sfx(sound.coin)
         self.coin_animation.update()
         if self.coin_animation.timer < 45:
             if self.coin_animation.timer < 15:

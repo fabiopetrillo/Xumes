@@ -41,13 +41,14 @@ def test_impl(test_context):
     ],
                                                   x=0, y=0, level=test_context.game.level,
                                                   screen=test_context.game.screen,
-                                                  dashboard=test_context.game.dashboard, sound=test_context.game.sound,
+                                                  dashboard=test_context.game.dashboard,
                                                   gravity=0.8)
 
 
 @when("The first pipe is at {i} % and the next pipe is at {j} %")
 def test_impl(test_context, i, j):
-    test_context.game.reset(str(i, "-", j))
+    level = str(i + "-" + j)
+    test_context.game.reset(level)
     test_context.game.clock.tick(0)
 
 

@@ -7,7 +7,7 @@ from games_examples.super_mario.classes.EntityCollider import EntityCollider
 
 
 class RedMushroom(EntityBase):
-    def __init__(self, screen, spriteColl, x, y, level, sound):
+    def __init__(self, screen, spriteColl, x, y, level):
         super(RedMushroom, self).__init__(y, x - 1, 1.25)
         self.spriteCollection = spriteColl
         self.animation = Animation(
@@ -22,7 +22,6 @@ class RedMushroom(EntityBase):
         self.collision = Collider(self, level)
         self.EntityCollider = EntityCollider(self)
         self.levelObj = level
-        self.sound = sound
 
     def update(self, camera):
         if self.alive:

@@ -9,7 +9,7 @@ from games_examples.super_mario.traits.leftrightwalk import LeftRightWalkTrait
 
 
 class Koopa(EntityBase):
-    def __init__(self, screen, spriteColl, x, y, level, sound):
+    def __init__(self, screen, spriteColl, x, y, level):
         super(Koopa, self).__init__(y - 1, x, 1.25)
         self.spriteCollection = spriteColl
         self.animation = Animation(
@@ -27,7 +27,6 @@ class Koopa(EntityBase):
         self.collision = Collider(self, level)
         self.EntityCollider = EntityCollider(self)
         self.levelObj = level
-        self.sound = sound
 
     def update(self, camera):
         if self.alive and self.active:
@@ -87,4 +86,3 @@ class Koopa(EntityBase):
     def _onCollisionWithMob(self, mob, collisionState):
         if collisionState.isColliding and mob.bouncing:
             self.alive = False
-            self.sound.play_sfx(self.sound.brick_bump)

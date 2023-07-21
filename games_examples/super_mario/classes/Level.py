@@ -23,7 +23,6 @@ class Level:
         self.sprites = Sprites()
         self.feature = feature
         self.dashboard = dashboard
-        #self.sound = sound
         self.screen = screen
         self.level = None
         self.levelLength = 0
@@ -168,7 +167,6 @@ class Level:
                 self.sprites.spriteCollection,
                 x,
                 y,
-                self.sound,
                 self.dashboard,
             )
         )
@@ -182,7 +180,6 @@ class Level:
                 x,
                 y,
                 item,
-                self.sound,
                 self.dashboard,
                 self
             )
@@ -199,22 +196,21 @@ class Level:
                 self.sprites.spriteCollection,
                 x,
                 y,
-                self.sound,
                 self.dashboard
             )
         )
 
     def addGoomba(self, x, y):
         self.entityList.append(
-            Goomba(self.screen, self.sprites.spriteCollection, x, y, self, self.sound)
+            Goomba(self.screen, self.sprites.spriteCollection, x, y, self)
         )
 
     def addKoopa(self, x, y):
         self.entityList.append(
-            Koopa(self.screen, self.sprites.spriteCollection, x, y, self, self.sound)
+            Koopa(self.screen, self.sprites.spriteCollection, x, y, self)
         )
 
     def addRedMushroom(self, x, y):
         self.entityList.append(
-            RedMushroom(self.screen, self.sprites.spriteCollection, x, y, self, self.sound)
+            RedMushroom(self.screen, self.sprites.spriteCollection, x, y, self)
         )

@@ -36,10 +36,9 @@ bigAnimation = Animation(
 
 
 class Mario(EntityBase):
-    def __init__(self, x, y, level, screen, dashboard, sound, gravity=0.8):
+    def __init__(self, x, y, level, screen, dashboard, gravity=0.8):
         super(Mario, self).__init__(x, y, gravity)
         self.camera = Camera(self.rect, self)
-        self.sound = sound
         self.input = Input(self)
         self.inAir = False
         self.inJump = False
@@ -93,26 +92,22 @@ class Mario(EntityBase):
         self.levelObj.entityList.remove(item)
         self.dashboard.points += 100
         self.dashboard.coins += 1
-        self.sound.play_sfx(self.sound.coin)
+
 
     def _onCollisionWithBlock(self, block):
         if not block.triggered:
             self.dashboard.coins += 1
-            self.sound.play_sfx(self.sound.bump)
         block.triggered = True
 
     def _onCollisionWithMob(self, mob, collisionState):
         if isinstance(mob, RedMushroom) and mob.alive:
             self.powerup(1)
             self.killEntity(mob)
-            self.sound.play_sfx(self.sound.powerup)
         elif collisionState.isTop and (mob.alive or mob.bouncing):
-            self.sound.play_sfx(self.sound.stomp)
             self.rect.bottom = mob.rect.top
             self.bounce()
             self.killEntity(mob)
         elif collisionState.isTop and mob.alive and not mob.active:
-            self.sound.play_sfx(self.sound.stomp)
             self.rect.bottom = mob.rect.top
             mob.timer = 0
             self.bounce()
@@ -122,11 +117,9 @@ class Mario(EntityBase):
             if mob.rect.x < self.rect.x:
                 mob.leftrightTrait.direction = -1
                 mob.rect.x += -5
-                self.sound.play_sfx(self.sound.kick)
             else:
                 mob.rect.x += 5
                 mob.leftrightTrait.direction = 1
-                self.sound.play_sfx(self.sound.kick)
         elif collisionState.isColliding and mob.alive and not self.invincibilityFrames:
             if self.powerUpState == 0:
                 self.gameOver()
@@ -136,7 +129,6 @@ class Mario(EntityBase):
                 x, y = self.rect.x, self.rect.y
                 self.rect = pygame.Rect(x, y + 32, 32, 32)
                 self.invincibilityFrames = 60
-                self.sound.play_sfx(self.sound.pipe)
 
     def bounce(self):
         self.traits["bounceTrait"].jump = True
@@ -156,9 +148,6 @@ class Mario(EntityBase):
         srf = pygame.Surface((640, 480))
         srf.set_colorkey((255, 255, 255), pygame.RLEACCEL)
         srf.set_alpha(128)
-        self.sound.music_channel.stop()
-        self.sound.music_channel.play(self.sound.death)
-
         for i in range(500, 20, -2):
             srf.fill((0, 0, 0))
             pygame.draw.circle(

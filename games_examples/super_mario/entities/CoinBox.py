@@ -5,7 +5,7 @@ from games_examples.super_mario.entities.Item import Item
 
 
 class CoinBox(EntityBase):
-    def __init__(self, screen, spriteCollection, x, y, sound, dashboard, gravity=0):
+    def __init__(self, screen, spriteCollection, x, y, dashboard, gravity=0):
         super(CoinBox, self).__init__(x, y, gravity)
         self.screen = screen
         self.spriteCollection = spriteCollection
@@ -14,7 +14,6 @@ class CoinBox(EntityBase):
         self.triggered = False
         self.time = 0
         self.maxTime = 10
-        self.sound = sound
         self.dashboard = dashboard
         self.vel = 1
         self.item = Item(spriteCollection, screen, self.rect.x, self.rect.y)
@@ -24,7 +23,7 @@ class CoinBox(EntityBase):
             self.animation.update()
         else:
             self.animation.image = self.spriteCollection.get("empty").image
-            self.item.spawnCoin(cam, self.sound, self.dashboard)
+            self.item.spawnCoin(cam, self.dashboard)
             if self.time < self.maxTime:
                 self.time += 1
                 self.rect.y -= self.vel

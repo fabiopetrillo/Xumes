@@ -4,7 +4,7 @@ from games_examples.super_mario.entities.EntityBase import EntityBase
 
 
 class RandomBox(EntityBase):
-    def __init__(self, screen, spriteCollection, x, y, item, sound, dashboard, level, gravity=0):
+    def __init__(self, screen, spriteCollection, x, y, item, dashboard, level, gravity=0):
         super(RandomBox, self).__init__(x, y, gravity)
         self.screen = screen
         self.spriteCollection = spriteCollection
@@ -13,7 +13,6 @@ class RandomBox(EntityBase):
         self.triggered = False
         self.time = 0
         self.maxTime = 10
-        self.sound = sound
         self.dashboard = dashboard
         self.vel = 1
         self.item = item
@@ -26,7 +25,6 @@ class RandomBox(EntityBase):
             self.animation.image = self.spriteCollection.get("empty").image
             if self.item == 'RedMushroom':
                 self.level.addRedMushroom(self.rect.y // 32 - 1, self.rect.x // 32)
-                self.sound.play_sfx(self.sound.powerup_appear)
             self.item = None
             if self.time < self.maxTime:
                 self.time += 1

@@ -4,7 +4,6 @@ import pygame
 
 from games_examples.super_mario.classes.Level import Level
 from games_examples.super_mario.classes.Menu import Menu
-from games_examples.super_mario.classes.Sound import Sound
 from games_examples.super_mario.entities.Mario import Mario
 from games_examples.super_mario.classes.Dashboard import Dashboard
 
@@ -22,7 +21,6 @@ class Game:
         self.screen = pygame.display.set_mode(windowSize)
         self.max_frame_rate = 60
         self.dashboard = Dashboard("font.png", 8, self.screen)
-        #self.sound = Sound()
         self.level = Level(self.screen,self.dashboard, self.levelname, self.feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard)
         self.clock = pygame.time.Clock()
@@ -58,9 +56,8 @@ class Game:
     def reset(self, feature):
         self.terminated = False
         self.dashboard = Dashboard("font.png", 8, self.screen)
-        #self.sound = Sound()
-        self.level = Level(self.screen, self.sound, self.dashboard, self.levelname, feature)
-        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard, self.sound)
+        self.level = Level(self.screen, self.dashboard, self.levelname, feature)
+        self.mario = Mario(0, 0, self.level, self.screen, self.dashboard)
         self.clock = pygame.time.Clock()
 
 

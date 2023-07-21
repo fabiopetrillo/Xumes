@@ -9,7 +9,6 @@ class JumpTrait:
     def jump(self, jumping):
         if jumping:
             if self.entity.onGround:
-                self.entity.sound.play_sfx(self.entity.sound.jump)
                 self.entity.vel.y = self.verticalSpeed
                 self.entity.inAir = True
                 self.initalHeight = self.entity.rect.y

@@ -11,7 +11,7 @@ from games_examples.super_mario.classes.Level import nb_entites
 def train_impl(game_context):
 
     game_context.player_x, game_context.coins, game_context.points, game_context.player_state = 0, 0, 0, 0
-    game_context.actions = ["nothing", "nothing"]
+    game_context.actions = ["nothing", "nothing", "nothing", "nothing"]
 
     dct = {
         'mario_rect': spaces.Box(-1, 1, dtype=np.float32, shape=(2,)),
@@ -30,12 +30,12 @@ def train_impl(game_context):
         dct[f'entity_{idx}_bouncing'] = spaces.Discrete(2)
         dct[f'entity_{idx}_onGround'] = spaces.Discrete(2)
 
-    game_context.observation_space = spaces.Dict(dct),
-    game_context.action_space = spaces.MultiBinary(4),
-    game_context.max_episode_length = 2000,
-    game_context.total_timesteps = int(50000),
-    game_context.algorithm_type = "MultiInputPolicy",
-    game_context.algorithm = stable_baselines3.PPO,
+    game_context.observation_space = spaces.Dict(dct)
+    game_context.action_space = spaces.MultiBinary(4)
+    game_context.max_episode_length = 2000
+    game_context.total_timesteps = int(50000)
+    game_context.algorithm_type = "MultiInputPolicy"
+    game_context.algorithm = stable_baselines3.PPO
     game_context.random_reset_rate = 0.0
 
 @observation
@@ -45,7 +45,7 @@ def train_impl(game_context):
         'mario_powerUpState': np.array([game_context.mario.powerUpState]),
         'ending_level': np.array([game_context.mario.ending_level]),
         'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
-        'dashboard_points': np.array([game_context.mario.dashboard.points]),
+        'dashboard_points': np.array([game_context.mario.dashboard.points])
     }
 
     for idx, entity in enumerate(game_context.mario.levelObj.entityList):
@@ -94,8 +94,9 @@ def train_impl(game_context):
 @action
 def train_impl(game_context, raw_actions):
     moves = [["nothing", "space"], ["nothing", "up"], ["nothing", "left"], ["nothing", "right"]]
-    return [moves[0][int(raw_actions[0])], moves[1][int(raw_actions[1])],
-            moves[2][int(raw_actions[2])], moves[3][int(raw_actions[3])]]
+    game_context.actions = [moves[0][int(raw_actions[0])], moves[1][int(raw_actions[1])],
+                            moves[2][int(raw_actions[2])], moves[3][int(raw_actions[3])]]
+    return game_context.actions
 
 
 

@@ -7,7 +7,7 @@ from games_examples.super_mario.traits.leftrightwalk import LeftRightWalkTrait
 
 
 class Goomba(EntityBase):
-    def __init__(self, screen, spriteColl, x, y, level, sound):
+    def __init__(self, screen, spriteColl, x, y, level):
         super(Goomba, self).__init__(y, x - 1, 1.25)
         self.spriteCollection = spriteColl
         self.animation = Animation(
@@ -23,7 +23,6 @@ class Goomba(EntityBase):
         self.collision = Collider(self, level)
         self.EntityCollider = EntityCollider(self)
         self.levelObj = level
-        self.sound = sound
         self.textPos = Vec2D(0, 0)
 
     def update(self, camera):
@@ -72,4 +71,3 @@ class Goomba(EntityBase):
     def _onCollisionWithMob(self, mob, collisionState):
         if collisionState.isColliding and mob.bouncing:
             self.alive = False
-            self.sound.play_sfx(self.sound.brick_bump)
