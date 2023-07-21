@@ -21,5 +21,3 @@ class IGameElementStateConverter:
         :returns: A `GameElementState` object representing the converted game element state.
         """
         raise NotImplementedError
-
-
