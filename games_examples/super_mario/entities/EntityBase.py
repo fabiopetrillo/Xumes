@@ -17,6 +17,8 @@ class EntityBase(object):
         self.type = ""
         self.onGround = False
         self.obeyGravity = True
+        self.SPPED_ENTITY = 0.004
+        self.move_counter = 0
         
     def applyGravity(self):
         if self.obeyGravity:

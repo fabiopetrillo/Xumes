@@ -19,36 +19,53 @@ class Game:
         pygame.init()
         self.levelname, self.feature = levelname, feature
         self.screen = pygame.display.set_mode(windowSize)
-        self.max_frame_rate = 60
+        self.max_frame_rate = 240
         self.dashboard = Dashboard("font.png", 8, self.screen)
         self.level = Level(self.screen,self.dashboard, self.levelname, self.feature)
         self.mario = Mario(0, 0, self.level, self.screen, self.dashboard)
         self.clock = pygame.time.Clock()
         self.running = True
+        self.dt = 0
 
     def run(self):
+
+        def _get_attributes(lst):
+            return [{
+                'type': item.type,
+                'position': {
+                    'x': item.rect.x,
+                    'y': item.rect.y
+                },
+                'alive': item.alive,
+                'active': item.active,
+                'bouncing': item.bouncing,
+                'onGround': item.onGround
+            } for item in lst]
 
         while True:
 
             pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.clock.get_fps())))
-            self.level.drawLevel(self.mario.camera)
+            self.level.drawLevel(self.mario.camera, self.dt)
             self.dashboard.update()
-            self.mario.update()
+
+            self.mario.update(self.dt)
 
             if self.mario.restart or self.mario.ending_level:
                 self.end_game()
 
             self.check_end()
+            #print(self.clock.tick(self.max_frame_rate) / 1000)
+            self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
             self.render()
 
     def render(self):
         pygame.display.update()
-        self.clock.tick(self.max_frame_rate)
+        self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
     def check_end(self):
         if self.terminated:
-            self.reset(None)
+            self.reset(["ennemies", "3-4"])
 
     def end_game(self):
         self.terminated = True
@@ -62,5 +79,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game("Level1-2", None)
+    game = Game("ennemies_feature", ["ennemies", "3-4"])
     game.run()

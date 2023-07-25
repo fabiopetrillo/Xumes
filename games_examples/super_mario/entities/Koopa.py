@@ -28,15 +28,18 @@ class Koopa(EntityBase):
         self.EntityCollider = EntityCollider(self)
         self.levelObj = level
 
-    def update(self, camera):
-        if self.alive and self.active:
-            self.updateAlive(camera)
-            self.checkEntityCollision()
-        elif self.alive and not self.active and not self.bouncing:
-            self.sleepingInShell(camera)
-            self.checkEntityCollision()
-        elif self.bouncing:
-            self.shellBouncing(camera)
+    def update(self, camera, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if self.alive and self.active:
+                self.updateAlive(camera)
+                self.checkEntityCollision()
+            elif self.alive and not self.active and not self.bouncing:
+                self.sleepingInShell(camera)
+                self.checkEntityCollision()
+            elif self.bouncing:
+                self.shellBouncing(camera)
+            self.move_counter = 0
 
     def drawKoopa(self, camera):
         if self.leftrightTrait.direction == -1:

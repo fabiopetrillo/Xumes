@@ -18,21 +18,24 @@ class CoinBox(EntityBase):
         self.vel = 1
         self.item = Item(spriteCollection, screen, self.rect.x, self.rect.y)
 
-    def update(self, cam):
-        if self.alive and not self.triggered:
-            self.animation.update()
-        else:
-            self.animation.image = self.spriteCollection.get("empty").image
-            self.item.spawnCoin(cam, self.dashboard)
-            if self.time < self.maxTime:
-                self.time += 1
-                self.rect.y -= self.vel
+    def update(self, cam, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if self.alive and not self.triggered:
+                self.animation.update()
             else:
-                if self.time < self.maxTime * 2:
+                self.animation.image = self.spriteCollection.get("empty").image
+                self.item.spawnCoin(cam, self.dashboard)
+                if self.time < self.maxTime:
                     self.time += 1
-                    self.rect.y += self.vel
-        self.screen.blit(
-            self.spriteCollection.get("sky").image,
-            (self.rect.x + cam.x, self.rect.y + 2),
-        )
-        self.screen.blit(self.animation.image, (self.rect.x + cam.x, self.rect.y - 1))
+                    self.rect.y -= self.vel
+                else:
+                    if self.time < self.maxTime * 2:
+                        self.time += 1
+                        self.rect.y += self.vel
+            self.screen.blit(
+                self.spriteCollection.get("sky").image,
+                (self.rect.x + cam.x, self.rect.y + 2),
+            )
+            self.screen.blit(self.animation.image, (self.rect.x + cam.x, self.rect.y - 1))
+            self.move_counter = 0

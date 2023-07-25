@@ -6,8 +6,8 @@ from games_examples.super_mario.entities.Mario import Mario
 from games_examples.super_mario.main import Game
 
 
-@given("A game with a player")
-def test_impl(test_context):
+@given("A game with a player against {i} ennemies")
+def test_impl(test_context, i):
     def _get_rect(rect):
         return [rect.x, rect.y]
 
@@ -20,13 +20,13 @@ def test_impl(test_context):
             },
             'alive': item.alive,
             'active': item.active,
-            'bouncing': item.boucing,
+            'bouncing': item.bouncing,
             'onGround': item.onGround
         } for item in lst]
 
     test_context.game = test_context.create(Game, "game",
                                             state=State("terminated", methods_to_observe=["run", "reset"]),
-                                            levelname="jump_feature", feature=["jump", "100-100"])
+                                            levelname="ennemies_feature", feature=["ennemies", "2-0"])
 
     test_context.game.mario = test_context.create(Mario, "mario", state=[
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
@@ -45,15 +45,16 @@ def test_impl(test_context):
                                                   gravity=0.8)
 
 
-@when("The first pipe is at {i} % and the next pipe is at {j} %")
+@when("There is {i} Goomba and {j} Koopa")
 def test_impl(test_context, i, j):
-    level = ["jump", str(i + "-" + j)]
+    level = ["ennemies", str(i + "-" + j)]
     test_context.game.reset(level)
 
     def _get_rect(rect):
         return [rect.x, rect.y]
 
     def _get_attributes(lst):
+        #print('////////////////////// Error //////////////////////')
         return [{
             'type': item.type,
             'position': {
@@ -62,9 +63,10 @@ def test_impl(test_context, i, j):
             },
             'alive': item.alive,
             'active': item.active,
-            'bouncing': item.boucing,
+            'bouncing': item.bouncing,
             'onGround': item.onGround
         } for item in lst]
+
 
     test_context.game.mario = test_context.create(Mario, "mario", state=[
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
@@ -74,35 +76,37 @@ def test_impl(test_context, i, j):
               methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
         State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
                                                                                   "_onCollisionWithBlock",
-                                                                                  "killEntity",
-                                                                                  "_onCollisionWithItem"])
+                                                                                  "killEntity"
+                                                                                  ])
     ],
                                                   x=0, y=0, level=test_context.game.level,
                                                   screen=test_context.game.screen,
                                                   dashboard=test_context.game.dashboard,
                                                   gravity=0.8)
     test_context.game.mario.notify()
+    print("++++++++++++++++++++ Reset de la game ++++++++++++++++++++")
+    print(test_context.game.mario.levelObj.entityList)
     test_context.game.clock.tick(0)
 
 
 @loop
 def test_impl(test_context):
     pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(test_context.game.clock.get_fps())))
-    test_context.game.level.drawLevel(test_context.game.mario.camera, test_context.game.dt)
+    test_context.game.level.drawLevel(test_context.game.mario.camera)
     test_context.game.dashboard.update()
-    test_context.game.mario.update(test_context.game.dt)
+    test_context.game.mario.update()
 
 
-@then("The player should have passed {nb_pipes} pipes")
-def test_impl(test_context, nb_pipes):
-    if int(nb_pipes) == 2:
-        test_context.assert_greater_equal(test_context.game.mario.rect.x, 448)
+@then("The player should have killed {nb_ennemies} ennemies")
+def test_impl(test_context, nb_ennemies):
+    if int(nb_ennemies) == 2:
+        test_context.assert_true(test_context.game.mario.dashboard.points == nb_ennemies*100)
 
 
-@then("The player should have passed at least {nb_pipes} pipes")
-def test_impl(test_context, nb_pipes):
-    if int(nb_pipes) == 1:
-        test_context.assert_greater_equal(test_context.game.mario.rect.x, 320)
+@then("The player should have killed at least {nb_ennemies} ennemies")
+def test_impl(test_context, nb_ennemies):
+    if int(nb_ennemies) == 1:
+        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, nb_ennemies*100)
 
 
 @render
@@ -116,8 +120,9 @@ def test_impl(test_context):
 
 @log
 def test_impl(test_context):
+
     x, y = test_context.game.mario.rect[0], test_context.game.mario.rect[1]
-    return {
+    dct = {
         "player": {
             "position": {
                 "x": x,
@@ -130,3 +135,13 @@ def test_impl(test_context):
             "coins": test_context.game.mario.dashboard.coins,
         },
     }
+    if(len(test_context.game.mario.levelObj.entityList) != 0):
+        for idx, entity in enumerate(test_context.game.mario.levelObj.entityList):
+            dct[f'entity_{idx}_name'] = entity.name
+            dct[f'entity_{idx}_type'] = entity.type
+            dct[f'entity_{idx}_position'] = [entity.position.x, entity.position.y]
+            dct[f'entity_{idx}_alive'] = entity.alive
+            dct[f'entity_{idx}_active'] = entity.active
+            dct[f'entity_{idx}_bouncing'] = entity.bouncing
+            dct[f'entity_{idx}_onGround'] = entity.onGround
+    return dct

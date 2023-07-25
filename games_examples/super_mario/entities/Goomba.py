@@ -25,14 +25,17 @@ class Goomba(EntityBase):
         self.levelObj = level
         self.textPos = Vec2D(0, 0)
 
-    def update(self, camera):
-        if self.alive:
-            self.applyGravity()
-            self.drawGoomba(camera)
-            self.leftrightTrait.update()
-            self.checkEntityCollision()
-        else:
-            self.onDead(camera)
+    def update(self, camera, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if self.alive:
+                self.applyGravity()
+                self.drawGoomba(camera)
+                self.leftrightTrait.update()
+                self.checkEntityCollision()
+            else:
+                self.onDead(camera)
+            self.move_counter = 0
 
     def drawGoomba(self, camera):
         self.screen.blit(self.animation.image, (self.rect.x + camera.x, self.rect.y))
