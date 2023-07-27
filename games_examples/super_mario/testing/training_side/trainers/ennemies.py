@@ -21,9 +21,9 @@ def train_impl(game_context):
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
     }
 
-    for idx in range(nb_entites):
+    for idx in range(1):
         #dct[f'entity_{idx}_name'] = spaces.Discrete(10)
-        dct[f'entity_{idx}_type'] = spaces.Discrete(10)
+        #dct[f'entity_{idx}_type'] = spaces.Discrete(10)
         dct[f'entity_{idx}_position'] = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32)
         dct[f'entity_{idx}_alive'] = spaces.Discrete(2)
         dct[f'entity_{idx}_active'] = spaces.Discrete(2)
@@ -32,14 +32,15 @@ def train_impl(game_context):
 
     game_context.observation_space = spaces.Dict(dct)
     game_context.action_space = spaces.MultiBinary(4)
-    game_context.max_episode_length = 2000
-    game_context.total_timesteps = int(50000)
+    game_context.max_episode_length = 500
+    game_context.total_timesteps = int(10000)
     game_context.algorithm_type = "MultiInputPolicy"
     game_context.algorithm = stable_baselines3.PPO
     game_context.random_reset_rate = 0.0
 
 @observation
 def train_impl(game_context):
+
     dct = {
         'mario_rect': np.array(game_context.mario.rect),
         'mario_powerUpState': np.array([game_context.mario.powerUpState]),
@@ -47,15 +48,8 @@ def train_impl(game_context):
         'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
         'dashboard_points': np.array([game_context.mario.dashboard.points])
     }
-    #print(game_context.mario)
-    #print(game_context.mario.levelObj.entityList)
     for idx, item in enumerate(game_context.mario.levelObj.entityList):
-        print("%%%%%%%%%%%%%%%%%%% Print de l'entitté %%%%%%%%%%%%%%%%%%")
-        print(item, idx)
-        print(nb_entites)
-        #dct[f'entity_{idx}_name'] = np.array([entity.name])
-        dct[f'entity_{idx}_type'] = np.array([item["type"]])
-        dct[f'entity_{idx}_position'] = np.array([item["position"]["x"], item["position"]["y"]])
+        dct[f'entity_{idx}_position'] = np.array([item["position"]['x'], item["position"]['y']])
         dct[f'entity_{idx}_alive'] = np.array([item["alive"]])
         dct[f'entity_{idx}_active'] = np.array([item["active"]])
         dct[f'entity_{idx}_bouncing'] = np.array([item["bouncing"]])
@@ -67,36 +61,32 @@ def train_impl(game_context):
 @reward
 def train_impl(game_context):
     reward = 0
-    if game_context.mario.dashboard.coins > game_context.coins:
-        reward += 0.6
     if game_context.mario.dashboard.points > game_context.points:
-        reward += 0.5
+        reward += 5
     if game_context.game.terminated or (game_context.player_state > game_context.mario.powerUpState):
         reward -= 5
-    if game_context.ending_level:
-        reward += 5
 
     for entity in game_context.mario.levelObj.entityList:
-        if entity.alive is False or entity.active is False:
-            reward += 0.2
+        if entity['alive'] is False or entity['active'] is False:
+            reward += 5
 
-    xDiff = game_context.mario.rect[0] - game_context.player_x
-    if xDiff >= 8:
-        reward += 1
-    elif xDiff > 0:
-        reward += 0.5
-    elif xDiff >= -8:
-        reward -= 1.0
-    else:
-        reward -= 1.5
+    #xDiff = game_context.mario.rect[0] - game_context.player_x
+    #if xDiff >= 8:
+    #    reward += 1
+    #elif xDiff > 0:
+    #    reward += 0.5
+    #elif xDiff >= -8:
+    #    reward -= 1.0
+    #else:
+    #    reward -= 1.5
 
     return reward
 
 
 @terminated
 def train_impl(game_context):
-    if __name__ == '__main__':
-        term = game_context.game.terminated or game_context.mario.dashboard.points >= 200
+    #if __name__ == '__main__':
+    term = game_context.game.terminated or game_context.mario.dashboard.points >= 100
     return term
 
 

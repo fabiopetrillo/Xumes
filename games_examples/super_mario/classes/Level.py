@@ -47,7 +47,7 @@ class Level:
         try:
             [self.addCoinBox(x, y) for x, y in data["level"]["entities"]["CoinBox"]]
             if self.feature is not None and self.feature[0] == "ennemies":
-                print("---------------------- Je passe par feature ---------------------------")
+                #print("---------------------- Je passe par feature ---------------------------")
                 if len(data["level"]["entities"][self.feature[1]]["Koopa"]) == 0:
                     [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
                 elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) == 0:
@@ -55,9 +55,9 @@ class Level:
                 else:
                     [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
                     [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
-                print(self.entityList)
+                #print(self.entityList)
             else:
-                print("$$$$$$$$$$$$$$$$$$$$$$$ Je passe pas par feature $$$$$$$$$$$$$$$$$$$$$$$")
+                #print("$$$$$$$$$$$$$$$$$$$$$$$ Je passe pas par feature $$$$$$$$$$$$$$$$$$$$$$$")
                 [self.addGoomba(x, y) for x, y in data["level"]["entities"]["Goomba"]]
                 [self.addKoopa(x, y) for x, y in data["level"]["entities"]["Koopa"]]
             [self.addCoin(x, y) for x, y in data["level"]["entities"]["coin"]]

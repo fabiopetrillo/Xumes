@@ -13,7 +13,7 @@ def test_impl(test_context, i):
 
     def _get_attributes(lst):
         return [{
-            'type': item.type,
+            #'type': item.type,
             'position': {
                 'x': item.rect.x,
                 'y': item.rect.y
@@ -56,7 +56,7 @@ def test_impl(test_context, i, j):
     def _get_attributes(lst):
         #print('////////////////////// Error //////////////////////')
         return [{
-            'type': item.type,
+            #'type': item.type,
             'position': {
                 'x': item.rect.x,
                 'y': item.rect.y
@@ -84,17 +84,16 @@ def test_impl(test_context, i, j):
                                                   dashboard=test_context.game.dashboard,
                                                   gravity=0.8)
     test_context.game.mario.notify()
-    print("++++++++++++++++++++ Reset de la game ++++++++++++++++++++")
-    print(test_context.game.mario.levelObj.entityList)
     test_context.game.clock.tick(0)
 
 
 @loop
 def test_impl(test_context):
     pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(test_context.game.clock.get_fps())))
-    test_context.game.level.drawLevel(test_context.game.mario.camera)
+    test_context.game.level.drawLevel(test_context.game.mario.camera, test_context.game.dt)
     test_context.game.dashboard.update()
-    test_context.game.mario.update()
+    test_context.game.mario.update(test_context.game.dt)
+    test_context.game.dt = test_context.game.clock.tick(60) / 1000
 
 
 @then("The player should have killed {nb_ennemies} ennemies")
@@ -135,13 +134,11 @@ def test_impl(test_context):
             "coins": test_context.game.mario.dashboard.coins,
         },
     }
-    if(len(test_context.game.mario.levelObj.entityList) != 0):
-        for idx, entity in enumerate(test_context.game.mario.levelObj.entityList):
-            dct[f'entity_{idx}_name'] = entity.name
-            dct[f'entity_{idx}_type'] = entity.type
-            dct[f'entity_{idx}_position'] = [entity.position.x, entity.position.y]
-            dct[f'entity_{idx}_alive'] = entity.alive
-            dct[f'entity_{idx}_active'] = entity.active
-            dct[f'entity_{idx}_bouncing'] = entity.bouncing
-            dct[f'entity_{idx}_onGround'] = entity.onGround
+    #print(test_context.game.mario.levelObj.entityList)
+    for idx, entity in enumerate(test_context.game.mario.levelObj.entityList):
+        dct[f'entity_{idx}_position'] = [entity.position.x, entity.position.y]
+        dct[f'entity_{idx}_alive'] = entity.alive
+        dct[f'entity_{idx}_active'] = entity.active
+        dct[f'entity_{idx}_bouncing'] = entity.bouncing
+        dct[f'entity_{idx}_onGround'] = entity.onGround
     return dct

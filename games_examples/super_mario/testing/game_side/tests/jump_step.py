@@ -91,6 +91,7 @@ def test_impl(test_context):
     test_context.game.level.drawLevel(test_context.game.mario.camera, test_context.game.dt)
     test_context.game.dashboard.update()
     test_context.game.mario.update(test_context.game.dt)
+    test_context.game.dt = test_context.game.clock.tick(test_context.game.max_frame_rate) / 1000
 
 
 @then("The player should have passed {nb_pipes} pipes")
@@ -109,9 +110,7 @@ def test_impl(test_context, nb_pipes):
 def test_impl(test_context):
     # Background
     pygame.display.update()
-    test_context.game.clock.tick(test_context.game.max_frame_rate)
-
-    test_context.game.dt = test_context.game.clock.tick(60) / 1000
+    test_context.game.dt = test_context.game.clock.tick(test_context.game.max_frame_rate) / 1000
 
 
 @log
