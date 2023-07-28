@@ -4,7 +4,7 @@ from gymnasium.vector.utils import spaces
 
 from xumes.training_module import observation, reward, terminated, action, config
 
-from games_examples.super_mario.classes.Level import nb_entites
+#from games_examples.super_mario.classes.Level import nb_entites
 
 
 @config
@@ -21,7 +21,7 @@ def train_impl(game_context):
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
     }
 
-    for idx in range(nb_entites):
+    for idx in range(1):
         dct[f'entity_{idx}_name'] = spaces.Discrete(10)
         dct[f'entity_{idx}_type'] = spaces.Discrete(3)
         dct[f'entity_{idx}_position'] = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32)

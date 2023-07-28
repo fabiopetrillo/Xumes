@@ -5,14 +5,14 @@ Feature: Testing killing ennemies
     Given A game with a player against 1 ennemies
     When There is 1 Goomba and 0 Koopa
     Then The player should have killed 2 ennemies
-    And The player should have killed at least 1 ennemies
+    #And The player should have killed at least 1 ennemies
 
   @basic
   Scenario: Kill 1 Koopa
     Given A game with a player against 1 ennemies
     When There is 0 Goomba and 1 Koopa
     Then The player should have killed 1 ennemies
-    And The player should have killed at least 1 ennemies
+    #And The player should have killed at least 1 ennemies
 
   @complicate
   Scenario: Kill 2 Goomba

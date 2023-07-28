@@ -65,7 +65,7 @@ class Game:
 
     def check_end(self):
         if self.terminated:
-            self.reset(["ennemies", "1-0"])
+            self.reset(["ennemies", "0-1"])
 
     def end_game(self):
         self.terminated = True
@@ -79,5 +79,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game("test", ["ennemies", "1-0"])
+    game = Game("test", ["ennemies", "0-1"])
     game.run()

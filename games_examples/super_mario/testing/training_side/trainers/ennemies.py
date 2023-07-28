@@ -4,7 +4,7 @@ from gymnasium.vector.utils import spaces
 
 from xumes.training_module import observation, reward, terminated, action, config
 
-from games_examples.super_mario.classes.Level import nb_entites
+#from games_examples.super_mario.classes.Level import nb_entites
 
 
 @config
@@ -12,6 +12,7 @@ def train_impl(game_context):
 
     game_context.player_x, game_context.coins, game_context.points, game_context.player_state = 0, 0, 0, 0
     game_context.actions = ["nothing", "nothing", "nothing", "nothing"]
+    game_context.xDiff = 0
 
     dct = {
         'mario_rect': spaces.Box(-1, 1, dtype=np.float32, shape=(2,)),
@@ -33,7 +34,7 @@ def train_impl(game_context):
     game_context.observation_space = spaces.Dict(dct)
     game_context.action_space = spaces.MultiBinary(4)
     game_context.max_episode_length = 500
-    game_context.total_timesteps = int(10000)
+    game_context.total_timesteps = int(30000)
     game_context.algorithm_type = "MultiInputPolicy"
     game_context.algorithm = stable_baselines3.PPO
     game_context.random_reset_rate = 0.0
@@ -69,6 +70,13 @@ def train_impl(game_context):
     for entity in game_context.mario.levelObj.entityList:
         if entity['alive'] is False or entity['active'] is False:
             reward += 5
+
+    for idx, entity in enumerate(game_context.mario.levelObj.entityList):
+        current_xDiff = np.abs(game_context.mario.rect[0] - entity['position']['x'])
+        if current_xDiff < game_context.xDiff:
+            reward += 0.4
+        game_context.xDiff = current_xDiff
+
 
     #xDiff = game_context.mario.rect[0] - game_context.player_x
     #if xDiff >= 8:

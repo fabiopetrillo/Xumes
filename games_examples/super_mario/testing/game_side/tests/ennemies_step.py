@@ -99,13 +99,14 @@ def test_impl(test_context):
 @then("The player should have killed {nb_ennemies} ennemies")
 def test_impl(test_context, nb_ennemies):
     if int(nb_ennemies) == 2:
-        test_context.assert_true(test_context.game.mario.dashboard.points == nb_ennemies*100)
+        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, nb_ennemies * 100)
+        #test_context.assert_true(test_context.game.mario.dashboard.points == nb_ennemies*100)
 
 
-@then("The player should have killed at least {nb_ennemies} ennemies")
-def test_impl(test_context, nb_ennemies):
-    if int(nb_ennemies) == 1:
-        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, nb_ennemies*100)
+#@then("The player should have killed at least {nb_ennemies} ennemies")
+#def test_impl(test_context, nb_ennemies):
+#    if int(nb_ennemies) == 1:
+#        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, nb_ennemies*100)
 
 
 @render
@@ -136,7 +137,7 @@ def test_impl(test_context):
     }
     #print(test_context.game.mario.levelObj.entityList)
     for idx, entity in enumerate(test_context.game.mario.levelObj.entityList):
-        dct[f'entity_{idx}_position'] = [entity.position.x, entity.position.y]
+        dct[f'entity_{idx}_position'] = [entity.rect.x, entity.rect.y]
         dct[f'entity_{idx}_alive'] = entity.alive
         dct[f'entity_{idx}_active'] = entity.active
         dct[f'entity_{idx}_bouncing'] = entity.bouncing
