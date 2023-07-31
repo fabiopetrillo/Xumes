@@ -29,19 +29,6 @@ class Game:
 
     def run(self):
 
-        def _get_attributes(lst):
-            return [{
-                'type': item.type,
-                'position': {
-                    'x': item.rect.x,
-                    'y': item.rect.y
-                },
-                'alive': item.alive,
-                'active': item.active,
-                'bouncing': item.bouncing,
-                'onGround': item.onGround
-            } for item in lst]
-
         while True:
 
             pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.clock.get_fps())))
@@ -54,7 +41,6 @@ class Game:
                 self.end_game()
 
             self.check_end()
-            #print(self.clock.tick(self.max_frame_rate) / 1000)
             self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
             self.render()
@@ -65,7 +51,7 @@ class Game:
 
     def check_end(self):
         if self.terminated:
-            self.reset(["ennemies", "0-1"])
+            self.reset(["ennemies", "1-0"])
 
     def end_game(self):
         self.terminated = True
@@ -79,5 +65,6 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game("test", ["ennemies", "0-1"])
+    game = Game("ennemies_feature", ["ennemies", "1-0"])
     game.run()
+

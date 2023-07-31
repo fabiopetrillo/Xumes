@@ -47,7 +47,8 @@ def train_impl(game_context):
         'mario_powerUpState': np.array([game_context.mario.powerUpState]),
         'ending_level': np.array([game_context.mario.ending_level]),
         'dashboard_coins': np.array([game_context.mario.dashboard.coins]),
-        'dashboard_points': np.array([game_context.mario.dashboard.points])
+        'dashboard_points': np.array([game_context.mario.dashboard.points]),
+        'mario_running': np.array([game_context.mario.running])
     }
     for idx, item in enumerate(game_context.mario.levelObj.entityList):
         dct[f'entity_{idx}_position'] = np.array([item["position"]['x'], item["position"]['y']])
@@ -64,12 +65,12 @@ def train_impl(game_context):
     reward = 0
     if game_context.mario.dashboard.points > game_context.points:
         reward += 5
-    if game_context.game.terminated or (game_context.player_state > game_context.mario.powerUpState):
+    if game_context.mario.running is False:
         reward -= 5
 
-    for entity in game_context.mario.levelObj.entityList:
-        if entity['alive'] is False or entity['active'] is False:
-            reward += 5
+    #for entity in game_context.mario.levelObj.entityList:
+    #    if entity['alive'] is False or entity['active'] is False:
+    #        reward += 5
 
     for idx, entity in enumerate(game_context.mario.levelObj.entityList):
         current_xDiff = np.abs(game_context.mario.rect[0] - entity['position']['x'])
@@ -94,7 +95,7 @@ def train_impl(game_context):
 @terminated
 def train_impl(game_context):
     #if __name__ == '__main__':
-    term = game_context.game.terminated or game_context.mario.dashboard.points >= 100
+    term = game_context.mario.running or game_context.mario.dashboard.points >= 100
     return term
 
 

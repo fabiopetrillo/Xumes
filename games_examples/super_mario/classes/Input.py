@@ -26,7 +26,7 @@ class Input:
                 else:
                     self.entity.traits['goTrait'].direction = 0
 
-                isJumping = event.key == pygame.K_SPACE or event.key == pygame.K_k #or event.key == pygame.K_UP
+                isJumping = event.key == pygame.K_SPACE or event.key == pygame.K_k or event.key == pygame.K_UP
                 self.entity.traits['jumpTrait'].jump(isJumping)
 
                 self.entity.traits['goTrait'].boost = pygame.K_LSHIFT

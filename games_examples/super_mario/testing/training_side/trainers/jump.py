@@ -4,7 +4,7 @@ from gymnasium.vector.utils import spaces
 
 from xumes.training_module import observation, reward, terminated, action, config
 
-#from games_examples.super_mario.classes.Level import nb_entites
+from games_examples.super_mario.classes.Level import nb_entites
 
 
 @config
@@ -21,7 +21,7 @@ def train_impl(game_context):
         'dashboard_points': spaces.Box(-1, 1, dtype=np.float32, shape=(1,))
     }
 
-    for idx in range(1):
+    for idx in range(nb_entites):
         dct[f'entity_{idx}_name'] = spaces.Discrete(10)
         dct[f'entity_{idx}_type'] = spaces.Discrete(3)
         dct[f'entity_{idx}_position'] = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32)
@@ -63,14 +63,9 @@ def train_impl(game_context):
 @reward
 def train_impl(game_context):
     reward = 0
-    if game_context.mario.dashboard.coins > game_context.coins:
-        reward += 0.6
-    if game_context.mario.dashboard.points > game_context.points:
-        reward += 0.5
-    if game_context.game.terminated or (game_context.player_state > game_context.mario.powerUpState):
+
+    if game_context.game.terminated:
         reward -= 5
-    if game_context.ending_level:
-        reward += 5
 
     xDiff = game_context.mario.rect[0] - game_context.player_x
     if xDiff >= 8:

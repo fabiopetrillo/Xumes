@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 from xumes.game_module import State, given, when, loop, then, render, log
@@ -103,7 +105,7 @@ def test_impl(test_context, nb_pipes):
 @then("The player should have passed at least {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
     if int(nb_pipes) == 1:
-        test_context.assert_greater_equal(test_context.game.mario.rect.x, 320)
+        test_context.assert_greater(test_context.game.mario.rect.x, 320)
 
 
 @render
