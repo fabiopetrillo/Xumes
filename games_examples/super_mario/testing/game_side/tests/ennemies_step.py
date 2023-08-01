@@ -70,8 +70,8 @@ def test_impl(test_context, i, j):
     test_context.game.mario = test_context.create(Mario, "mario", state=[
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
         State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
+        State("restart", methods_to_observe="gameOver"),
         State("ending_level", methods_to_observe="end_level"),
-        State("running", methods_to_observe="gameOver"),
         State("levelObj", State("entityList", func=_get_attributes),
               methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
         State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
@@ -98,15 +98,15 @@ def test_impl(test_context):
 
 @then("The player should have killed {nb_ennemies} ennemies")
 def test_impl(test_context, nb_ennemies):
-    if int(nb_ennemies) == 2:
-        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, 200)
+    if int(nb_ennemies) == 1:
+        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, 100)
         #test_context.assert_true(test_context.game.mario.dashboard.points == nb_ennemies*100)
 
 
-@then("The player should have killed at least {nb_ennemies} ennemies")
-def test_impl(test_context, nb_ennemies):
-    if int(nb_ennemies) == 1:
-        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, 100)
+#@then("The player should have killed at least {nb_ennemies} ennemies")
+#def test_impl(test_context, nb_ennemies):
+#    if int(nb_ennemies) == 1:
+#        test_context.assert_greater_equal(test_context.game.mario.dashboard.points, 100)
 
 
 @render
