@@ -24,7 +24,7 @@ def train_impl(game_context):
     game_context.observation_space = spaces.Dict(dct)
     game_context.action_space = spaces.MultiBinary(4)
     game_context.max_episode_length = 500
-    game_context.total_timesteps = int(200000)
+    game_context.total_timesteps = int(12228)
     game_context.algorithm_type = "MultiInputPolicy"
     game_context.algorithm = stable_baselines3.PPO
     game_context.random_reset_rate = 0.0
@@ -44,26 +44,22 @@ def train_impl(game_context):
 def train_impl(game_context):
     reward = 0
     if game_context.mario.rect[0] > 384:
-        reward += 3
-    if game_context.mario.restart:
-        reward -= 5
+        reward += 2
+    else:
+        reward -= 4
 
     xDiff = game_context.mario.rect[0] - game_context.player_x
-    if xDiff >= 8:
-        reward += 0.8
-    elif xDiff > 0:
-        reward += 0.5
-    elif xDiff >= -8:
-        reward -= 1.0
+    if xDiff > 0:
+        reward += 0.2
     else:
-        reward -= 1.5
+        reward -= 0.4
 
     return reward
 
 
 @terminated
 def train_impl(game_context):
-    term = game_context.mario.restart or game_context.mario.rect[0] >= 384
+    term = game_context.mario.restart or game_context.mario.rect[0] > 384
     return term
 
 

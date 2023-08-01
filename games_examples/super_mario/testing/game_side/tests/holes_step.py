@@ -9,7 +9,9 @@ from games_examples.super_mario.main import Game
 @given("A game with a player")
 def test_impl(test_context):
     def _get_rect(rect):
-        return [rect.x, rect.y]
+
+        if rect is not None:
+            return [rect.x, rect.y]
 
     test_context.game = test_context.create(Game, "game",
                                             state=State("terminated", methods_to_observe=["run", "reset"]),
@@ -31,7 +33,8 @@ def test_impl(test_context, nb_holes):
     test_context.game.reset(None)
 
     def _get_rect(rect):
-        return [rect.x, rect.y]
+        if rect is not None:
+            return [rect.x, rect.y]
 
     test_context.game.mario = test_context.create(Mario, "mario", state=[
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
@@ -59,7 +62,8 @@ def test_impl(test_context):
 @then("The player should have passed {nb_holes} holes at {position}")
 def test_impl(test_context, nb_holes, position):
     if int(nb_holes) == 1:
-        test_context.assert_greater_equal(test_context.game.mario.rect.x, int(position))
+        test_context.assert_true(test_context.game.mario.rect.x > int(position))
+        #test_context.assert_greater(test_context.game.mario.rect.x, int(position))
 
 
 @render

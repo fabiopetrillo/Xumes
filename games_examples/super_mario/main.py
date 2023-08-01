@@ -51,7 +51,7 @@ class Game:
 
     def check_end(self):
         if self.terminated:
-            self.reset(["ennemies", "1-0"])
+            self.reset(["balance", "1-1-1"])
 
     def end_game(self):
         self.terminated = True
@@ -65,6 +65,6 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game("ennemies_feature", ["ennemies", "1-0"])
+    game = Game("balance_feature", ["balance","1-1-1"])
     game.run()
 

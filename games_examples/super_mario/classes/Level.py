@@ -46,16 +46,15 @@ class Level:
     def loadEntities(self, data):
         try:
             [self.addCoinBox(x, y) for x, y in data["level"]["entities"]["CoinBox"]]
-            if self.feature is not None and self.feature[0] == "ennemies":
-                #print("---------------------- Je passe par feature ---------------------------")
-                if len(data["level"]["entities"][self.feature[1]]["Koopa"]) == 0:
-                    [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
-                elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) == 0:
-                    [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
-                else:
-                    [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
-                    [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
-                #print(self.entityList)
+            if self.feature is not None:
+                if self.feature[0] == "ennemies" or self.feature[0] == "balance":
+                    if len(data["level"]["entities"][self.feature[1]]["Koopa"]) == 0:
+                        [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
+                    elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) == 0:
+                        [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
+                    elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) != 0 and len(data["level"]["entities"][self.feature[1]]["Koopa"]) != 0 :
+                        [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
+                        [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
             else:
                 #print("$$$$$$$$$$$$$$$$$$$$$$$ Je passe pas par feature $$$$$$$$$$$$$$$$$$$$$$$")
                 [self.addGoomba(x, y) for x, y in data["level"]["entities"]["Goomba"]]
@@ -92,14 +91,18 @@ class Level:
             self.addBushSprite(x, y)
         for x, y in data["level"]["objects"]["cloud"]:
             self.addCloudSprite(x, y)
-        if self.feature is not None and self.feature[0] == "jump":
+        if self.feature is not None and (self.feature[0] == "jump" or self.feature[0] == "balance"):
             for x, y, z in data["level"]["objects"]["pipe"][self.feature[1]]:
                 self.addPipeSprite(x, y, z)
         elif len(data["level"]["objects"]["pipe"]) != 0:
             for x, y, z in data["level"]["objects"]["pipe"]:
                 self.addPipeSprite(x, y, z)
-        for x, y in data["level"]["objects"]["sky"]:
-            self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
+        if self.feature is not None and self.feature[0] == "balance":
+            for x, y in data["level"]["objects"]["sky"][self.feature[1]]:
+                self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
+        else:
+            for x, y in data["level"]["objects"]["sky"]:
+                self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
         for x, y in data["level"]["objects"]["ground"]:
             self.level[y][x] = Tile(
                 self.sprites.spriteCollection.get("ground"),
