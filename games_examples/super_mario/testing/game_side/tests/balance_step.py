@@ -8,12 +8,12 @@ from games_examples.super_mario.main import Game
 
 @given("A game with a player, {i} pipes, {j} goombas and {k} holes")
 def test_impl(test_context, i, j, k):
+    print("given passed")
     def _get_rect(rect):
         return [rect.x, rect.y]
 
     def _get_attributes(lst):
         return [{
-            #'type': item.type,
             'position': {
                 'x': item.rect.x,
                 'y': item.rect.y
@@ -47,6 +47,7 @@ def test_impl(test_context, i, j, k):
 
 @when("There is {i} pipes, {j} goombas and {k} holes")
 def test_impl(test_context, i, j, k):
+    print("when passed")
     level = ["balance", str(i + "-" + j + "-" + k)]
     test_context.game.reset(level)
 
@@ -94,7 +95,7 @@ def test_impl(test_context):
     test_context.game.mario.update(test_context.game.dt)
     test_context.game.dt = test_context.game.clock.tick(60) / 1000
 
-@then("The player should have passed {nb_pipes} pipes at x={position}")
+@then("The player should have passed {nb_pipes} pipes at x {position}")
 def test_impl(test_context, nb_pipes, position):
     if int(nb_pipes) == 1:
         test_context.assert_true(test_context.game.mario.rect.x >= int(position))
@@ -104,7 +105,7 @@ def test_impl(test_context, nb_enemies):
     if int(nb_enemies) == 1:
         test_context.assert_true(test_context.game.mario.dashboard.points >= 100)
 
-@then("The player should have passed {nb_holes} holes at x={position}")
+@then("The player should have passed {nb_holes} holes at x {position}")
 def test_impl(test_context, nb_holes, position):
     if int(nb_holes) == 1:
         test_context.assert_true(test_context.game.mario.rect.x >= int(position))
