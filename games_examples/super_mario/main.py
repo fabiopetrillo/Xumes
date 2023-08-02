@@ -35,6 +35,7 @@ class Game:
             self.level.drawLevel(self.mario.camera, self.dt)
             self.dashboard.update()
 
+            print(self.mario.rect.x)
             self.mario.update(self.dt)
 
             if self.mario.restart or self.mario.ending_level:
