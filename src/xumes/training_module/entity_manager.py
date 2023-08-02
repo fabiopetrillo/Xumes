@@ -268,11 +268,12 @@ class EntityListAdapter(list, Entity):
         return EntityListAdapter(state)
 
     def update_state(self, state):
-        for i in range(len(state)):
-            if i < len(self) and isinstance(self[i], Entity):
-                self[i] = self[i].update_state(state[i])
+        self.clear()
+        for i in state:
+            if isinstance(i, Entity):
+                self.append(i)
             else:
-                self.append(choose_delegate(state[i]))
+                self.append(choose_delegate(i))
         return self
 
     def __hash__(self):
@@ -307,6 +308,7 @@ class EntitySetAdapter(set, Entity):
         return EntitySetAdapter(state)
 
     def update_state(self, state):
+        self.clear()
         for i in state:
             self.add(i if isinstance(i, Entity) else choose_delegate(i))
         return self
