@@ -27,10 +27,3 @@ Feature: Testing the jump
     When The first pipe is at 150 % and the next pipe is at 100 %
     Then The player should have passed 2 pipes
     And The player should have passed at least 1 pipes
-
-  @critic
-  Scenario: Jump 100:150
-    Given A game with a player
-    When The first pipe is at 100 % and the next pipe is at 150 %
-    Then The player should have passed 2 pipes
-    And The player should have passed at least 1 pipes

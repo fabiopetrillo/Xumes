@@ -27,7 +27,9 @@ class Level:
         self.level = None
         self.levelLength = 0
         self.entityList = []
+        self.nb_entities = 0
         self.loadLevel(levelname, self.feature)
+
 
     def loadLevel(self, levelname, feature):
         file = os.path.join(level_path, '{}.json')
@@ -37,13 +39,26 @@ class Level:
             self.loadObjects(data)
             self.loadEntities(data)
             self.levelLength = data["length"]
-            nb_entites = len(self.entityList)
+            self.nb_entites = len(self.entityList)
+
+
 
     def loadEntities(self, data):
         try:
             [self.addCoinBox(x, y) for x, y in data["level"]["entities"]["CoinBox"]]
-            [self.addGoomba(x, y) for x, y in data["level"]["entities"]["Goomba"]]
-            [self.addKoopa(x, y) for x, y in data["level"]["entities"]["Koopa"]]
+            if self.feature is not None:
+                if self.feature[0] == "ennemies" or self.feature[0] == "balance":
+                    if len(data["level"]["entities"][self.feature[1]]["Koopa"]) == 0:
+                        [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
+                    elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) == 0:
+                        [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
+                    elif len(data["level"]["entities"][self.feature[1]]["Goomba"]) != 0 and len(data["level"]["entities"][self.feature[1]]["Koopa"]) != 0 :
+                        [self.addGoomba(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Goomba"]]
+                        [self.addKoopa(x, y) for x, y in data["level"]["entities"][self.feature[1]]["Koopa"]]
+            else:
+                #print("$$$$$$$$$$$$$$$$$$$$$$$ Je passe pas par feature $$$$$$$$$$$$$$$$$$$$$$$")
+                [self.addGoomba(x, y) for x, y in data["level"]["entities"]["Goomba"]]
+                [self.addKoopa(x, y) for x, y in data["level"]["entities"]["Koopa"]]
             [self.addCoin(x, y) for x, y in data["level"]["entities"]["coin"]]
             [self.addCoinBrick(x, y) for x, y in data["level"]["entities"]["coinBrick"]]
             [self.addRandomBox(x, y, item) for x, y, item in data["level"]["entities"]["RandomBox"]]
@@ -76,28 +91,32 @@ class Level:
             self.addBushSprite(x, y)
         for x, y in data["level"]["objects"]["cloud"]:
             self.addCloudSprite(x, y)
-        if self.feature is not None:
-            for x, y, z in data["level"]["objects"]["pipe"][self.feature]:
+        if self.feature is not None and (self.feature[0] == "jump" or self.feature[0] == "balance"):
+            for x, y, z in data["level"]["objects"]["pipe"][self.feature[1]]:
                 self.addPipeSprite(x, y, z)
-        else:
+        elif len(data["level"]["objects"]["pipe"]) != 0:
             for x, y, z in data["level"]["objects"]["pipe"]:
                 self.addPipeSprite(x, y, z)
-        for x, y in data["level"]["objects"]["sky"]:
-            self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
+        if self.feature is not None and self.feature[0] == "balance":
+            for x, y in data["level"]["objects"]["sky"][self.feature[1]]:
+                self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
+        else:
+            for x, y in data["level"]["objects"]["sky"]:
+                self.level[y][x] = Tile(self.sprites.spriteCollection.get("sky"), None)
         for x, y in data["level"]["objects"]["ground"]:
             self.level[y][x] = Tile(
                 self.sprites.spriteCollection.get("ground"),
                 pygame.Rect(x * 32, y * 32, 32, 32),
             )
 
-    def updateEntities(self, cam):
+    def updateEntities(self, cam, dt):
         for entity in self.entityList:
-            entity.update(cam)
+            entity.update(cam, dt)
             if entity.alive is None:
                 self.entityList.remove(entity)
-                nb_entites = len(self.entityList)
+                self.nb_entites = len(self.entityList)
 
-    def drawLevel(self, camera):
+    def drawLevel(self, camera, dt):
         try:
             for y in range(0, 15):
                 for x in range(0 - int(camera.pos.x + 1), 20 - int(camera.pos.x - 1)):
@@ -110,7 +129,7 @@ class Level:
                         self.level[y][x].sprite.drawSprite(
                             x + camera.pos.x, y, self.screen
                         )
-            self.updateEntities(camera)
+            self.updateEntities(camera, dt)
         except IndexError:
             return
 

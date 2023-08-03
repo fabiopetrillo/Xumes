@@ -15,12 +15,15 @@ class CoinBrick(EntityBase):
         self.dashboard = dashboard
         self.item = Item(spriteCollection, screen, self.rect.x, self.rect.y)
 
-    def update(self, cam):
-        if not self.alive or self.triggered:
-            self.image = self.spriteCollection.get("empty").image
-            self.item.spawnCoin(cam, self.dashboard)
-        self.screen.blit(
-            self.spriteCollection.get("sky").image,
-            (self.rect.x + cam.x, self.rect.y + 2),
-        )
-        self.screen.blit(self.image, (self.rect.x + cam.x, self.rect.y - 1))
+    def update(self, cam, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if not self.alive or self.triggered:
+                self.image = self.spriteCollection.get("empty").image
+                self.item.spawnCoin(cam, self.dashboard)
+            self.screen.blit(
+                self.spriteCollection.get("sky").image,
+                (self.rect.x + cam.x, self.rect.y + 2),
+            )
+            self.screen.blit(self.image, (self.rect.x + cam.x, self.rect.y - 1))
+            self.move_counter = 0

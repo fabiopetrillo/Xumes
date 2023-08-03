@@ -70,18 +70,12 @@ class SuperMarioTestRunner(TestRunner):
         while not self.game.mario.restart:
 
             self.test_client.wait()
-            pygame.display.set_caption("Super Mario running with {:d} FPS".format(int(self.game.clock.get_fps())))
-            if self.game.mario.pause:
-                self.game.mario.pauseObj.update()
-            else:
-                self.game.level.drawLevel(self.game.mario.camera)
-                self.game.dashboard.update()
-                self.game.mario.update()
-                self.game.render()
+            self.game.level.drawLevel(self.game.mario.camera)
+            self.game.dashboard.update()
+            self.game.mario.update()
 
-            #if self.game.mario.restart or self.game.mario.end_level:
-            #    self.game.terminated = True
-                #self.game.reset()
+            if self.game.mario.restart or self.game.mario.ending_level:
+                self.game.end_game()
 
             self.game.render()
 

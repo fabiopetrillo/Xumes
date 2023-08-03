@@ -23,14 +23,17 @@ class RedMushroom(EntityBase):
         self.EntityCollider = EntityCollider(self)
         self.levelObj = level
 
-    def update(self, camera):
-        if self.alive:
-            self.applyGravity()
-            self.drawRedMushroom(camera)
-            self.leftrightTrait.update()
-            self.checkEntityCollision()
-        else:
-            self.onDead(camera)
+    def update(self, camera, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if self.alive:
+                self.applyGravity()
+                self.drawRedMushroom(camera)
+                self.leftrightTrait.update()
+                self.checkEntityCollision()
+            else:
+                self.onDead(camera)
+            self.move_counter = 0
 
     def drawRedMushroom(self, camera):
         self.screen.blit(self.animation.image, (self.rect.x + camera.x, self.rect.y))

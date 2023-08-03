@@ -60,16 +60,19 @@ class Mario(EntityBase):
         self.pause = False
         self.pauseObj = Pause(screen, self, dashboard)
 
-    def update(self):
-        if self.invincibilityFrames > 0:
-            self.invincibilityFrames -= 1
-        self.updateTraits()
-        self.moveMario()
-        self.camera.move()
-        self.applyGravity()
-        self.checkEntityCollision()
-        self.end_level()
-        self.input.checkForInput()
+    def update(self, dt):
+        self.move_counter += dt
+        if self.move_counter >= self.SPPED_ENTITY:
+            if self.invincibilityFrames > 0:
+                self.invincibilityFrames -= 1
+            self.updateTraits()
+            self.moveMario()
+            self.camera.move()
+            self.applyGravity()
+            self.checkEntityCollision()
+            self.end_level()
+            self.input.checkForInput()
+            self.move_counter = 0
 
     def moveMario(self):
         self.rect.y += self.vel.y
@@ -157,9 +160,6 @@ class Mario(EntityBase):
                 i,
             )
             self.screen.blit(srf, (0, 0))
-            pygame.display.update()
-            self.input.checkForInput()
-        while self.sound.music_channel.get_busy():
             pygame.display.update()
             self.input.checkForInput()
         self.restart = True
