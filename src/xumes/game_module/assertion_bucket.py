@@ -1,3 +1,5 @@
+import time
+
 import multiprocess
 from typing import List
 
@@ -122,10 +124,12 @@ class AssertionBucket:
                 error_logs += f"\n{assertion_result.fail_message:50}\n" \
                               f"{'Actual':10}: {assertion_result.actual} \n" \
                               f"{'Expected':10}: {assertion_result.expected}\n"
+
         self._queue.put(AssertionReport(passed=self._passed,
                                         error_logs=error_logs,
                                         test_name=self._test_name
                                         ))
+        time.sleep(0.5)
 
     def clear(self):
         self._data.clear()

@@ -185,7 +185,7 @@ class TestIAssertionStrategy(TestCase):
         self.assertFalse(int_assertion.test(data))
         data2 = [3, 2] * 50
         self.assertFalse(int_assertion.test(data2))
-        date3 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]
+        date3 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]
         self.assertTrue(int_assertion.test(date3))
 
     def test_between_float(self):
@@ -312,6 +312,7 @@ class TestIAssertionStrategy(TestCase):
         data2 = [2] * 100 + [3] * 100
         self.assertFalse(int_assertion.test(data2))
 
+
     def test_less_equal_float(self):
         float_assertion = AssertionLessThanOrEqual(1.0)
         data = [0.5] * 100
@@ -367,6 +368,10 @@ class TestIAssertionStrategy(TestCase):
         self.assertFalse(int_assertion.test(data))
         data2 = [2] * 100 + [3] * 100
         self.assertTrue(int_assertion.test(data2))
+        data3 = [352, 386, 387, 388, 386, 387, 385, 389, 385, 389, 389, 386, 387, 387]
+        int_assertion2 = AssertionGreaterThan(384)
+        self.assertTrue(int_assertion2.test(data3))
+
 
     def test_greater_float(self):
         float_assertion = AssertionGreaterThan(1.0)
@@ -429,6 +434,13 @@ class TestIAssertionStrategy(TestCase):
         self.assertFalse(int_assertion.test(data))
         data2 = [2] * 100 + [3] * 100
         self.assertTrue(int_assertion.test(data2))
+        data3 = [352, 386, 387, 388, 386, 387, 385, 389, 385, 389, 389, 386, 387, 387]
+        int_assertion2 = AssertionGreaterThanOrEqual(384)
+        self.assertTrue(int_assertion2.test(data3))
+        data = [1] * 100
+        self.assertTrue(int_assertion.test(data))
+        data4 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]
+        self.assertTrue(int_assertion.test(data4))
 
     def test_greater_equal_float(self):
         float_assertion = AssertionGreaterThanOrEqual(1.0)

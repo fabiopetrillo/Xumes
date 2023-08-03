@@ -6,7 +6,6 @@ from multiprocess import set_start_method
 import click
 
 from xumes.core.modes import TRAIN_MODE, TEST_MODE, RENDER_MODE, FEATURE_MODE, SCENARIO_MODE
-from xumes.game_module.feature_strategy import FeatureStrategy
 from xumes.game_module.implementations import CommunicationServiceTestManagerRestApi
 from xumes.game_module.implementations.features_impl.gherkin_feature_strategy import GherkinFeatureStrategy
 from xumes.game_module.test_manager import PygameTestManager
@@ -71,7 +70,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
     else:
         log = False
 
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=get_debug_level(debug, info))
+    logging_level = get_debug_level(debug, info)
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging_level)
 
     if train:
         mode = TRAIN_MODE
@@ -105,7 +105,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
                                      feature_strategy=GherkinFeatureStrategy(alpha=alpha, features_names=features,
                                                                              scenarios_names=scenarios, tags=tags,
                                                                              ),
-                                     mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log)
+                                     mode=mode, timesteps=timesteps, iterations=iterations, do_logs=log,
+                                     logging_level=logging_level)
     test_manager.test_all()
 
 
@@ -118,7 +119,8 @@ def tester(train, debug, render, test, ip, port, path, timesteps, iterations, in
 @click.option("--info", is_flag=True, help="Info debug level.")
 @click.option("--port", default=5000, help="Port of the training server.")
 @click.option("--path", default=None, type=click.Path(), help="Path of the ./trainers.rst folder.")
-@click.option("--model", default=None, type=click.Path(), help="Path of the model to load if you want to use a base model for your training.")
+@click.option("--model", default=None, type=click.Path(),
+              help="Path of the model to load if you want to use a base model for your training.")
 def trainer(train, debug, test, path, mode, port, info, tensorboard, model):
     # change start method to fork to avoid errors with multiprocessing
     # Windows does not support the fork start method
@@ -131,8 +133,8 @@ def trainer(train, debug, test, path, mode, port, info, tensorboard, model):
         print("You must choose a path to save the model.")
         return
 
-    print(model)
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=get_debug_level(debug, info))
+    logging_level = get_debug_level(debug, info)
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging_level)
 
     if not train and not test:
         print("You must choose between --train or --test.")
@@ -152,10 +154,12 @@ def trainer(train, debug, test, path, mode, port, info, tensorboard, model):
 
     if model_mode == FEATURE_MODE:
         training_manager = VecStableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), port,
-                                                            mode=mode, do_logs=tensorboard, model_path=model)
+                                                            mode=mode, do_logs=tensorboard, model_path=model,
+                                                            logging_level=logging_level)
     elif model_mode == SCENARIO_MODE:
         training_manager = StableBaselinesTrainerManager(CommunicationServiceTrainerManagerRestApi(), mode=mode,
-                                                         do_logs=tensorboard, model_path=model)
+                                                         do_logs=tensorboard, model_path=model,
+                                                         logging_level=logging_level)
 
     if training_manager:
         training_manager.start()

@@ -40,7 +40,7 @@ class TrainerManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, mode: str = TEST_MODE,
-                 port: int = 5000, do_logs: bool = False, model_path: str = None):
+                 port: int = 5000, do_logs: bool = False, model_path: str = None, logging_level=logging.NOTSET):
         self._load_trainers()
         self._trainer_processes: Dict[str, multiprocess.Process] = {}
         self._mode = mode
@@ -48,7 +48,7 @@ class TrainerManager:
         self._port = port
         self._do_logs = do_logs
         self._previous_model_path = model_path
-
+        self._logging_level = logging_level
 
     # noinspection DuplicatedCode
     @staticmethod
@@ -71,6 +71,9 @@ class TrainerManager:
             self.train()
         elif self._mode == TEST_MODE:
             self.play()
+
+    def _init_logger(self):
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=self._logging_level)
 
     # connect_trainer, disconnect_trainer, create_and_train, create_and_play
     # shall not be abstract methods, but because of the registry queue they are
@@ -199,17 +202,22 @@ class StableBaselinesTrainerManager(TrainerManager):
             del self._trainer_processes[name]
 
     def create_and_train(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
+        self._init_logger()
         # Create a new trainer and train it
         observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
-        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r,
+                                      config_r)
         trainer.train(self._model_path(feature, scenario),
                       logs_path=self._model_path(feature, scenario) + "/../_logs" if self._do_logs else None,
                       logs_name=scenario, previous_model_path=self._previous_model_path)
 
     def create_and_play(self, feature: str, scenario: str, port: int, queue: multiprocess.Queue):
+        self._init_logger()
         # Create a new trainer and play it
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=self._logging_level)
         observation_r, action_r, reward_r, terminated_r, config_r = queue.get()
-        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r)
+        trainer = self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r,
+                                      config_r)
         trainer.load(self._model_path(feature, scenario) + "/best_model")
         trainer.play(timesteps=None)
 
@@ -227,8 +235,9 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
     """
 
     def __init__(self, communication_service: ICommunicationServiceTrainerManager, port: int,
-                 mode=TEST_MODE, do_logs=False, model_path: str = None):
-        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs, model_path=model_path)
+                 mode=TEST_MODE, do_logs=False, model_path: str = None, logging_level=logging.NOTSET):
+        super().__init__(communication_service, mode=mode, port=port, do_logs=do_logs, model_path=model_path,
+                         logging_level=logging_level)
 
         # Create a vectorized trainer
         # This trainer will train all agents on the same model
@@ -260,13 +269,18 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         process.start()
         self._process = process
 
-    def _train_agent(self, registry_queue):
+    def _init_vec_trainer(self, registry_queue):
+        self._init_logger()
         observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
 
         for (feature, scenario, port) in self._training_services_datas:
-            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
+            self.vec_trainer.add_training_service(
+                self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
 
         self.vec_trainer.make()
+
+    def _train_agent(self, registry_queue):
+        self._init_vec_trainer(registry_queue)
         logging.info("Training model")
         self.vec_trainer.train(self._model_path(self._trained_feature, ""),
                                logs_path=self._model_path(self._trained_feature,
@@ -286,12 +300,7 @@ class VecStableBaselinesTrainerManager(StableBaselinesTrainerManager):
         self._process = process
 
     def _play_agent(self, registry_queue):
-        observation_r, action_r, reward_r, terminated_r, config_r = registry_queue.get()
-
-        for (feature, scenario, port) in self._training_services_datas:
-            self.vec_trainer.add_training_service(self.create_trainer(feature, scenario, port, observation_r, action_r, reward_r, terminated_r, config_r))
-
-        self.vec_trainer.make()
+        self._init_vec_trainer(registry_queue)
         # logging.info("Loading model")
         self.vec_trainer.load(self._model_path(self._trained_feature, "") + "/best_model")
         logging.info("Playing model")

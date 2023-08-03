@@ -23,5 +23,8 @@ class ICommunicationServiceTrainerManager:
     def reset(self, trainer_manager) -> None:
         raise NotImplementedError
 
+    def stop(self, trainer_manager) -> None:
+        raise NotImplementedError
+
     def run(self, trainer_manager, port) -> None:
         raise NotImplementedError
