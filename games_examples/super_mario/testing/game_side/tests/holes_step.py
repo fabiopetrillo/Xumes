@@ -61,6 +61,7 @@ def test_impl(test_context):
 
 @then("The player should have passed {nb_holes} holes at {position}")
 def test_impl(test_context, nb_holes, position):
+    print("------------------PRINT THEN --------------------")
     if int(nb_holes) == 1:
         test_context.assert_true(test_context.game.mario.rect.x > int(position))
         #test_context.assert_greater(test_context.game.mario.rect.x, int(position))

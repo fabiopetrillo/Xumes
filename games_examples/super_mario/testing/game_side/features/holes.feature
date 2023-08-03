@@ -1,4 +1,4 @@
-Feature: Testing jumping over holes
+Feature: Testing jumping over hole
 
   @basic
   Scenario: Jump over 1 hole
