@@ -91,20 +91,12 @@ class AssertionEqual(Assertion):
         super().test(data)
 
         value = self._value
-        if self._type == bool:
-            data = np.array([1 if x == self._value else -1 for x in data])
-        elif self._type != float and self._type != int:
+        if self._type != float and self._type != int:
             data = np.array([1 if x == self._value else -1 for x in data])
             value = 1
 
         t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data, value,
                                                                                                          self._alpha)
-
-        if (self._type == int or self._type == float) and p_value_t:
-            return p_value_t > self._alpha
-
-        elif (self._type == bool or self._type == str) and p_value_combined:
-            return p_value_combined > self._alpha
 
         return not significant_difference
 
@@ -125,33 +117,17 @@ class AssertionBetween(Assertion):
     def test(self, data) -> bool:
         super().test(data)
 
-        if self._type != float and self._type != int:
-            data = np.array([1 if self._min_value <= x <= self._max_value else -1 for x in data])
-            value = 1
+        data = np.array([1 if self._min_value <= x <= self._max_value else -1 for x in data])
+        value = 1
 
-            t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
-                                                                                                             value,
-                                                                                                             self._alpha)
+        t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
+                                                                                                         value,
+                                                                                                         self._alpha)
 
-            if p_value_combined:
-                return p_value_combined > self._alpha
+        if p_value_combined:
+            return p_value_combined > self._alpha
 
-            return not significant_difference
-
-        else:
-
-            t_statistic_min, p_value_t_min, p_value_prop_min, p_value_combined_min, significant_difference_min = hypothesis_test(
-                data, self._min_value,
-                self._alpha)
-            t_statistic_max, p_value_t_max, p_value_prop_max, p_value_combined_max, significant_difference_max = hypothesis_test(
-                data,
-                self._max_value,
-                self._alpha)
-
-            if t_statistic_max and t_statistic_min:
-                return t_statistic_max < 0 < t_statistic_min
-            else:
-                return self._min_value <= np.mean(data) <= self._max_value
+        return not significant_difference
 
 
 class AssertionLessThan(Assertion):
@@ -175,19 +151,15 @@ class AssertionLessThan(Assertion):
                                                                                                              value,
                                                                                                              self._alpha)
 
-            if p_value_combined:
-                return p_value_combined > self._alpha
-
             return not significant_difference
 
         else:
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              self._value,
                                                                                                              self._alpha)
-            if p_value_t:
-                return p_value_t / 2 < self._alpha and t_statistic < 0
-            elif p_value_prop:
-                return p_value_prop / 2 < self._alpha and t_statistic < 0
+
+            if p_value_combined and t_statistic:
+                return p_value_combined / 2 < self._alpha and t_statistic < 0
             else:
                 return np.mean(data) < self._value
 
@@ -213,19 +185,14 @@ class AssertionLessThanOrEqual(Assertion):
                                                                                                              value,
                                                                                                              self._alpha)
 
-            if p_value_combined:
-                return p_value_combined >= self._alpha
-
             return not significant_difference
 
         else:
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              self._value,
                                                                                                              self._alpha)
-            if p_value_t:
-                return p_value_t / 2 <= self._alpha and t_statistic < 0
-            elif p_value_prop:
-                return p_value_prop / 2 <= self._alpha and t_statistic < 0
+            if t_statistic:
+                return t_statistic < 0
             else:
                 return np.mean(data) <= self._value
 
@@ -244,15 +211,12 @@ class AssertionGreaterThan(Assertion):
         super().test(data)
 
         if self._type != float and self._type != int:
-            data = np.array([1 if x > self._value else -1 for x in data])
+            data = np.array([1 if x > self._value else 0 for x in data])
             value = 1
 
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              value,
                                                                                                              self._alpha)
-
-            if p_value_combined:
-                return p_value_combined > self._alpha
 
             return not significant_difference
 
@@ -260,10 +224,9 @@ class AssertionGreaterThan(Assertion):
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              self._value,
                                                                                                              self._alpha)
-            if p_value_t:
-                return p_value_t / 2 < self._alpha and t_statistic > 0
-            elif p_value_prop:
-                return p_value_prop / 2 < self._alpha and t_statistic > 0
+
+            if p_value_combined and t_statistic:
+                return p_value_combined / 2 < self._alpha and t_statistic > 0
             else:
                 return np.mean(data) > self._value
 
@@ -288,18 +251,13 @@ class AssertionGreaterThanOrEqual(Assertion):
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              value,
                                                                                                              self._alpha)
-            if p_value_combined:
-                return p_value_combined > self._alpha
-
             return not significant_difference
 
         else:
             t_statistic, p_value_t, p_value_prop, p_value_combined, significant_difference = hypothesis_test(data,
                                                                                                              self._value,
                                                                                                              self._alpha)
-            if p_value_t:
-                return p_value_t / 2 <= self._alpha and t_statistic > 0
-            elif p_value_prop:
-                return p_value_prop / 2 <= self._alpha and t_statistic > 0
+            if t_statistic:
+                return t_statistic > 0
             else:
                 return np.mean(data) >= self._value

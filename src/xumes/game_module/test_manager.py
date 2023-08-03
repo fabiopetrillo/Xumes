@@ -1,3 +1,6 @@
+import logging
+import time
+
 import multiprocess
 from abc import abstractmethod
 from typing import List, Dict
@@ -58,7 +61,8 @@ class TestManager:
     """
 
     def __init__(self, communication_service: ICommunicationServiceTestManager, feature_strategy: FeatureStrategy,
-                 mode: str = TEST_MODE, timesteps=None, iterations=None, do_logs: bool = False):
+                 mode: str = TEST_MODE, timesteps=None, iterations=None, do_logs: bool = False,
+                 logging_level=logging.NOTSET):
 
         self._communication_service = communication_service
         self._scenario_datas: Dict[Scenario, ScenarioData] = {}
@@ -68,6 +72,7 @@ class TestManager:
         self._feature_strategy: FeatureStrategy = feature_strategy
         self._assertion_queue = multiprocess.Queue()
         self._do_logs = do_logs
+        self._logging_level = logging_level
 
     def get_free_port(self, scenario) -> int:
         # Get the port for a given feature and scenario
@@ -80,16 +85,20 @@ class TestManager:
         # Add a game service data to the list of game services data
         self._scenario_datas[scenario] = ScenarioData(ip=ip, port=port)
 
-    def create_game_service(self, scenario: Scenario, scenario_data: ScenarioData) -> GameService:
+    def create_game_service(self, scenario: Scenario, scenario_data: ScenarioData, assertion_queue: multiprocess.Queue,
+                            registry_queue: multiprocess.Queue) -> GameService:
         game_service = self._build_game_service(
             self._feature_strategy.build_test_runner(mode=self._mode, timesteps=self._timesteps,
                                                      iterations=self._iterations, scenario=scenario,
-                                                     test_queue=self._assertion_queue,
+                                                     test_queue=assertion_queue,
                                                      do_logs=self._do_logs,
-                                                     registry_queue=scenario_data.registry_queue
+                                                     registry_queue=registry_queue
                                                      ), scenario_data.ip, scenario_data.port, )
         scenario_data.game_service = game_service
         return game_service
+
+    def _init_logging(self):
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=self._logging_level)
 
     @abstractmethod
     def _build_game_service(self, test_runner, ip, port) -> GameService:
@@ -108,13 +117,19 @@ class TestManager:
             for scenario in feature.scenarios:
 
                 self._communication_service.connect_trainer(self, scenario)
-
-                self._scenario_datas[scenario].registry_queue.put((given_registry, when_registry, then_registry, loop_registry, render_registry, delete_screen_registry, log_registry))
+                self._scenario_datas[scenario].registry_queue.put((given_registry, when_registry, then_registry,
+                                                                   loop_registry, render_registry,
+                                                                   delete_screen_registry, log_registry))
                 if self._mode == TEST_MODE or self._mode == TRAIN_MODE:  # no render
-                    process = multiprocess.Process(target=self.run_test, args=(scenario, active_processes,))
+                    process = multiprocess.Process(target=self.run_test, args=(
+                        scenario, active_processes, self._assertion_queue,
+                        self._scenario_datas[scenario].registry_queue,))
                 else:  # render
                     process = multiprocess.Process(target=self.run_test_render,
-                                                   args=(scenario, active_processes,))
+                                                   args=(scenario, active_processes,
+                                                         self._assertion_queue,
+                                                         self._scenario_datas[scenario].registry_queue,
+                                                         ))
                 process.start()
                 active_processes.value += 1
                 self._scenario_datas[scenario].process = process
@@ -136,6 +151,8 @@ class TestManager:
         if self._mode == TEST_MODE:
             self._assert()
 
+        self._communication_service.stop()
+
     def _assert(self):
 
         results: List[AssertionReport] = []
@@ -145,6 +162,8 @@ class TestManager:
 
         while not self._assertion_queue.empty():
             assertion_report = self._assertion_queue.get()
+            if assertion_report is None:
+                break
             results.append(assertion_report)
             if assertion_report.passed:
                 successes += 1
@@ -169,8 +188,11 @@ class TestManager:
     def _delete_game_services(self) -> None:
         self._scenario_datas.clear()
 
-    def run_test(self, scenario: Scenario, active_processes) -> None:
-        game_service = self.create_game_service(scenario, self._scenario_datas[scenario])
+    def run_test(self, scenario: Scenario, active_processes, assertion_queue: multiprocess.Queue,
+                 registry_queue: multiprocess.Queue) -> None:
+        self._init_logging()
+        game_service = self.create_game_service(scenario, self._scenario_datas[scenario], assertion_queue,
+                                                registry_queue)
         game_service.run()
 
         with active_processes.get_lock():
@@ -178,8 +200,11 @@ class TestManager:
 
         game_service.stop()
 
-    def run_test_render(self, scenario: Scenario, active_processes) -> None:
-        game_service = self.create_game_service(scenario, self._scenario_datas[scenario])
+    def run_test_render(self, scenario: Scenario, active_processes, assertion_queue: multiprocess.Queue,
+                        registry_queue: multiprocess.Queue) -> None:
+        self._init_logging()
+        game_service = self.create_game_service(scenario, self._scenario_datas[scenario], assertion_queue,
+                                                registry_queue)
         game_service.run_render()
 
         with active_processes.get_lock():

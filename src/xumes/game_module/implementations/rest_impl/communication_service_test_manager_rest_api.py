@@ -54,4 +54,6 @@ class CommunicationServiceTestManagerRestApi(ICommunicationServiceTestManager):
         pass
 
     def stop(self) -> None:
-        pass
+        # noinspection HttpUrlsUsage
+        requests.post(f'http://{self.ip}:{self.port}/shutdown')
+

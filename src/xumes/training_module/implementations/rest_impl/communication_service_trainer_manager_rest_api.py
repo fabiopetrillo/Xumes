@@ -1,4 +1,7 @@
-from flask import Flask, request
+import os
+from signal import signal, SIGTERM
+
+from flask import Flask, request, Response
 
 from xumes.training_module.i_communication_service_trainer_manager import ICommunicationServiceTrainerManager
 
@@ -42,10 +45,24 @@ class CommunicationServiceTrainerManagerRestApi(ICommunicationServiceTrainerMana
         def ping():
             return "pong"
 
+    def stop(self, trainer_manager):
+
+        @self.app.route('/shutdown', methods=['POST'])
+        def shutdown():
+            response = Response("Server shutting down...")
+
+            @response.call_on_close
+            def on_close():
+                sig = getattr(signal, "SIGKILL", SIGTERM)
+                os.kill(os.getpid(), sig)
+
+            return response
+
     def run(self, trainer_manager, port) -> None:
         self.connect_trainer(trainer_manager)
         self.disconnect_trainer(trainer_manager)
         self.start_training(trainer_manager)
         self.reset(trainer_manager)
+        self.stop(trainer_manager)
         self.ping()
         self.app.run(port=port)
