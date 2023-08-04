@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from xumes.core.errors.running_ends_error import RunningEndsError
-from xumes.core.modes import TEST_MODE
+from xumes.core.modes import TEST_MODE, RENDER_MODE
 from xumes.core.registry import create_registry_content, create_registry, exec_registry_function
 from xumes.game_module.assertion_bucket import AssertionBucket
 from xumes.game_module.test_runner import TestRunner
@@ -209,7 +209,7 @@ class FeatureStrategy(ABC):
                 self._do_assert_and_log()
 
             def _do_assert_and_log(self) -> None:
-                if self._mode == TEST_MODE:
+                if self._mode == TEST_MODE or self._mode == RENDER_MODE:
                     # If the test is finished, we assert the test
                     self._assertion_bucket.assertion_mode()
                     exec_registry_function(registry=then_r[steps], game_context=self, scenario_name=scenario_name)
