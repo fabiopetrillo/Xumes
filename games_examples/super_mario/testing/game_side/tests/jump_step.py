@@ -13,19 +13,6 @@ def test_impl(test_context):
     def _get_rect(rect):
         return [rect.x, rect.y]
 
-    def _get_attributes(lst):
-        return [{
-            'type': item.type,
-            'position': {
-                'x': item.rect.x,
-                'y': item.rect.y
-            },
-            'alive': item.alive,
-            'active': item.active,
-            'bouncing': item.boucing,
-            'onGround': item.onGround
-        } for item in lst]
-
     test_context.game = test_context.create(Game, "game",
                                             state=State("terminated", methods_to_observe=["run", "reset"]),
                                             levelname="jump_feature", feature=["jump", "100-100"])
@@ -34,8 +21,6 @@ def test_impl(test_context):
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
         State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
         State("ending_level", methods_to_observe="end_level"),
-        State("levelObj", State("entityList", func=_get_attributes),
-              methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
         State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
                                                                                   "_onCollisionWithBlock",
                                                                                   "killEntity",
@@ -55,25 +40,10 @@ def test_impl(test_context, i, j):
     def _get_rect(rect):
         return [rect.x, rect.y]
 
-    def _get_attributes(lst):
-        return [{
-            'type': item.type,
-            'position': {
-                'x': item.rect.x,
-                'y': item.rect.y
-            },
-            'alive': item.alive,
-            'active': item.active,
-            'bouncing': item.boucing,
-            'onGround': item.onGround
-        } for item in lst]
-
     test_context.game.mario = test_context.create(Mario, "mario", state=[
         State("rect", func=_get_rect, methods_to_observe="moveMario"),
         State("powerUpState", methods_to_observe=["powerup", "_onCollisionWithMob"]),
         State("ending_level", methods_to_observe="end_level"),
-        State("levelObj", State("entityList", func=_get_attributes),
-              methods_to_observe=["_onCollisionWithItem", "_onCollisionWithMob"]),
         State("dashboard", [State("coins"), State("points")], methods_to_observe=["_onCollisionWithItem",
                                                                                   "_onCollisionWithBlock",
                                                                                   "killEntity",
@@ -99,7 +69,7 @@ def test_impl(test_context):
 @then("The player should have passed {nb_pipes} pipes")
 def test_impl(test_context, nb_pipes):
     if int(nb_pipes) == 2:
-        test_context.assert_greater_equal(test_context.game.mario.rect.x, 448)
+        test_context.assert_greater(test_context.game.mario.rect.x, 448)
 
 
 @then("The player should have passed at least {nb_pipes} pipes")
